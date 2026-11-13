@@ -104,6 +104,13 @@ func _run() -> void:
 	src.free()
 	m.goto("city")
 	await _shot("06_city")
+	m.goto("world")
+	await _shot("06b_world")
+	var hp0: Array = Game.party.map(func(c): return c.health)
+	print("travel: ", Game.travel("mines", 1), " endurance ", hp0, " -> ", Game.party.map(func(c): return c.health), " at ", Game.location)
+	for i in Game.party.size():
+		Game.party[i].health = hp0[i]
+	Game.location = "lehan"
 	m.goto("shop")
 	var sh: Node = m.current
 	sh.drop(null, {"item": 32})

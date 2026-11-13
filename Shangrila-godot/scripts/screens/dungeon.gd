@@ -148,7 +148,7 @@ func _ready() -> void:
 		act_buttons[ACTS[i]] = b
 
 	# Bottom-left buttons (DungeonWin 1-8, 39).
-	var bl := [["Close", 10, 50, _on_close, "Leave the mines and return to the city"],
+	var bl := [["Close", 10, 50, _on_close, "Leave the mines"],
 		["Save", 64, 46, _on_save, "Save the game"],
 		["Examine", 114, 62, _on_examine, "Examine the surroundings"],
 		["Sleep", 180, 50, _on_sleep, "Rest: turns endurance into hit points and restores mana"]]
@@ -206,7 +206,7 @@ func _after_move() -> void:
 			start_combat(Combat.new(Game.depth()))
 			return
 	if Game.pos == Game.MINES_START and Game.facing == 2:
-		say("Daylight. The way back to %s lies behind you (Close)." % Game.city.name)
+		say("Daylight. The way out lies behind you (Close).")
 
 
 func _turn(d: int) -> void:
@@ -257,7 +257,7 @@ func _on_map() -> void:
 
 func _on_close() -> void:
 	if await Game.main.confirm("Do you really want to leave the mines?"):
-		Game.main.goto("city")
+		Game.main.goto("world")
 
 
 func _on_save() -> void:

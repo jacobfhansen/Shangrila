@@ -37,6 +37,10 @@ in code. Better home-made art could replace them, including portraits for the fo
 ## Ideas
 
 ### World map and travel
+**Started:** the map screen, travel along routes, and the Endurance cost per day are in the game
+(Lehan and the Mines, one day apart). Still to do: discovering new places, running out of
+food (weakened, then losing hit points), and the open questions below.
+
 Bring a world map into play. The party travels between locations (cities, castles, dungeons such
 as the mines of Lehan), and travel costs food, so moving around is never free.
 

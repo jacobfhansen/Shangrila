@@ -111,9 +111,107 @@ def chain():
     img.save(OUT / "chain.png")
 
 
+def world_map():
+    """The world map: an inked parchment chart of an invented land."""
+    w, h = 600, 370
+    rng = np.random.default_rng(71)
+    yy, xx = np.mgrid[0:h, 0:w]
+    # Height: noise plus a broad falloff so the middle is land and the edges are sea.
+    n = tile_noise(w, h, 4, 73, 6)
+    dx, dy = (xx - w * 0.47) / (w * 0.55), (yy - h * 0.52) / (h * 0.62)
+    fall = 1 - np.sqrt(dx * dx + dy * dy)
+    height = n * 0.75 + fall * 0.55
+    # A mountain range curving across the north-east.
+    ridge = np.exp(-(((yy - (h * 0.30 + 0.0009 * (xx - w * 0.6) ** 2)) / 26.0) ** 2)) * np.clip((xx - w * 0.3) / (w * 0.15), 0, 1)
+    height += ridge * 0.25 * tile_noise(w, h, 6, 79, 3)
+    sea = height < 0.52
+    paper = tile_noise(w, h, 3, 83, 5)
+
+    base_land = np.array([222, 200, 152])
+    base_sea = np.array([170, 178, 160])
+    rgb = np.where(sea[..., None], base_sea, base_land).astype(float)
+    rgb += ((paper - 0.5) * 36)[..., None]
+    # Gentle relief shading on land (light from the north-west).
+    gy, gx = np.gradient(height)
+    relief = np.clip((gx + gy) * -900, -25, 25)
+    rgb += np.where(sea, 0, relief)[..., None]
+    # Lowlands a little greener, highlands a little browner.
+    rgb += np.where(sea, 0, np.clip((height - 0.62) * 120, -10, 25))[..., None] * np.array([0.3, -0.2, -0.6])
+
+    img = to_img(rgb)
+    d = ImageDraw.Draw(img)
+    ink = (70, 48, 26)
+
+    # Coastline: ink where land touches sea, plus offset ripple lines out at sea.
+    land = ~sea
+    edge = land & (np.roll(sea, 1, 0) | np.roll(sea, -1, 0) | np.roll(sea, 1, 1) | np.roll(sea, -1, 1))
+    dist = np.zeros((h, w))  # rough distance from the coast, out at sea
+    ring = edge.copy()
+    seen = land.copy()
+    for k in range(1, 15):
+        grow = (np.roll(ring, 1, 0) | np.roll(ring, -1, 0) | np.roll(ring, 1, 1) | np.roll(ring, -1, 1)) & ~seen
+        dist[grow] = k
+        seen |= grow
+        ring = grow
+    px = np.array(img).astype(float)
+    for k, a in ((4, 0.35), (8, 0.22), (13, 0.12)):
+        m = dist == k
+        px[m] = px[m] * (1 - a) + np.array(ink) * a
+    px[edge] = ink
+    img = Image.fromarray(px.astype(np.uint8), "RGB")
+    d = ImageDraw.Draw(img)
+
+    # Mountains: little inked peaks on the high ground.
+    for _ in range(2600):
+        x, y = int(rng.integers(8, w - 8)), int(rng.integers(10, h - 6))
+        if sea[y, x] or height[y, x] < 0.80:
+            continue
+        s = 4 + int((height[y, x] - 0.80) * 30) + int(rng.integers(0, 3))
+        s = min(s, 10)
+        if rng.random() < 0.88:
+            continue
+        d.polygon([(x - s, y), (x, y - s - 2), (x + s, y)], fill=(196, 172, 128))
+        d.line([(x - s, y), (x, y - s - 2), (x + s, y)], fill=ink, width=1)
+        d.line([(x, y - s - 2), (x + s // 3, y)], fill=(120, 96, 64), width=1)
+
+    # Forests: clusters of small tree rings on the lowlands.
+    forest = tile_noise(w, h, 5, 89, 4)
+    for _ in range(9000):
+        x, y = int(rng.integers(6, w - 6)), int(rng.integers(6, h - 6))
+        if sea[y, x] or not (0.56 < height[y, x] < 0.76) or forest[y, x] < 0.6:
+            continue
+        if rng.random() < 0.8:
+            continue
+        d.ellipse([x - 3, y - 3, x + 3, y + 2], fill=(150, 150, 96), outline=(80, 74, 40))
+        d.line([(x, y + 2), (x, y + 4)], fill=(80, 74, 40))
+
+    # Compass rose in the north-west sea.
+    cx, cy, r = 52, 52, 26
+    for ang, ln in ((0, r), (90, r), (180, r), (270, r), (45, r * 0.55), (135, r * 0.55), (225, r * 0.55), (315, r * 0.55)):
+        t = np.radians(ang)
+        tip = (cx + np.sin(t) * ln, cy - np.cos(t) * ln)
+        side = 5
+        l = (cx + np.sin(t - np.pi / 2) * side, cy - np.cos(t - np.pi / 2) * side)
+        rr = (cx + np.sin(t + np.pi / 2) * side, cy - np.cos(t + np.pi / 2) * side)
+        d.polygon([l, tip, rr], fill=(236, 220, 180) if ang % 90 else ink, outline=ink)
+    d.ellipse([cx - 4, cy - 4, cx + 4, cy + 4], fill=(236, 220, 180), outline=ink)
+
+    # Vignette and a double frame.
+    px = np.array(img).astype(float)
+    vx, vy = (xx - w / 2) / (w / 2), (yy - h / 2) / (h / 2)
+    vig = np.clip((vx * vx + vy * vy - 0.55) * 0.35, 0, 0.35)
+    px = px * (1 - vig[..., None]) + np.array([90, 60, 30]) * vig[..., None]
+    img = Image.fromarray(np.clip(px, 0, 255).astype(np.uint8), "RGB")
+    d = ImageDraw.Draw(img)
+    d.rectangle([2, 2, w - 3, h - 3], outline=ink, width=2)
+    d.rectangle([7, 7, w - 8, h - 8], outline=ink, width=1)
+    img.save(OUT / "world_map.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
     parchment()
     chain()
+    world_map()
     print("wrote textures to", OUT)

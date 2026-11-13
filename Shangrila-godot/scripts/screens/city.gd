@@ -1,5 +1,5 @@
 extends Control
-## City - Lehan. The gate leads to the mines, plus the inn and the weapon smith (Shops[2]).
+## City - Lehan. The gate leads out to the world map, plus the inn and the weapon smith (Shops[2]).
 
 
 func _ready() -> void:
@@ -17,7 +17,7 @@ func _ready() -> void:
 	_tower(Rect2(258, 120, 50, 215))
 	_tower(Rect2(372, 120, 50, 215))
 	Ui.image(self, "rock", Rect2(308, 160, 64, 175), true)
-	_door(Rect2(316, 220, 48, 115), "Gate", _on_gate, "Leave the city through the gate and enter the mines", Color("#0a0806"))
+	_door(Rect2(316, 220, 48, 115), "Gate", _on_gate, "Leave the city and set out into the land", Color("#0a0806"))
 
 	# Weapon smith (left).
 	_house(Rect2(36, 220, 190, 140), "dark_stone", Color("#7a2a1a"))
@@ -85,7 +85,7 @@ func _on_gate() -> void:
 	if Game.party.is_empty():
 		await Game.main.message("You have no characters in your party.\nMuster one at the inn first.")
 		return
-	Game.main.goto("dungeon")
+	Game.main.goto("world")
 
 
 func _on_shop() -> void:

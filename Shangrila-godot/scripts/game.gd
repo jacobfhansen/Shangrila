@@ -61,6 +61,20 @@ const DIR_NAMES := ["North", "East", "South", "West"]
 const DIR_LETTERS := ["N", "E", "S", "W"]
 const DIR_VEC := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
 
+## World map. `at` is the position on assets/world_map.png (600x370). `screen` is entered on
+## arrival. `kind` is "city" (can be found by travelling near it) or "dungeon" / "plot" (only
+## through rumours, clues or exits).
+const LOCATIONS := {
+	"lehan": {"name": "Lehan", "kind": "city", "at": Vector2(236, 252), "screen": "city",
+		"desc": "A walled town with an inn and a weapon smith."},
+	"mines": {"name": "The Mines", "kind": "dungeon", "at": Vector2(292, 200), "screen": "dungeon",
+		"desc": "Old mine workings in the hills above Lehan."},
+}
+## Routes between locations, with the number of days on the road.
+const ROUTES := [["lehan", "mines", 1]]
+## Endurance each character uses per day of travel (food is what refills it).
+const TRAVEL_COST := 8
+
 var main: Node            # set by main.gd, used for modal dialogs
 var items := {}           # id -> item dictionary (templates, never mutated)
 var mines := {}           # Vector2i -> Array[bool] exits [N, E, S, W]
@@ -71,6 +85,8 @@ var party: Array = []     # up to 6 characters
 var visited := {}         # Vector2i -> true
 var pos := MINES_START
 var facing := 0           # 0 N, 1 E, 2 S, 3 W
+var location := "lehan"   # key in LOCATIONS: where the party is on the world map
+var known: Array = ["lehan", "mines"]   # discovered locations
 
 var rng := RandomNumberGenerator.new()
 
@@ -421,6 +437,7 @@ func party_defeated() -> void:
 		add_copper(c, -char_copper(c) / 2)
 	pos = MINES_START
 	facing = 0
+	location = "lehan"
 
 
 ## DoesItFit: can item from slot `src` be placed in slot `dst`?
@@ -522,6 +539,8 @@ func new_game() -> void:
 	visited = {MINES_START: true}
 	pos = MINES_START
 	facing = 0
+	location = "lehan"
+	known = ["lehan", "mines"]
 
 
 func has_save() -> bool:
@@ -535,6 +554,7 @@ func save_game(screen: String) -> bool:
 	var data := {
 		"version": 2, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
+		"location": location, "known": known,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
@@ -584,4 +604,35 @@ func load_game() -> String:
 	if not mines.has(pos):
 		pos = MINES_START
 	facing = data.get("facing", 0)
+	location = data.get("location", "lehan")
+	if not LOCATIONS.has(location):
+		location = "lehan"
+	known = data.get("known", ["lehan", "mines"])
 	return data.get("screen", "inn")
+
+
+# ---------------------------------------------------------------- world map / travel
+
+## Known destinations reachable from `from`: [{"to": key, "days": n}].
+func routes_from(from: String) -> Array:
+	var out := []
+	for r in ROUTES:
+		var other: String = r[1] if r[0] == from else (r[0] if r[1] == from else "")
+		if other != "" and other in known:
+			out.append({"to": other, "days": r[2]})
+	return out
+
+
+## Travel to `dest`. Every character uses Endurance for each day on the road.
+## Returns lines describing the trip.
+func travel(dest: String, days: int) -> Array:
+	var lines := ["After %d day%s on the road the party reaches %s." % [days, "" if days == 1 else "s", LOCATIONS[dest].name]]
+	var hungry := []
+	for c in party:
+		c.health = maxi(0, c.health - TRAVEL_COST * days)
+		if c.health == 0:
+			hungry.append(c.name)
+	if not hungry.is_empty():
+		lines.append("%s %s starving and need%s food." % [", ".join(hungry), "is" if hungry.size() == 1 else "are", "s" if hungry.size() == 1 else ""])
+	location = dest
+	return lines
