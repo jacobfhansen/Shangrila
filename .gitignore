@@ -1,0 +1,7 @@
+# Godot 4 cache
+.godot/
+*.tmp
+.DS_Store
+
+# Original 1997 source, kept locally only
+Shangrila-old-code/
