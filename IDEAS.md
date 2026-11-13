@@ -72,3 +72,49 @@ as the mines of Lehan), and travel costs food, so moving around is never free.
 - Can food be bought (inn, market) or foraged on the way (the Foraging skill)?
 - How long does it take to go from weakened to losing hit points, and how much do the
   stats drop?
+
+### Characters with a will of their own
+The player decides who is in the party, where it goes and what each character is ordered to do
+in combat. But the characters are people: they like or dislike each other, and they do not
+always follow orders.
+
+**What shapes relations between characters**
+- **Race attitudes:** fixed starting feelings between the races (for example, Thuugs distrust
+  Nisk).
+- **Personality traits:** each character has one or two traits (brave, greedy, pious,
+  hot-tempered, loyal, …) that get on well or clash with other characters' traits. Traits are
+  **hidden**. The player learns them only from the characters' comments during play ("Brand
+  grumbles that the Nisk took the best share again").
+- **Shared deeds:** feelings change with what happens. Saving someone in combat warms them, and
+  unfair loot sharing or leaving a fallen friend behind sours them.
+- **Values:** characters react to the party's choices. A paladin dislikes stealing or fleeing,
+  and a thief scorns paying full price.
+
+**Discipline (how well a character obeys)**
+Built from:
+- Will Power
+- class training (warriors, paladins and monks are drilled; thieves and mages are more
+  independent)
+- experience (veterans keep their nerve, which finally gives experience a use)
+- the party leader's Charisma, which lifts or lowers everyone's discipline
+
+**In combat**
+- **Small deviations:** a character with low discipline may swap an order for what they would
+  rather do (a hot-head attacks instead of parrying, a coward hides). The log says why.
+- **Morale breaks:** under heavy pressure (friends falling, losing badly), morale can break.
+  The character flees, freezes or refuses to act.
+
+**Outside combat, bad relations can lead to**
+- **Refusing to join:** at the inn, a character will not muster into a party with someone
+  they dislike.
+- **Quarrels on the road:** arguments while travelling or resting cost Endurance or spoil sleep.
+- **Leaving the party:** if it gets bad enough, a character walks out and returns to the inn.
+- **Stealing or betrayal:** a greedy or hateful character might take loot or abandon someone.
+
+**Open questions**
+- How much should the player see? Only comments, or also a mood indicator (a face or colour
+  per character) without numbers?
+- Who is the party leader: the first slot, or chosen by the player?
+- The list of traits, and the starting attitude table between the four races.
+- Can the player improve relations (sharing loot fairly, feasting at the inn, a leader with
+  high Charisma talking to them)?
