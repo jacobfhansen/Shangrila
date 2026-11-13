@@ -90,7 +90,7 @@ func refresh() -> void:
 		skill_values[s].text = str(c.skills[s]) if c.cls != Game.NO_CLASS else ""
 	accept.disabled = c.cls == Game.NO_CLASS
 	if not rolled:
-		hint.text = "Choose race and portrait, then press Reroll to roll the dice."
+		hint.text = Game.RACE_INFO[c.race] + " Choose race and portrait, then press Reroll to roll the dice."
 	elif c.cls == Game.NO_CLASS:
 		var any := false
 		for k in 8:

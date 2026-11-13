@@ -3,8 +3,16 @@ extends Node
 
 const SAVE_PATH := "user://shangrila_save.json"
 
-const RACES := ["Dwarf", "Elf", "Half Elf", "Halfling", "Human"]
-enum { DWARF, ELF, HALFELF, HALFLING, HUMAN }
+const RACES := ["Human", "Thuug", "Aeldroe", "Nisk"]
+enum { HUMAN, THUUG, AELDROE, NISK }
+const RACE_INFO := [
+	"Humans: adaptable and strong-armed.",
+	"Thuugs: slow, turtle-like folk. Their shell gives +1 armour class.",
+	"Aeldroes: slim, half-transparent beings with a gift for magic and hiding.",
+	"Nisk: quick, wiry rat-folk who climb well and miss little.",
+]
+## Saves before version 2 used the original 1997 races; map them onto the new ones.
+const OLD_RACE_MAP := [THUUG, AELDROE, HUMAN, NISK, HUMAN]  # Dwarf, Elf, Half Elf, Halfling, Human
 
 const CLASSES := ["Cleric", "Enchanter", "Mage", "Monk", "Paladin", "Ranger", "Thief", "Warrior"]
 enum { CLERIC, ENCHANTER, MAGE, MONK, PALADIN, RANGER, THIEF, WARRIOR }
@@ -200,16 +208,14 @@ func roll_character(c: Dictionary) -> void:
 	c.max_hits = _d(2, 5, 3) + hits_bonus(c.constitution)
 	c.hits = c.max_hits
 	match c.race:
-		DWARF:
-			c.strength += 1; c.constitution += 1; c.dexterity -= 1; c.charisma -= 1
-		ELF:
-			c.dexterity += 1; c.intelligence += 1; c.will -= 1; c.charisma += 1; c.constitution -= 1
-		HALFELF:
-			c.strength += 1; c.charisma += 1; c.will -= 1
-		HALFLING:
-			c.strength -= 1; c.dexterity += 1; c.constitution += 1; c.will += 1; c.intelligence -= 1
 		HUMAN:
 			c.strength += 1
+		THUUG:
+			c.strength += 1; c.constitution += 2; c.dexterity -= 2; c.charisma -= 1
+		AELDROE:
+			c.intelligence += 2; c.will += 1; c.strength -= 1; c.constitution -= 2
+		NISK:
+			c.dexterity += 2; c.constitution += 1; c.strength -= 1; c.charisma -= 1
 	c.max_health = c.will + (c.strength + c.constitution) * 4
 	c.health = c.max_health / 2
 	c.max_magic = 0
@@ -288,6 +294,14 @@ func update_skills(c: Dictionary) -> void:
 			sk[3] = 5 + ssd; sk[8] = 10 + roundi((s + d) / 2.0); sk[9] = 5 + d; sk[18] = 7 + d; sk[20] = 10 + d
 		WARRIOR:
 			sk[0] = 5 + ssd; sk[5] = 2 + ssd; sk[6] = 10 + ssd
+	match c.race:
+		AELDROE:
+			sk[15] += 10  # Hide: hard to see
+			if sk[16] > -25:
+				sk[16] += 10  # Magic Arts
+		NISK:
+			sk[8] += 10  # Climb
+			sk[17] += 5  # Perception
 
 
 func finish_character(c: Dictionary, nm: String) -> void:
@@ -306,6 +320,8 @@ func encumbrance(c: Dictionary) -> int:
 
 func armor_class(c: Dictionary) -> int:
 	var ac: int = 7 + armor_bonus(c.dexterity)
+	if c.race == THUUG:
+		ac += 1  # shell
 	for i in [1, 2, 3, 4, 5, 8, 9]:
 		if c.items[i] != 0:
 			ac += item(c.items[i]).defense
@@ -517,7 +533,7 @@ func save_game(screen: String) -> bool:
 	for k in visited:
 		v.append([k.x, k.y])
 	var data := {
-		"version": 1, "screen": screen, "roster": roster, "party": party,
+		"version": 2, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -554,6 +570,10 @@ func load_game() -> String:
 	data = _ints(data)
 	roster = data.get("roster", [])
 	party = data.get("party", [])
+	if data.get("version", 1) < 2:
+		# The party is saved as separate copies, so convert both lists.
+		for c in roster + party:
+			c.race = OLD_RACE_MAP[clampi(c.race, 0, OLD_RACE_MAP.size() - 1)]
 	for c in roster + party:
 		refresh_magic(c)
 	visited = {}

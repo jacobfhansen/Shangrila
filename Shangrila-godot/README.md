@@ -9,7 +9,7 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
 
 - **Screens and flow:** About picture, then main menu (New / Resume / Quit), Inn, Create
   Character, View Character, City of Lehan, Weapon Smith and the Mines.
-- **Character rules:** 3×(2–6) stat rolls, race modifiers, hit points, endurance, the starting
+- **Character rules:** 3×(2–6) stat rolls, hit points, endurance, the starting
   purse, class requirements, the 22 skills and their formulas, starting kits per class, and max
   encumbrance. The bonus tables are copied exactly from `ShangrilaUtils.p`.
 - **Items:** the full item pool (31 items) with the original weights, defense values, slot rules
@@ -29,6 +29,11 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
 
 ## What had to be filled in
 
+- **Races:** the original Dwarf, Elf, Half Elf, Halfling and Human are replaced by Humans
+  (+1 Str), Thuugs (slow, turtle-like folk: +1 Str, +2 Con, -2 Dex, -1 Cha, +1 armour class
+  from the shell), Aeldroes (slim, half-transparent beings with a gift for magic: +2 Int, +1 Will,
+  -1 Str, -2 Con, +10 Hide and Magic Arts) and Nisk (wiry rat-folk: +2 Dex, +1 Con, -1 Str,
+  -1 Cha, +10 Climb, +5 Perception). Old saves are converted when loaded.
 - The resource forks (all UI pictures, the item icons and the 47 portraits) were empty in the
   copy, so the UI is rebuilt in code. Item icons and most portraits are drawn procedurally.
 - Save and Resume were stubs in the original. Here they save to `user://shangrila_save.json`.
