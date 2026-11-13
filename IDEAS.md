@@ -118,3 +118,58 @@ Built from:
 - The list of traits, and the starting attitude table between the four races.
 - Can the player improve relations (sharing loot fairly, feasting at the inn, a leader with
   high Charisma talking to them)?
+
+### Race secrets
+The races are new to the player, so they can still surprise. Each race has hidden traits that
+come to light during play, a mix of gifts and drawbacks.
+
+- **At the start:** the create screen keeps the short description and the stat bonuses. The
+  secrets come on top of those.
+- **How secrets are revealed:**
+  - **Situations:** a trait shows the first time it matters (first river crossing, first
+    night in the deep mines, first visit to a city shop).
+  - **Character comments:** characters say things about their own kind.
+  - **NPCs and books:** innkeepers, scholars and found books tell race lore.
+  - **Journal:** every discovery is written into an in-game journal the player can reread.
+- **Who writes them:** Claude proposes secrets, and Jacob picks, changes or drops them.
+
+**Proposed secrets (to pick from)**
+
+*Thuug*
+- T1 **Cold-blooded:** sluggish in cold places (mountain passes, winter, deep mines), with lower
+  Dexterity. Quicker in warm places.
+- T2 **Sink like stones:** cannot swim, but can hold their breath for a long time and walk
+  across river bottoms where others need a ford or a boat.
+- T3 **Long fasts:** travel uses only half as much of their Endurance, but when they eat, they
+  eat a lot.
+- T4 **Moulting:** every few weeks the shell is shed. For a few days there is no armour bonus,
+  and the Thuug is touchy.
+- T5 **Old roads:** Thuugs live long and remember ancient routes. While travelling, a Thuug
+  may reveal a forgotten route on the world map.
+
+*Aeldroe*
+- A1 **Light-fed:** sunlight restores their mana. In long darkness (deep mines) they fade: Hide
+  improves, but they slowly lose Endurance.
+- A2 **Colours show feelings:** when afraid or angry they flush with colour and become visible,
+  so Hide fails. It also lets the player read their mood (ties into "will of their own").
+- A3 **Iron-shy:** carrying iron weapons or armour dulls their magic (Magic Arts penalty).
+- A4 **Dreamless:** sleep heals them less, but magic cannot put them to sleep.
+- A5 **Ghost-sight:** they sense undead in nearby squares before the undead appear.
+
+*Nisk*
+- N1 **Whiskers:** no penalty in darkness. They may sense hidden passages, such as a way
+  through the rubble in the mines.
+- N2 **Hoarders:** they cannot resist shiny things. They find extra loot, but sometimes
+  pocket coins for themselves (ties into stealing and betrayal).
+- N3 **Iron stomach:** rotten food and poison do not harm them. They can eat what others
+  cannot.
+- N4 **Mistrusted:** city shopkeepers charge more and guards watch closely when a Nisk is in
+  the party.
+- N5 **Pack sense:** a Nisk fights better next to another Nisk, and gets nervous when alone
+  (morale).
+
+*Human*
+- H1 **Quick learners:** they gain experience faster.
+- H2 **Restless:** long stays in town make them bored and irritable (morale drops when idle).
+- H3 **Welcome everywhere:** easier to get rumours from NPCs in any city.
+- H4 **Ambitious:** they want to lead, and quarrel more if they are not the party leader.
