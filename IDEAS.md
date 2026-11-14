@@ -271,3 +271,55 @@ the Aeldroes know where they come from; what waits at the bottom of the mines.
   combined with any of the others and become an Aeldroe race secret.
 - O6 **The erased name:** a spirit's power lies in its name, and a rival temple wiped out every
   record of it. Pieces of the name are found one by one. Who erased it, and why?
+
+### The spirit's prison and the journey
+The spirit wakes after eons of forced slumber, weak and bound. Its physical body lies sealed
+deep in the mines of Lehan. To free it, the spirit must grow strong enough, and its followers
+must travel the whole world for clues and items to undo every lock its jailers set.
+
+**The host**
+- The spirit rides inside one follower, the *host*. It can only see and act where the host is.
+  The host is the spirit's anchor, not the player's avatar.
+- Being the host matters: extra devotion and a channel for miracles, but also strain (for
+  example nightmares, or the other followers' unease). This ties into "Characters with a will
+  of their own".
+- If the host dies, the spirit jumps to another follower nearby. If no follower is near, it
+  falls back to its shrine ("Losing every follower").
+
+**From one party to many**
+- **Early game:** the spirit travels only with its host's party. Followers left at inns in
+  other towns are out of its reach.
+- **Later (unlocked):** free travel. The spirit can jump between followers in different
+  towns and manage several groups.
+- **Followers the spirit is not with live their own lives:** they spread the faith, earn and
+  spend money, quarrel, and may even leave or die. When the spirit returns, it learns what
+  happened.
+
+**The prison in the mines**
+- Deep in the mines lies the sealed chamber that holds the spirit's body. The party can reach
+  it early, see the locks, and must leave again. The player knows the final goal from the
+  start.
+- The unfinished rubble passages in the mines could become the way toward the chamber.
+- Going deeper brings back memories ("The spirit's forgotten past").
+
+**The locks: a chain**
+- Opening one lock reveals where the next one is, which gives a guided story.
+- Each lock needs some mix of clues, an item, and enough power (faith).
+- The locks can be spread across the regions, and races, of the world. For example, Thuugs
+  remember old roads, Nisk tunnels reach hidden places, and Aeldroes are bound to the spirit
+  itself.
+
+**The jailers: hidden among us**
+- The heirs of those who imprisoned the spirit still live on in plain sight. Perhaps the
+  founding families of Lehan, a respected order, or a guild. Some do not know what their
+  ancestors did; others watch in secret.
+- They tie into "People who remember", and could become allies, enemies or a moral choice
+  as the truth comes out.
+
+**Open questions**
+- How many locks are there, and what is the order of the chain?
+- Who exactly are the jailers' heirs, and what do they know?
+- What unlocks free travel: a lock, a faith level, or a place found on the way?
+- How do followers away from the spirit report back (letters at the inn, a summary when the
+  spirit returns)?
+- What happens when the body is freed: the end of the game, or a new phase?
