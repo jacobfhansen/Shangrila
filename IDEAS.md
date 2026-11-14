@@ -177,3 +177,50 @@ come to light during play, a mix of gifts and drawbacks.
 - H2 **Restless:** long stays in town make them bored and irritable (morale drops when idle).
 - H3 **Welcome everywhere:** easier to get rumours from NPCs in any city.
 - H4 **Ambitious:** they want to lead, and quarrel more if they are not the party leader.
+
+### The player is a patron spirit
+The player is not one of the characters. The player is a minor spirit (a forgotten power)
+whose followers the characters are. The spirit cannot act in the world by itself: it needs
+followers to cling to, and they are not puppets. They believe in it, more or less. This frames
+the other ideas:
+- **Orders** in combat are the spirit's nudges. Discipline is partly devotion ("Characters with
+  a will of their own").
+- **Hidden traits and race secrets:** the spirit cannot read minds. It learns about its
+  followers and their races by watching and listening ("Race secrets", the journal).
+- *Shangrila* could be what the spirit seeks, what it lost, or where it came from.
+
+**Faith**
+The spirit's power is measured in faith points.
+- **Gained by:**
+  - victories and deeds (won fights, quests, discovered places)
+  - prayer: followers resting at inns or visiting shrines
+  - answered prayers: when the spirit helps, believers grow more devoted
+  - spreading the word: followers with high Charisma convert NPCs, so the faith grows in towns
+- **Spent on:**
+  - **miracles:** small interventions such as a heal, a calmed quarrel, or a nudge to obey
+  - **saving the fallen:** bringing a dead follower back
+- **Lost when followers die:** every death costs the spirit faith, which must be won back.
+
+**Death**
+Death is permanent, unless the spirit spends faith to bring the follower back. (Today a
+fallen character just comes around with 1 hit point, and a defeated party wakes up at the inn.
+That changes.)
+
+**Losing every follower**
+The spirit goes dormant until a new soul finds its shrine. The game starts over with a new
+follower, but the spirit keeps some of what it learned (the journal, race secrets).
+
+**Follower cap**
+How many characters the spirit can hold, in the party and waiting at inns together, starts at
+6 and grows as the faith grows. (Today the limit is 23 at the inn plus 6 in the party.)
+
+**Open questions**
+- What makes the cap grow, given that faith is not spent on it: total faith earned,
+  the number of believers in towns, or milestones in the story?
+- Does the spirit have a name, or does the player choose one at the start?
+- How does the spirit appear in the game: a shrine at the inn, a voice in the log, an icon
+  that shows faith?
+- Which miracles exist, and what do they cost? Are they always available, or only when a
+  follower prays?
+- How expensive is bringing someone back, and is there a time limit (the body must be
+  carried to a shrine)?
