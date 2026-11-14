@@ -187,7 +187,7 @@ the other ideas:
   a will of their own").
 - **Hidden traits and race secrets:** the spirit cannot read minds. It learns about its
   followers and their races by watching and listening ("Race secrets", the journal).
-- *Shangrila* could be what the spirit seeks, what it lost, or where it came from.
+- *Shangrila* is the valley the spirit once guarded (see "The spirit's forgotten past").
 
 **Faith**
 The spirit's power is measured in faith points.
@@ -240,7 +240,20 @@ backbone of the story, a mystery told in fragments.
 
 **Tone:** open for now.
 
-**Proposed origins (to pick from, mix or reshape)**
+**Chosen origin: O1 + O2 + O5 combined**
+- The spirit was once the guardian of Shangrila, a hidden valley. Finding Shangrila again is
+  the goal of the game (O1).
+- Other powers sealed the spirit away for something it did, or was blamed for. The mines of
+  Lehan were dug toward its prison, so going deeper in the mines brings back memories. Whether
+  the sealing was just is part of the mystery (O2).
+- The Aeldroes are descended from its first followers, the people of Shangrila. They are
+  half-transparent because they began to fade when the faith ended. This becomes an Aeldroe
+  race secret, and Aeldroe followers may react to the spirit in special ways (O5).
+
+Open questions: why the spirit was sealed and by whom; what happened to Shangrila; whether
+the Aeldroes know where they come from; what waits at the bottom of the mines.
+
+**All proposed origins** (O3, O4 and O6 were not chosen, kept for reference)
 - O1 **The lost guardian of Shangrila:** the spirit once watched over a hidden valley,
   Shangrila. Its people were scattered or destroyed, faith died out, and the spirit faded.
   Finding Shangrila again is the goal.
