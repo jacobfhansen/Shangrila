@@ -224,3 +224,37 @@ How many characters the spirit can hold, in the party and waiting at inns togeth
   follower prays?
 - How expensive is bringing someone back, and is there a time limit (the body must be
   carried to a shrine)?
+
+### The spirit's forgotten past (main story)
+The spirit wakes with no memory of what it was. Uncovering its true origin and nature is the
+backbone of the story, a mystery told in fragments.
+
+**How memories come back**
+- **Faith thresholds:** each new level of faith brings back a memory. The stronger the spirit
+  grows, the more it remembers.
+- **Dreams of followers:** when the party sleeps, a follower may dream a fragment of the past.
+- **Ruins and old shrines:** forgotten places of the spirit's old worship, plot-only locations
+  on the world map ("World map and travel").
+- **People who remember:** old NPCs, hostile priests or other spirits who knew it before.
+- Every fragment goes into the journal.
+
+**Tone:** open for now.
+
+**Proposed origins (to pick from, mix or reshape)**
+- O1 **The lost guardian of Shangrila:** the spirit once watched over a hidden valley,
+  Shangrila. Its people were scattered or destroyed, faith died out, and the spirit faded.
+  Finding Shangrila again is the goal.
+- O2 **The sealed one:** other powers bound the spirit for something it did, or was blamed
+  for. The mines of Lehan were dug toward its prison, and the deeper the party goes, the more
+  it remembers. Was the sealing just?
+- O3 **The shattered spirit:** the spirit is one fragment of a greater being that was broken
+  apart. Other fragments are rival spirits with followers of their own. Growing means
+  winning them over, or absorbing them.
+- O4 **The mortal who ascended:** the spirit was once a mortal adventurer (of which race?)
+  who reached Shangrila and became something more. Its memories are of a mortal life, and
+  its old companions may still have descendants.
+- O5 **The faded people:** the Aeldroes are half-transparent because their ancestors were the
+  spirit's first followers. When the faith ended, they began to fade with it. This could be
+  combined with any of the others and become an Aeldroe race secret.
+- O6 **The erased name:** a spirit's power lies in its name, and a rival temple wiped out every
+  record of it. Pieces of the name are found one by one. Who erased it, and why?
