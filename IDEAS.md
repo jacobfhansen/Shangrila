@@ -508,6 +508,8 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 - J5 **The lost girl:** a miner's daughter, an Aeldroe, has gone missing in the mines. She
   followed a calling no one else could hear. A first hint of the Aeldroe secret.
 
+**The roster:** the pre-made characters are listed in [CHARACTERS.md](CHARACTERS.md).
+
 **What changes in the game today**
 - The Create screen (rolling stats, picking race and class) goes away, or becomes a
   developer tool for making the pre-made characters.
