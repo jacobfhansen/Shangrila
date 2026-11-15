@@ -180,9 +180,11 @@ come to light during play, a mix of gifts and drawbacks.
 
 ### The player is a patron spirit
 The player is not one of the characters. The player is a spirit, a remnant of a fallen ruler
-(see "The spirit's forgotten past"), whose followers the characters are. The spirit cannot act in the world by itself: it needs
-followers to cling to, and they are not puppets. They believe in it, more or less. This frames
-the other ideas:
+(see "The spirit's forgotten past"), whose followers the characters are. The spirit cannot
+act in the world by itself: it needs followers to cling to, and they are not puppets. They
+believe in it, more or less. This frames the other ideas:
+- **A small secret circle:** the spirit's followers are few, and they behave just like the
+  jailers: a secret sect. There are no great hosts of believers and no temple building.
 - **Orders** in combat are the spirit's nudges. Discipline is partly devotion ("Characters with
   a will of their own").
 - **Hidden traits and race secrets:** the spirit cannot read minds. It learns about its
@@ -193,9 +195,10 @@ the other ideas:
 The spirit's power is measured in faith points.
 - **Gained by:**
   - victories and deeds (won fights, quests, discovered places)
-  - prayer: followers resting at inns or visiting shrines
+  - prayer: followers resting at inns or in hidden sanctums
   - answered prayers: when the spirit helps, believers grow more devoted
-  - spreading the word: followers with high Charisma convert NPCs, so the faith grows in towns
+  - secret influence: followers quietly win influence in towns (informants, safe houses).
+    It gives faith, but also risks discovery by the sect.
 - **Spent on:**
   - **miracles:** small interventions such as a heal, a calmed quarrel, or a nudge to obey
   - **saving the fallen:** bringing a dead follower back
@@ -217,15 +220,24 @@ keeps track of the spirit's own stats: for example faith, level, remnants merged
 miracles, the follower cap, and recovered memories.
 
 **Follower cap**
-How many characters the spirit can hold, in the party and waiting at inns together, starts at
-6 and grows as the faith grows. (Today the limit is 23 at the inn plus 6 in the party.)
+How many characters the spirit can hold, in the party and waiting at inns together, is kept
+small. It starts at 6 and grows a little, to around 10–12 at most, through remnants (R5).
+(Today the limit is 23 at the inn plus 6 in the party.)
+
+**Parking followers, and the danger of it**
+- The player can park followers in a town to put together a party better suited to a
+  specific task.
+- **The sect strikes at parked followers.** When the party returns to a town to pick
+  someone up, assassins may ambush them, and the party must fight to save them.
+- **Warning signs** come first, such as strangers asking questions at the inn, so the
+  player can hurry back or move them.
+- **Safer places:** some places protect parked followers better, such as hidden sanctums
+  (R7) or a loyal innkeeper.
 
 **Open questions**
-- What makes the cap grow, given that faith is not spent on it: total faith earned,
-  the number of believers in towns, or milestones in the story?
+- Exactly how much does the cap grow, and with which remnants?
 - Does the spirit have a name, or does the player choose one at the start?
-- How does the spirit appear in the game: a shrine at the inn, a voice in the log, an icon
-  that shows faith?
+- How does the spirit appear in the game: a voice in the log, an icon that shows faith?
 - Which miracles exist, and what do they cost? Are they always available, or only when a
   follower prays?
 - How expensive is bringing someone back, and is there a time limit (the body must be
@@ -342,9 +354,10 @@ spirit's own buried body in the tomb.)
 - **Early game:** the spirit travels only with its host's party. Followers left at inns in
   other towns are out of its reach.
 - **Later (unlocked):** free travel. The spirit can jump between followers in different
-  towns and manage several groups.
-- **Followers the spirit is not with live their own lives:** they spread the faith, earn and
-  spend money, quarrel, and may even leave or die. When the spirit returns, it learns what
+  towns and manage several small groups.
+- **Followers the spirit is not with live their own lives:** they build secret influence,
+  earn and spend money, quarrel, and may even leave or die (or be attacked by the sect, see
+  "Parking followers, and the danger of it"). When the spirit returns, it learns what
   happened.
 
 **The prison in the mines**
@@ -375,12 +388,12 @@ spirit's own buried body in the tomb.)
   - R3 **Miracles:** the first miracles, and later stronger ones.
   - R4 **Dream-sending:** speak to followers, and potential followers, in their dreams.
     A new way to persuade and to reveal memories.
-  - R5 **A wider reach:** a higher follower cap, and followers further away can take over
-    as host.
+  - R5 **A wider reach:** a slightly higher follower cap, and followers further away can
+    take over as host.
   - R6 **Taking a new host at will:** move into another follower in the party, not only when
     the host dies.
-  - R7 **Hallowed ground:** consecrate places as shrines where followers pray, rest and
-    gain faith.
+  - R7 **Hidden sanctums:** make secret hiding places (a cellar, a cave) where followers can
+    rest safely, pray, and be parked out of the sect's reach.
   - R8 **Command:** a stronger hold on followers in combat (better discipline and morale).
   - R9 **Return from death:** bring a dead follower back ("Saving the fallen").
 
@@ -405,6 +418,11 @@ spirit's own buried body in the tomb.)
   as the truth comes out.
 - **Rivals in the race for the remnants:** the sect hunts the remnants too. A remnant
   could be found already guarded, taken, or destroyed by them.
+- **The sect leader crosses the party's path often:** the client from the shrine job (see
+  "The awakening") keeps turning up throughout the game, hunting remnants, in the towns,
+  or questioning people about the night at the shrine. This builds up to the final battle.
+- **Two secret circles:** the spirit's followers and the sect mirror each other. Both are
+  small, hidden, and hunting the same remnants.
 
 **Open questions**
 - Exactly how many remnants (6–9), and in what order are they found?
@@ -502,8 +520,7 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 - How many characters per town?
 - Who are the adventurers at the shrine, and why do they travel together?
 - The client is the sect leader: what is their name and story? When do they first suspect
-  that something escaped from the shrine, and how often do they cross the party's path
-  before the end?
+  that something escaped from the shrine?
 - Can the player run out of followers? With permanent death and a fixed pool, the run could
   get stuck. Some characters could return later, or new ones appear as the story moves on.
 - Do characters level up after joining (experience), or stay as they are?
