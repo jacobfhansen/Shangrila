@@ -179,15 +179,15 @@ come to light during play, a mix of gifts and drawbacks.
 - H4 **Ambitious:** they want to lead, and quarrel more if they are not the party leader.
 
 ### The player is a patron spirit
-The player is not one of the characters. The player is a minor spirit (a forgotten power)
-whose followers the characters are. The spirit cannot act in the world by itself: it needs
+The player is not one of the characters. The player is a spirit, a remnant of a fallen ruler
+(see "The spirit's forgotten past"), whose followers the characters are. The spirit cannot act in the world by itself: it needs
 followers to cling to, and they are not puppets. They believe in it, more or less. This frames
 the other ideas:
 - **Orders** in combat are the spirit's nudges. Discipline is partly devotion ("Characters with
   a will of their own").
 - **Hidden traits and race secrets:** the spirit cannot read minds. It learns about its
   followers and their races by watching and listening ("Race secrets", the journal).
-- *Shangrila* is the valley the spirit once guarded (see "The spirit's forgotten past").
+- *Shangrila* was the realm the spirit once ruled (see "The spirit's forgotten past").
 
 **Faith**
 The spirit's power is measured in faith points.
@@ -244,25 +244,46 @@ backbone of the story, a mystery told in fragments.
 - **People who remember:** old NPCs, hostile priests or other spirits who knew it before.
 - Every fragment goes into the journal.
 
-**Tone:** open for now.
+**Tone:** tragic. Whether the story ends in redemption or in more darkness is up to the player.
 
-**Chosen origin: O1 + O2 + O5 combined, with part of O3**
-- The spirit was once the guardian of Shangrila, a hidden valley. Finding Shangrila again is
-  the goal of the game (O1).
-- Other powers sealed the spirit away for something it did, or was blamed for. The mines of
-  Lehan were dug toward its prison, so going deeper in the mines brings back memories. Whether
-  the sealing was just is part of the mystery (O2).
-- The Aeldroes are descended from its first followers, the people of Shangrila. They are
-  half-transparent because they began to fade when the faith ended. This becomes an Aeldroe
-  race secret, and Aeldroe followers may react to the spirit in special ways (O5).
-- The spirit was broken apart. The player is a detached remnant of that old power, and the
-  other remnants sleep in hidden places across the world (part of O3, but without rival
-  spirits: all remnants are asleep). See "The spirit's prison and the journey".
+**The backstory** (what the player uncovers, piece by piece)
+- **The ruler of Shangrila:** the spirit was once a powerful individual in a world where
+  magic exists. It commanded godlike powers and ruled the realm of Shangrila with
+  benevolence, defeating its enemies in glorious battles.
+- **The one thing it could not command: love.** The spirit loved one particular person, and
+  that love was not returned. Out of jealousy, despair and anger, terrible deeds were done.
+- **The beloved** is a mystery, revealed slowly through memories. The beloved was an
+  Aeldroe, and the terrible deeds were done to their people. The Aeldroes' fading, their
+  half-transparency, is the spirit's curse on them. (This becomes an Aeldroe race secret,
+  and Aeldroe followers may react to the spirit in special ways.)
+- **The fall:** in the end its own disgruntled followers overthrew the spirit and entombed
+  it in the mines of Lehan. They swore an oath to guard the grave so that it could never
+  return.
+- **The remnants:** before its death the spirit managed to split off remnants of itself
+  and hide them across the world. The player is one of them.
+- **The centuries since:** plague and war ravaged the lands, Shangrila fell into ruin and
+  legend, and most people forgot what it had all been about.
+- **The sect:** a select few zealots still keep the oath. They are fanatic followers of
+  what is now a secret sect, unknown to most: the jailers' heirs (see "The jailers: hidden
+  among us").
 
-Open questions: why the spirit was sealed and by whom; what happened to Shangrila; whether
-the Aeldroes know where they come from; what waits at the bottom of the mines.
+**The player's choice: redemption or relapse**
+The player can try to redeem the spirit, or simply continue where it left off, doing
+terrible things to its enemies. The key choices along the way (see "Runs and endings")
+decide which.
 
-**All proposed origins** (O4 and O6 were not chosen, and O3 only in part; kept for reference)
+**How this fits the earlier origin proposals:** O1 (Shangrila, now the realm it ruled),
+O2 (sealed in the mines, now by its own followers), O3 (remnants, now hidden by the spirit
+itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in changed form.
+
+**Open questions**
+- Who was the beloved, and what became of them? (Kept a mystery for now.)
+- What exactly were the terrible deeds?
+- Where are the ruins of Shangrila, and can they be visited?
+- Do the Aeldroes know where their fading comes from?
+- Does the sect know the remnants exist, and are they hunting them too?
+
+**All proposed origins** (kept for reference; the backstory above replaces them)
 - O1 **The lost guardian of Shangrila:** the spirit once watched over a hidden valley,
   Shangrila. Its people were scattered or destroyed, faith died out, and the spirit faded.
   Finding Shangrila again is the goal.
@@ -282,8 +303,8 @@ the Aeldroes know where they come from; what waits at the bottom of the mines.
   record of it. Pieces of the name are found one by one. Who erased it, and why?
 
 ### The spirit's prison and the journey
-The jailers broke the old power apart. Its body lies buried in a sealed tomb deep in the mines
-of Lehan, and its remnants were scattered and hidden across the world. The player is one
+The spirit's own followers overthrew it and buried its body in a sealed tomb deep in the mines
+of Lehan. Before it died, the spirit split off remnants of itself and hid them across the world. The player is one
 remnant: the one in the roadside shrine, woken after eons by the party camping there.
 To be whole and free again, the spirit must find and merge with every other remnant, then
 open the tomb and enter its body.
@@ -328,8 +349,8 @@ spirit's own buried body in the tomb.)
 - **Finding them, as a chain:** the memories in one remnant can point to where the next one
   sleeps. This keeps the guided story chosen earlier for the locks.
 - They can be spread across the regions, and races, of the world. For example, Thuugs
-  remember old roads, Nisk tunnels reach hidden places, and Aeldroes are bound to the spirit
-  itself.
+  remember old roads, Nisk tunnels reach hidden places, and the Aeldroes carry the spirit's
+  curse.
 - **Proposed remnant powers (to pick from):**
   - R1 **Free travel:** jump between followers in different towns ("From one party to many").
   - R2 **Insight:** see followers' hidden traits and moods directly, instead of only through
@@ -353,9 +374,10 @@ spirit's own buried body in the tomb.)
 3. Perhaps a second epic boss battle follows. Who, or what, waits for the risen spirit?
 
 **The jailers: hidden among us**
-- The heirs of those who imprisoned the spirit still live on in plain sight. Perhaps the
-  founding families of Lehan, a respected order, or a guild. Some do not know what their
-  ancestors did; others watch in secret.
+- The heirs of the followers who overthrew the spirit still live on in plain sight. Most
+  have forgotten the oath. A select few zealots still keep it, as a secret sect unknown to
+  most people. They may hide among the founding families of Lehan, a respected order, or a
+  guild.
 - They tie into "People who remember", and could become allies, enemies or a moral choice
   as the truth comes out.
 
