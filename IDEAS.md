@@ -368,7 +368,19 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
   companions grow uneasy or curious. Revealing the spirit to them is a choice the player
   makes, and how they take it depends on who they are.
 
-**Proposed first jobs (to pick from)**
+**Chosen opening: J3, then J2**
+1. **Tear down the shrine (J3):** the group was paid to destroy the roadside shrine at dawn.
+   The client is one of the jailers' heirs, who noticed the shrine stirring. That night the
+   spirit wakes inside one of them. At dawn the host refuses, or finds a way to stop the job.
+   This is the first source of the companions' suspicion, and the first enemy, since the
+   client will want to know why the job failed.
+2. **Clear the mines (J2):** with the shrine job gone, the group needs money. In Lehan the
+   council is hiring people to explore the old mine workings, where miners have vanished
+   since something began to stir. That leads straight toward the spirit's prison, and
+   teaches the dungeon.
+3. After the mines job, each companion decides whether to stay or go their own way.
+
+**All proposed first jobs** (J1, J4 and J5 were not chosen, kept for reference)
 - J1 **The sealed box:** the group is escorting a sealed box to Lehan for one of its old
   families, which are secretly the jailers' heirs. The box holds something tied to one of the
   locks, and the host can feel it. Deliver it, open it, or steal it?
@@ -395,7 +407,9 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
 **Open questions**
 - How many characters per town?
 - Who are the adventurers at the shrine, and why do they travel together?
-- Which first job (J1–J5, or a mix)?
+- Who is the client behind the shrine job, and what do they do when it fails?
+- How does the host stop the destruction (refuse, sabotage, a miracle), and can the player
+  choose?
 - Can the player run out of followers? With permanent death and a fixed pool, the run could
   get stuck. Some characters could return later, or new ones appear as the story moves on.
 - Do characters level up after joining (experience), or stay as they are?
