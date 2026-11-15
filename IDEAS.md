@@ -351,7 +351,7 @@ spirit's own buried body in the tomb.)
 - They can be spread across the regions, and races, of the world. For example, Thuugs
   remember old roads, Nisk tunnels reach hidden places, and the Aeldroes carry the spirit's
   curse.
-- **Proposed remnant powers (to pick from):**
+- **Remnant powers** (all nine are kept; which remnant brings which is decided later):
   - R1 **Free travel:** jump between followers in different towns ("From one party to many").
   - R2 **Insight:** see followers' hidden traits and moods directly, instead of only through
     comments.
@@ -383,7 +383,7 @@ spirit's own buried body in the tomb.)
 
 **Open questions**
 - Exactly how many remnants (6–9), and in what order are they found?
-- Which powers go with which remnant?
+- Which powers go with which remnant? (With fewer than nine remnants, some bring two.)
 - Who exactly are the jailers' heirs, and what do they know?
 - How do followers away from the spirit report back (letters at the inn, a summary when the
   spirit returns)?
