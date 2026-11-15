@@ -281,6 +281,7 @@ decide which.
   the spirit has changed, and the heart of the good ending.
   - **It has a price: the spirit's life.** Lifting the curse costs the spirit its life,
     and the game ends there: the spirit gives itself up to free the people it cursed.
+  - **It can only happen after the body rises,** at the very end (see "The ending").
   - Ending the game at that moment also avoids having to show the Aeldroes changed
     afterwards (no longer transparent, and so on).
 - **The direct path to the evil ending:** silencing the Aeldroe elders to protect the
@@ -297,8 +298,6 @@ itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in c
 - Where are the ruins of Shangrila, and can they be visited?
 - How can the player learn "the secret" from the elders, and how do the elders react if
   they recognise what the spirit is? Do they tell their own people?
-- When can the curse be lifted: does the risen body, or a number of remnants, have to come
-  first?
 - What does the sect do with a remnant it finds: destroy it, lock it away, or use it?
 
 **All proposed origins** (kept for reference; the backstory above replaces them)
@@ -390,6 +389,10 @@ spirit's own buried body in the tomb.)
    after an epic boss battle.
 2. The spirit enters its buried body, which rises from the dead.
 3. Perhaps a second epic boss battle follows. Who, or what, waits for the risen spirit?
+4. **The final choice:** only now, whole and alive again, can the spirit lift the
+   Aeldroes' curse, at the cost of its life (see "The player's choice: redemption or
+   relapse"). Or it can keep its power and take its revenge. For maximum drama, the spirit
+   must give up everything just when it has won it all back.
 
 **The jailers: hidden among us**
 - The heirs of the nobles who overthrew the spirit still live on in plain sight. Most
