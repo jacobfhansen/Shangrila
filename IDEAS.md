@@ -275,6 +275,10 @@ backbone of the story, a mystery told in fragments.
 The player can try to redeem the spirit, or simply continue where it left off, doing
 terrible things to its enemies. The key choices along the way (see "Runs and endings")
 decide which.
+- **The ultimate redemption:** ending the Aeldroes' curse. This is the clearest proof that
+  the spirit has changed, and the heart of the good ending.
+- **The direct path to the evil ending:** silencing the Aeldroe elders to protect the
+  spirit's secret.
 
 **How this fits the earlier origin proposals:** O1 (Shangrila, now the realm it ruled),
 O2 (sealed in the mines, now by its own nobles), O3 (remnants, now hidden by the spirit
@@ -287,6 +291,8 @@ itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in c
 - Where are the ruins of Shangrila, and can they be visited?
 - How can the player learn "the secret" from the elders, and how do the elders react if
   they recognise what the spirit is? Do they tell their own people?
+- How can the curse be ended: does it need all the remnants, the spirit's risen body, the
+  elders' help, or a sacrifice?
 - What does the sect do with a remnant it finds: destroy it, lock it away, or use it?
 
 **All proposed origins** (kept for reference; the backstory above replaces them)
