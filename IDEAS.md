@@ -38,7 +38,8 @@ in code. Better home-made art could replace them, including portraits for the fo
 
 ### World map and travel
 **Started:** the map screen, travel along routes, and the Endurance cost per day are in the game
-(Lehan and the Mines, one day apart). Still to do: discovering new places, running out of
+(the Old Shrine, Lehan and the Mines, each a day apart). The first discovery by rumour is in
+too: the Mines appear on the map after the first visit to Lehan. Still to do: discovering new places, running out of
 food (weakened, then losing hit points), and the open questions below.
 
 Bring a world map into play. The party travels between locations (cities, castles, dungeons such
@@ -512,8 +513,10 @@ guidance, and later dreams.
   including the sect?
 
 ### Conversations (the dialogue screen)
-**Prototype:** *Prologue* on the main menu plays "Dawn at the shrine" with this screen (host
-choice, the scene playing itself, the inner voice, the Speaking row and tagged replies).
+**In the game:** *New* starts with "Dawn at the shrine" on this screen (host choice, the scene
+playing itself, the inner voice, the Speaking row and tagged replies). Afterwards the Harrow
+Company is the party, starting at the ruined shrine on the world map. The Mines are found
+through the council's notice on the first visit to Lehan.
 
 Conversations are where recruiting, the touch and the story happen, so they get their own
 screen. It is inspired by the Fallout series (a portrait, the other person's line, and a

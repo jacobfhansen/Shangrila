@@ -31,6 +31,8 @@ func _ready() -> void:
 
 	Ui.title(self, Game.city.name, Vector2(0, 14), 34, 640, HORIZONTAL_ALIGNMENT_CENTER)
 	Ui.btn(self, "Quit", Rect2(10, 438, 70, 32), _on_quit, "Back to the main menu")
+	if not "mines" in Game.known:
+		_hear_of_mines.call_deferred()
 	var who := "Party: " + (", ".join(Game.party.map(func(c): return c.name)) if Game.party.size() > 0 else "nobody - visit the inn to muster a party")
 	Ui.label(self, who, Vector2(92, 446), 12, Ui.TEXT, 540)
 
@@ -79,6 +81,12 @@ func _door(r: Rect2, text: String, cb: Callable, tip: String, col: Color) -> voi
 	b.add_theme_stylebox_override("pressed", hover)
 	b.add_theme_color_override("font_color", Color(1, 1, 1, 0.0))
 	b.add_theme_color_override("font_hover_color", Ui.GOLD)
+
+
+## The first time in Lehan: rumours of the council's job put the mines on the map.
+func _hear_of_mines() -> void:
+	Game.known.append("mines")
+	await Game.main.message("In the market square a crier reads a notice from the council: miners have gone missing in the old workings above the town, and the council will pay well for anyone willing to look into it.\n\nThe Mines are now on your map.")
 
 
 func _on_gate() -> void:

@@ -6,7 +6,9 @@ extends Control
 var index := 0:
 	set(v):
 		index = v
+		_cast_portrait()
 		queue_redraw()
+var _race_pic: RacePortrait
 var highlight := false:
 	set(v):
 		highlight = v
@@ -22,6 +24,23 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+## Icons from Game.PORTRAIT_CAST on are the pre-made characters, drawn by RacePortrait.
+func _cast_portrait() -> void:
+	var k := index - Game.PORTRAIT_CAST
+	if k < 0 or k >= PrologueData.ORDER.size():
+		if _race_pic:
+			_race_pic.queue_free()
+			_race_pic = null
+		return
+	if _race_pic == null:
+		_race_pic = RacePortrait.new()
+		_race_pic.set_anchors_preset(Control.PRESET_FULL_RECT)
+		add_child(_race_pic)
+	var who: Dictionary = PrologueData.CAST[PrologueData.ORDER[k]]
+	_race_pic.race = who.race
+	_race_pic.look = who.look
+
+
 func _ell(c: Vector2, rx: float, ry: float, a0 := 0.0, a1 := TAU, n := 24) -> PackedVector2Array:
 	var pts := PackedVector2Array()
 	for i in n + 1:
@@ -33,6 +52,9 @@ func _ell(c: Vector2, rx: float, ry: float, a0 := 0.0, a1 := TAU, n := 24) -> Pa
 func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size)
 	draw_rect(r, Color("#120c08"))
+	if _race_pic:
+		_race_pic.highlight = highlight
+		return
 	if index <= 1:
 		var t := Ui.tex("The_Man" if index == 0 else "The_Enemy")
 		# Crop the 140x113 paintings to a square around the face.

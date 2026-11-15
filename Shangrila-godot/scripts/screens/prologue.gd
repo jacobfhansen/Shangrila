@@ -13,6 +13,7 @@ var steps: Array = []
 var idx := -1
 var choosing := false
 var finished := false
+var chosen := -1
 
 var italic: SystemFont
 var painting: ScenePainting
@@ -90,7 +91,6 @@ func _build_select() -> void:
 		add_child(pick)
 		Ui.place(pick, r)
 	Ui.btn(self, "Back", Rect2(20, 436, 90, 32), _on_back, "Back to the main menu")
-	Ui.label(self, "Prototype of the opening scene and the dialogue screen", Vector2(120, 444), 12, Ui.DIM, 500, HORIZONTAL_ALIGNMENT_RIGHT)
 
 
 # ---------------------------------------------------------------- the scene
@@ -309,6 +309,7 @@ func choose(i: int) -> void:
 	if not choosing:
 		return
 	choosing = false
+	chosen = i
 	var rep: Dictionary = P.HOSTS[host].replies[i]
 	for ch in replies.get_children():
 		ch.queue_free()
@@ -327,9 +328,17 @@ func choose(i: int) -> void:
 func _show_end() -> void:
 	finished = true
 	prompt.text = ""
-	Ui.label(replies, "End of the prologue prototype.", Vector2(0, 20), 15, Ui.GOLD, 624, HORIZONTAL_ALIGNMENT_CENTER)
+	if get_meta("args", {}).get("new_game", false):
+		Ui.btn(replies, "Continue", Rect2(242, 50, 140, 34), _on_continue, "Set out for Lehan")
+		return
+	Ui.label(replies, "End of the prologue.", Vector2(0, 20), 15, Ui.GOLD, 624, HORIZONTAL_ALIGNMENT_CENTER)
 	Ui.btn(replies, "Choose another host", Rect2(150, 70, 160, 34), _build_select)
 	Ui.btn(replies, "Main menu", Rect2(330, 70, 140, 34), _on_back)
+
+
+func _on_continue() -> void:
+	Game.start_company(host, chosen)
+	Game.main.goto("world")
 
 
 func _unhandled_input(e: InputEvent) -> void:

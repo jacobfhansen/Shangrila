@@ -185,4 +185,32 @@ func _run() -> void:
 	var n := Game.party.size()
 	Game.new_game()
 	print("load -> ", Game.load_game(), " party ", Game.party.size(), "==", n, " pos ", Game.pos, " name ", Game.party[0].name, " items type ", typeof(Game.party[0].items[6]))
+	await _new_game_route()
 	get_tree().quit()
+
+
+## New game: prologue -> the Harrow Company at the shrine -> world map -> inn -> Lehan.
+func _new_game_route() -> void:
+	var m: Node = Game.main
+	m.goto("prologue", {"new_game": true})
+	var pr: Node = m.current
+	pr.start_scene("tikkat")
+	pr.skip_to_choice()
+	pr.choose(1)
+	while not pr.finished:
+		pr._next()
+	await get_tree().create_timer(1.6).timeout
+	await _shot("17_prologue_end")
+	pr._on_continue()
+	await _shot("18_world_at_shrine")
+	print("company: ", Game.party.map(func(c): return "%s %s %s" % [c.name, Game.RACES[c.race], Game.CLASSES[c.cls]]),
+		" at ", Game.location, " known ", Game.known, " story ", Game.story)
+	m.goto("inn")
+	await _shot("19_inn_company")
+	m.goto("city")
+	await get_tree().create_timer(0.3).timeout
+	await _shot("20_city_rumour")
+	if m.modal_open:
+		m._modal_done.emit(true)
+	await get_tree().process_frame
+	print("known after Lehan: ", Game.known)

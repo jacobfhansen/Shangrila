@@ -41,7 +41,8 @@ func _ready() -> void:
 		Ui.place(b, Rect2(at.x - 16, at.y - 16, 32, 32))
 
 	var here: Dictionary = Game.LOCATIONS[Game.location]
-	Ui.btn(self, "Enter " + here.name, Rect2(20, 436, 150, 32), _on_location.bind(Game.location), "Go into " + here.name)
+	var enter: String = "Look around" if here.screen == "" else "Enter " + here.name
+	Ui.btn(self, enter, Rect2(20, 436, 150, 32), _on_location.bind(Game.location), here.desc)
 	Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game")
 	Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu")
 	info = Ui.label(self, "", Vector2(180, 444), 12, Ui.TEXT, 284)
@@ -62,7 +63,11 @@ func _on_location(key: String) -> void:
 	if Game.main.modal_open:
 		return
 	if key == Game.location:
-		Game.main.goto(Game.LOCATIONS[key].screen)
+		var screen: String = Game.LOCATIONS[key].screen
+		if screen == "":
+			await Game.main.message(Game.LOCATIONS[key].desc)
+		else:
+			Game.main.goto(screen)
 		return
 	var days := -1
 	for r in Game.routes_from(Game.location):
@@ -113,10 +118,10 @@ class MapLayer extends Control:
 				_dashed(Game.LOCATIONS[key].at, Game.LOCATIONS[r.to].at, Color(ink, 0.8))
 		for key in Game.known:
 			var loc: Dictionary = Game.LOCATIONS[key]
-			if loc.kind == "city":
-				_city(loc.at, ink)
-			else:
-				_cave(loc.at, ink)
+			match loc.kind:
+				"city": _city(loc.at, ink)
+				"ruin": _ruin(loc.at, ink)
+				_: _cave(loc.at, ink)
 		# The party: a pulsing red ring around its location.
 		var at: Vector2 = Game.LOCATIONS[Game.location].at
 		var pulse := 0.5 + 0.5 * sin(t * 4.0)
@@ -138,6 +143,17 @@ class MapLayer extends Control:
 			draw_rect(Rect2(p.x - 9 + i * 7, p.y - 9, 4, 4), ink, false, 1.0)
 		draw_rect(body, ink, false, 1.5)
 		draw_rect(Rect2(p.x - 2, p.y, 4, 6), ink)
+
+	func _ruin(p: Vector2, ink: Color) -> void:
+		var stone := Color("#d8c8a0")
+		draw_rect(Rect2(p.x - 9, p.y + 2, 18, 5), stone)
+		draw_rect(Rect2(p.x - 9, p.y + 2, 18, 5), ink, false, 1.0)
+		var pillar := PackedVector2Array([p + Vector2(-4, 2), p + Vector2(-4, -9), p + Vector2(-1, -6),
+			p + Vector2(1, -10), p + Vector2(4, -7), p + Vector2(4, 2)])
+		draw_colored_polygon(pillar, stone)
+		draw_polyline(pillar + PackedVector2Array([pillar[0]]), ink, 1.2, true)
+		draw_circle(p + Vector2(8, 0), 1.6, ink)
+		draw_circle(p + Vector2(-8, -1), 1.2, ink)
 
 	func _cave(p: Vector2, ink: Color) -> void:
 		var hill := PackedVector2Array([p + Vector2(-12, 7), p + Vector2(-4, -8), p + Vector2(4, -9), p + Vector2(12, 7)])

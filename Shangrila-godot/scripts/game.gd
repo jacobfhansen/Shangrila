@@ -28,6 +28,7 @@ const SKILLS := [
 const MAX_ROSTER := 23
 const MAX_PARTY := 6
 const PORTRAITS := 32
+const PORTRAIT_CAST := 100   # icons from here on are the pre-made characters (RacePortrait)
 
 ## Equipment slot numbers are the same as in the original (Items[1..30]).
 const SLOT_HEAD := 1
@@ -65,13 +66,15 @@ const DIR_VEC := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 
 ## arrival. `kind` is "city" (can be found by travelling near it) or "dungeon" / "plot" (only
 ## through rumours, clues or exits).
 const LOCATIONS := {
+	"shrine": {"name": "The Old Shrine", "kind": "ruin", "at": Vector2(168, 292), "screen": "",
+		"desc": "A roadside shrine, long hidden under brambles. Only rubble is left."},
 	"lehan": {"name": "Lehan", "kind": "city", "at": Vector2(236, 252), "screen": "city",
 		"desc": "A walled town with an inn and a weapon smith."},
 	"mines": {"name": "The Mines", "kind": "dungeon", "at": Vector2(292, 200), "screen": "dungeon",
 		"desc": "Old mine workings in the hills above Lehan."},
 }
 ## Routes between locations, with the number of days on the road.
-const ROUTES := [["lehan", "mines", 1]]
+const ROUTES := [["lehan", "mines", 1], ["shrine", "lehan", 1]]
 ## Endurance each character uses per day of travel (food is what refills it).
 const TRAVEL_COST := 8
 
@@ -87,6 +90,7 @@ var pos := MINES_START
 var facing := 0           # 0 N, 1 E, 2 S, 3 W
 var location := "lehan"   # key in LOCATIONS: where the party is on the world map
 var known: Array = ["lehan", "mines"]   # discovered locations
+var story := {}           # story state, e.g. {"host": "ithrae", "prologue_reply": 0}
 
 var rng := RandomNumberGenerator.new()
 
@@ -541,6 +545,35 @@ func new_game() -> void:
 	facing = 0
 	location = "lehan"
 	known = ["lehan", "mines"]
+	story = {}
+
+
+## After the prologue: the Harrow Company becomes the party, with the host first. They stand
+## at the ruined shrine, a day from Lehan, and do not know of the mines yet.
+func start_company(host: String, reply: int) -> void:
+	new_game()
+	var cast: Dictionary = PrologueData.CAST
+	var order: Array = PrologueData.ORDER.duplicate()
+	order.erase(host)
+	order.push_front(host)
+	for key in order:
+		var src: Dictionary = cast[key]
+		var c := blank_character()
+		c.race = RACES.find(src.race)
+		c.icon = PORTRAIT_CAST + PrologueData.ORDER.find(key)
+		var cls: int = CLASSES.find(src.cls)
+		for i in 500:
+			roll_character(c)
+			if class_allowed(c, cls):
+				break
+		set_class(c, cls)
+		finish_character(c, src.name)
+		c["traits"] = src.traits.duplicate()   # hidden from the player
+		c.health = c.max_health
+		party.append(c)
+	location = "shrine"
+	known = ["shrine", "lehan"]
+	story = {"host": host, "prologue_reply": reply}
 
 
 func has_save() -> bool:
@@ -554,7 +587,7 @@ func save_game(screen: String) -> bool:
 	var data := {
 		"version": 2, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
-		"location": location, "known": known,
+		"location": location, "known": known, "story": story,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
@@ -608,6 +641,7 @@ func load_game() -> String:
 	if not LOCATIONS.has(location):
 		location = "lehan"
 	known = data.get("known", ["lehan", "mines"])
+	story = data.get("story", {})
 	return data.get("screen", "inn")
 
 
