@@ -279,9 +279,8 @@ terrible things to its enemies. The key choices along the way (see "Runs and end
 decide which.
 - **The ultimate redemption:** ending the Aeldroes' curse. This is the clearest proof that
   the spirit has changed, and the heart of the good ending.
-  - **It has a price:** lifting the curse costs the spirit some of its power, or in the
-    end its life. If it costs its life, the game ends there: the spirit gives itself up
-    to free the people it cursed.
+  - **It has a price: the spirit's life.** Lifting the curse costs the spirit its life,
+    and the game ends there: the spirit gives itself up to free the people it cursed.
   - Ending the game at that moment also avoids having to show the Aeldroes changed
     afterwards (no longer transparent, and so on).
 - **The direct path to the evil ending:** silencing the Aeldroe elders to protect the
@@ -298,8 +297,8 @@ itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in c
 - Where are the ruins of Shangrila, and can they be visited?
 - How can the player learn "the secret" from the elders, and how do the elders react if
   they recognise what the spirit is? Do they tell their own people?
-- Does lifting the curse always cost the spirit its life, or can a partial price (some of
-  its power) be paid? Does the risen body or a number of remnants have to come first?
+- When can the curse be lifted: does the risen body, or a number of remnants, have to come
+  first?
 - What does the sect do with a remnant it finds: destroy it, lock it away, or use it?
 
 **All proposed origins** (kept for reference; the backstory above replaces them)
