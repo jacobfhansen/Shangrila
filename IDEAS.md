@@ -512,6 +512,9 @@ guidance, and later dreams.
   including the sect?
 
 ### Conversations (the dialogue screen)
+**Prototype:** *Prologue* on the main menu plays "Dawn at the shrine" with this screen (host
+choice, the scene playing itself, the inner voice, the Speaking row and tagged replies).
+
 Conversations are where recruiting, the touch and the story happen, so they get their own
 screen. It is inspired by the Fallout series (a portrait, the other person's line, and a
 numbered list of replies with tags), with one twist: the player also chooses *who* speaks.

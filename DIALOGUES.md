@@ -38,9 +38,11 @@ sensations (see "How the spirit communicates"). The shared opening of the inner 
 > skull. For one heartbeat you see a hall full of light, and a crowd bowing low, to you.
 > Then it is gone, and the mist is back.*
 
-What follows depends on who the host is. If the host is a character who speaks in the
-shared setup, a companion takes over that line (Maera takes Joss's orders, Tikkat takes
-Ithrae's observation, and so on).
+What follows depends on who the host is. The host still speaks their own line in the shared
+setup, because the spirit only touches them after it.
+
+**Playable prototype:** *Prologue* on the main menu. The in-game text is in
+`Shangrila-godot/scripts/data/prologue.gd`, with short reactions written out for every reply.
 
 ---
 

@@ -68,6 +68,19 @@ func _run() -> void:
 	await _shot("01_about")
 	m.goto("title")
 	await _shot("02_title")
+	m.goto("prologue")
+	await _shot("02b_prologue_hosts")
+	var pr: Node = m.current
+	pr.start_scene("ithrae")
+	for k in 3:
+		pr._next()
+	await _shot("02c_prologue_speech")
+	pr.skip_to_choice()
+	await get_tree().create_timer(1.6).timeout   # let the touch flash fade
+	await _shot("02d_prologue_choice")
+	pr.choose(0)
+	pr._next()
+	await _shot("02e_prologue_after")
 	Game.new_game()
 	Game.party = [_make("Brand", Game.WARRIOR, 0), _make("Oldo", Game.MAGE, 1), _make("Sira", Game.THIEF, 5),
 		_make("Tavi", Game.RANGER, 9)]
