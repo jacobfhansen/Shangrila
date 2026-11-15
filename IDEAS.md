@@ -477,6 +477,14 @@ guidance, and later dreams.
 - **The host:** the spirit can take anyone in the party as host. Being touched makes a
   better, steadier host.
 
+**Control in combat has a price**
+- Characters the player does not control fight on their own, by their traits and default
+  tactics (a hot-head attacks, a coward hides, a healer heals).
+- Taking control of a character for a round is a touch: better results, but a step closer
+  to fear or to belief.
+- This ties together "Characters with a will of their own", the touch, and the default
+  tactics and auto-combat already in the game.
+
 **The recruiting conversation**
 - Recruiting happens in short conversations with **dialogue choices**. Which follower
   speaks, and what they say, matters. The character's hidden traits decide the outcome.
@@ -495,9 +503,7 @@ guidance, and later dreams.
 - Some wrong approaches offend a character for good, closing the door for this run.
 
 **Open questions**
-- Does taking control in combat mean that characters you do *not* control act on their own
-  (by their traits and default tactics)? That would make control itself a choice, with the
-  touch as its price.
+- Is the host always under the player's control in combat, without a touch?
 - How is the touch shown: a hidden value, comments only, or a visible sign on the
   character (a faint glow on the portrait)?
 - How quickly does it grow, and what makes someone reject it?
