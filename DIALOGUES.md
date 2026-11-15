@@ -10,17 +10,46 @@ Notation:
 
 ## Dawn at the shrine (the first choice)
 
-This is the first moment the player can act (step 2 of "A game that starts by playing itself").
-Until now the player has only watched the Harrow Company camp by the overgrown shrine.
+The spirit wakes, chooses its host, and makes its first choice (steps 1–2 of "A game that
+starts by playing itself").
 
-### Shared setup
+### The waking
 
-Grey dawn. Mist lies in the ditch along the road. Half the brambles have been hacked away
-from the shrine, uncovering a weathered stone figure. Its face is worn smooth, but the
-outline of a crown can still be made out.
+The screen is black. Then eyelids open, heavily, twice, and the scene comes into view: grey
+dawn, the embers of a campfire, five shapes stirring around it, and the shrine.
+The spirit has no host yet. Its thoughts appear in italics, with no face and no name.
 
-> **Joss:** Right. Picks and crowbars. The man paid for rubble by noon, and rubble is what
-> he gets.
+> *...light.*
+>
+> Grey dawn. Mist lies in the ditch along the road. By the embers of a campfire, five shapes are
+> stirring.
+>
+> **Tikkat** *(yawning)*: Who decided we sleep next to a haunted rock?
+>
+> **Joss:** The man paying us did. Up. All of you.
+>
+> *Where... am I?*
+>
+> **Maera** *(rolling up her blanket)*: There was a root under my back all night. The same root.
+> I've named it.
+>
+> **Ommuk:** Roots are honest. They stay where they are. Unlike Tikkat in his sleep.
+>
+> **Tikkat:** I do not move in my sleep.
+>
+> **Ithrae:** You kicked me twice.
+>
+> *How long have I slept? The stone around me is old. So very old.*
+>
+> Half the brambles have been hacked away from the shrine, uncovering a weathered stone figure.
+> Its face is worn smooth, but the outline of a crown can still be made out.
+>
+> *A crown. Mine?*
+>
+> **Joss:** Right. Picks and crowbars. The man paid for rubble by noon, and rubble is what he
+> gets.
+>
+> *They mean to break it. Let them. There is nothing in that stone for me now.*
 >
 > **Ithrae** *(a hand on the stone)*: Joss... it's warm. Stone shouldn't be warm at dawn.
 >
@@ -28,21 +57,39 @@ outline of a crown can still be made out.
 >
 > **Ommuk** *(humming a slow prayer)*: Everyone does not know that.
 >
+> *Who are they? Hired hands. Five of them. Living, breathing, warm.*
+>
 > **Maera** *(watching the trees)*: Someone's been watching this place. There are fresh tracks
 > by the road.
+>
+> *I am fading. The stone held me together. Without it I am smoke in the morning air.*
+>
+> *I must hold on to one of them. Now, before the light takes me.*
 
-Then the spirit touches the host for the first time. The spirit has no words yet, only
-sensations (see "How the spirit communicates"). The shared opening of the inner dialogue:
+### Choosing the host
+
+The player chooses whom the spirit holds on to, seen through the spirit's eyes:
+
+1. **Joss Harrow:** *the one giving the orders. Hard, and hungry for something.*
+2. **Maera Vell:** *the one watching the trees. Restless, sharp-eyed.*
+3. **Ommuk:** *the slow one, humming a prayer to no one in particular.*
+4. **Ithrae:** *the pale one with her hand on the stone. She can feel me.*
+5. **Tikkat:** *the small one, all whiskers and nerves.*
+
+### The first touch
+
+The spirit takes hold, with a flash of light, and from here on the inner experience is seen from
+inside the host:
 
 > *Something stirs behind your eyes. A pressure, like a hand laid gently on the inside of your
 > skull. For one heartbeat you see a hall full of light, and a crowd bowing low, to you.
 > Then it is gone, and the mist is back.*
 
-What follows depends on who the host is. The host still speaks their own line in the shared
-setup, because the spirit only touches them after it.
+What follows depends on who the host is: their own reaction, then the first choice.
 
-**Playable prototype:** *Prologue* on the main menu. The in-game text is in
+**In the game:** *New* on the main menu. The in-game text is in
 `Shangrila-godot/scripts/data/prologue.gd`, with short reactions written out for every reply.
+The mouse wheel opens the history of everything said so far (and pauses the scene).
 
 ---
 

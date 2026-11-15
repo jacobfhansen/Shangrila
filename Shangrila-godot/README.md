@@ -49,9 +49,10 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
 ## Prologue (new)
 
 *New* on the main menu starts with the opening scene from `DIALOGUES.md` in the repository root:
-pick which member of the Harrow Company the spirit wakes inside, watch the scene play out
-by itself (click or Space to hurry), and make the first choice in the new dialogue screen
-(keys 1-4). The screen shows the speaker, the host's inner voice in italics, a "Speaking" row
+the spirit's eyes open on the Harrow Company's camp at dawn, it listens to their morning chatter
+(its own thoughts in italics), chooses whom to hold on to, and makes the first choice through
+that host in the new dialogue screen (keys 1-9). The scene moves on by itself; click or Space
+hurries it, P pauses, and the mouse wheel (or H) opens the history of everything said so far. The screen shows the speaker, the host's inner voice in italics, a "Speaking" row
 (only the host can speak for now) and replies tagged with the host's traits. The text is in
 `scripts/data/prologue.gd`, the portraits for the four races in `scripts/widgets/race_portrait.gd`.
 

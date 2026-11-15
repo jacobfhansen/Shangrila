@@ -69,18 +69,25 @@ func _run() -> void:
 	m.goto("title")
 	await _shot("02_title")
 	m.goto("prologue")
-	await _shot("02b_prologue_hosts")
+	await get_tree().create_timer(3.2).timeout   # the eyelids, half open
+	await _shot("02a_prologue_waking")
 	var pr: Node = m.current
-	pr.start_scene("ithrae")
-	for k in 3:
+	for k in 6:
 		pr._next()
-	await _shot("02c_prologue_speech")
+	await get_tree().create_timer(2.6).timeout
+	await _shot("02b_prologue_chatter")
+	pr.skip_to_choice()
+	await _shot("02c_prologue_host_choice")
+	pr.pick_host("ithrae")
 	pr.skip_to_choice()
 	await get_tree().create_timer(1.6).timeout   # let the touch flash fade
 	await _shot("02d_prologue_choice")
 	pr.choose(0)
 	pr._next()
 	await _shot("02e_prologue_after")
+	pr.open_history()
+	await _shot("02f_prologue_history")
+	pr.close_history()
 	Game.new_game()
 	Game.party = [_make("Brand", Game.WARRIOR, 0), _make("Oldo", Game.MAGE, 1), _make("Sira", Game.THIEF, 5),
 		_make("Tavi", Game.RANGER, 9)]
@@ -194,7 +201,8 @@ func _new_game_route() -> void:
 	var m: Node = Game.main
 	m.goto("prologue", {"new_game": true})
 	var pr: Node = m.current
-	pr.start_scene("tikkat")
+	pr.skip_to_choice()
+	pr.pick_host("tikkat")
 	pr.skip_to_choice()
 	pr.choose(1)
 	while not pr.finished:

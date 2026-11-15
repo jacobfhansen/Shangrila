@@ -34,18 +34,49 @@ const CAST := {
 
 const ORDER := ["joss", "maera", "ommuk", "ithrae", "tikkat"]
 
-const SETUP := [
-	{"n": "Grey dawn. Mist lies in the ditch along the road. Half the brambles have been hacked away from the old shrine, uncovering a weathered stone figure."},
-	{"n": "Its face is worn smooth, but the outline of a crown can still be made out."},
+## The waking: the spirit opens its eyes on the camp, before it has a host.
+## {"sp": text} is the spirit's own thought (it has no host and no face yet).
+const INTRO := [
+	{"fx": "eyes"},
+	{"sp": "...light."},
+	{"n": "Grey dawn. Mist lies in the ditch along the road. By the embers of a campfire, five shapes are stirring."},
+	{"s": "tikkat", "a": "yawning", "t": "Who decided we sleep next to a haunted rock?"},
+	{"s": "joss", "t": "The man paying us did. Up. All of you."},
+	{"sp": "Where... am I?"},
+	{"s": "maera", "a": "rolling up her blanket", "t": "There was a root under my back all night. The same root. I've named it."},
+	{"s": "ommuk", "t": "Roots are honest. They stay where they are. Unlike Tikkat in his sleep."},
+	{"s": "tikkat", "t": "I do not move in my sleep."},
+	{"s": "ithrae", "t": "You kicked me twice."},
+	{"sp": "How long have I slept? The stone around me is old. So very old."},
+	{"n": "Half the brambles have been hacked away from the shrine, uncovering a weathered stone figure. Its face is worn smooth, but the outline of a crown can still be made out."},
+	{"sp": "A crown. Mine?"},
 	{"s": "joss", "t": "Right. Picks and crowbars. The man paid for rubble by noon, and rubble is what he gets."},
+	{"sp": "They mean to break it. Let them. There is nothing in that stone for me now."},
 	{"s": "ithrae", "a": "a hand on the stone", "t": "Joss... it's warm. Stone shouldn't be warm at dawn."},
 	{"s": "tikkat", "t": "Warm stone means silver underneath. Everyone knows that."},
 	{"s": "ommuk", "a": "humming a slow prayer", "t": "Everyone does not know that."},
+	{"sp": "Who are they? Hired hands. Five of them. Living, breathing, warm."},
 	{"s": "maera", "a": "watching the trees", "t": "Someone's been watching this place. There are fresh tracks by the road."},
+	{"sp": "I am fading. The stone held me together. Without it I am smoke in the morning air."},
+	{"sp": "I must hold on to one of them. Now, before the light takes me."},
+	{"host_choice": true},
+]
+
+## Right after the host is chosen: the first touch, seen from inside the host.
+const TOUCH := [
 	{"fx": "touch"},
 	{"i": "Something stirs behind your eyes. A pressure, like a hand laid gently on the inside of your skull."},
 	{"i": "For one heartbeat you see a hall full of light, and a crowd bowing low, to you. Then it is gone, and the mist is back."},
 ]
+
+## How the host choice describes each of them, from the spirit's point of view.
+const SEEN_AS := {
+	"joss": "The one giving the orders. Hard, and hungry for something.",
+	"maera": "The one watching the trees. Restless, sharp-eyed.",
+	"ommuk": "The slow one, humming a prayer to no one in particular.",
+	"ithrae": "The pale one with her hand on the stone. She can feel me.",
+	"tikkat": "The small one, all whiskers and nerves.",
+}
 
 ## Per host: their inner reaction, then the first choice. Each reply has tags, the line
 ## the host speaks (empty for a silent choice), and what follows.
