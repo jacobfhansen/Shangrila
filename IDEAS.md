@@ -346,12 +346,20 @@ A backstory, fixed hidden traits (see "Characters with a will of their own"), a 
 quest, and possibly knowledge about the locks or the jailers' heirs.
 
 **Runs and endings**
-- **Start of a run:** the player chooses the first soul, the one who finds the spirit's
-  shrine, from a few candidates. This choice flavours the whole run.
+- **Start of a run:** see "The awakening" below. The choice of first soul flavours the
+  whole run.
 - **Endings** (good, evil, and others) are decided by key choices, for example at each
   lock. Different followers make different runs possible: who the spirit has gathered
   affects which choices are available and how they turn out.
 - Playing again with other followers gives a different story and possibly a different ending.
+
+**The awakening (opening of every run)**
+- The spirit awakens at a roadside shrine on the road to Lehan, about a day from the town. It
+  is the first location on the world map.
+- A party of 4–5 adventurers, of mixed race and class, is camping at the shrine that night.
+- The player chooses one of them as the first follower and host.
+- The others travel on. They can be found again in the world and won over later,
+  perhaps at a cost.
 
 **What changes in the game today**
 - The Create screen (rolling stats, picking race and class) goes away, or becomes a
@@ -362,7 +370,8 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
   patron spirit").
 
 **Open questions**
-- How many characters per town, and how many first souls to choose from?
+- How many characters per town?
+- Who are the adventurers at the shrine, and why do they travel together?
 - Can the player run out of followers? With permanent death and a fixed pool, the run could
   get stuck. Some characters could return later, or new ones appear as the story moves on.
 - Do characters level up after joining (experience), or stay as they are?
