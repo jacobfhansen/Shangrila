@@ -182,7 +182,8 @@ Traits: Reckless, Vengeful, Cheerful · Wins them over: gold
 
 **Liraeth** – Aeldroe Cleric · Tier 3 ★
 One of the elders who keep "the secret". She would never knowingly serve the spirit, but
-could be won over by someone she does not recognise as it.
+could be won over by someone she does not recognise as it. Touching her is dangerous: she
+would recognise the spirit at once.
 Traits: Pious, Proud, Merciful · Wins them over: faith and power, or deceit
 
 **Nimae** – Aeldroe Mage · Tier 3

@@ -434,6 +434,76 @@ spirit's own buried body in the tomb.)
 - Where are the checkpoints, and how often?
 - Which stats does the spirit's character sheet have?
 
+### Recruiting and the touch of the spirit
+How the spirit wins people over, given that it has no body and no voice.
+
+**The spirit acts only through its followers**
+The circle recruits on the spirit's behalf, like a real secret sect. The followers make the
+approach, pay, do the tasks and talk. The spirit adds what no ordinary person can: miracles,
+guidance, and later dreams.
+
+| Want | How it is done in practice |
+|---|---|
+| Gold | The party pays from its purse; the host or a follower hands it over. |
+| An item | The party finds, buys or steals the item and gives it to them. |
+| A task | The party does the job: a quest, a fight, a debt paid. |
+| Persuasion | A follower talks. That follower's Charisma, race, traits, and testimony matter. |
+| Faith and power | The spirit works a miracle *through* the host, in front of the person. |
+
+**How the spirit communicates**
+1. **With the host:** an inner voice. At first only urges, feelings and flashes ("You feel
+   a cold certainty that the stranger is lying"). It grows clearer with each remnant.
+   In the game: the spirit's lines in the log, in italics.
+2. **With the touched:** they feel the spirit's guidance themselves, more and more clearly
+   the more they are touched.
+3. **With outsiders:** no contact, except through miracles they witness and the testimony
+   of the touched. Later, R4 Dream-sending lets the spirit reach them in dreams.
+
+**Touched by the spirit**
+- **Every intervention is a touch.** When the player works a miracle on a character, or
+  takes direct control of their actions (for example their combat orders), that character
+  is touched by the spirit.
+- **It helps:** touched characters do better and survive more often.
+- **It is a risk:** being touched can frighten them. Too much, too soon, and they may leave.
+  How they take it depends on their hidden traits (a Pious character may welcome it; a
+  Skeptic or Superstitious one may be scared).
+- **It grows gradually** in everyone who travels with the host. Sooner or later, each one
+  **embraces** it (becoming a believer, with more devotion and discipline) or **rejects**
+  it (and may leave).
+- **The touched spread it:** they talk about it among themselves and to outsiders. Their
+  testimony is a form of persuasion: "Mivvi tells Boddo that he sometimes feels the spirit
+  guiding his actions, and feels empowered by it. Boddo can know it too, if he just
+  believes."
+- **The host:** the spirit can take anyone in the party as host. Being touched makes a
+  better, steadier host.
+
+**The recruiting conversation**
+- Recruiting happens in short conversations with **dialogue choices**. Which follower
+  speaks, and what they say, matters. The character's hidden traits decide the outcome.
+- **Wants and deal-breakers:** besides what a character wants, they have deal-breakers
+  about the party. An Honest character will not join a party with a known thief, a Merciful
+  one is put off by Ruthless followers, and a Thuug with a grudge refuses if there is a Nisk
+  in the party. Who you bring along matters, which gives parking followers a purpose.
+- **The shrine party** joins for certain. Everyone else is a challenge.
+- **Higher tiers want more:** for example a task *and* persuasion, or an item *and* a show of
+  power.
+- **Learning what someone wants is part of the challenge:** through rumours, by watching
+  them, and from how they react in conversation. R2 Insight later shows it directly.
+
+**Failure**
+- Usually it means "not yet": come back better prepared.
+- Some wrong approaches offend a character for good, closing the door for this run.
+
+**Open questions**
+- Does taking control in combat mean that characters you do *not* control act on their own
+  (by their traits and default tactics)? That would make control itself a choice, with the
+  touch as its price.
+- How is the touch shown: a hidden value, comments only, or a visible sign on the
+  character (a faint glow on the portrait)?
+- How quickly does it grow, and what makes someone reject it?
+- What happens to a character who rejects it: leaves quietly, or might tell others,
+  including the sect?
+
 ### Pre-made followers instead of rolled characters
 The spirit is discovering who it is by gathering and guiding followers, so the player no
 longer rolls up characters. Every character is pre-made and named, with a story of their own.
@@ -474,9 +544,11 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 - **The party stays together for the job.** Afterwards, each companion decides whether to stay
   (and perhaps become a believer) or go their own way. Those who leave can be found again
   in the world and won over later.
-- **Suspicion grows:** the host acts strangely (miracles, odd knowledge, changed habits). The
-  companions grow uneasy or curious. Revealing the spirit to them is a choice the player
-  makes, and how they take it depends on who they are.
+- **The shrine party joins for certain:** all five are companions from the start, so the
+  game gets going without a struggle.
+- **They are touched gradually:** the host acts strangely (miracles, odd knowledge, changed
+  habits), and the companions begin to feel the spirit themselves. Each reacts according to
+  who they are (see "Recruiting and the touch of the spirit").
 
 **Chosen opening: J3, then J2**
 1. **Tear down the shrine (J3):** the shrine has lain hidden under undergrowth for ages. The
