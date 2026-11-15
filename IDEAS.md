@@ -478,6 +478,8 @@ guidance, and later dreams.
   better, steadier host.
 
 **Control in combat has a price**
+- The host is always under the player's control, without a touch (once the spirit is
+  strong enough, see "A game that starts by playing itself").
 - Characters the player does not control fight on their own, by their traits and default
   tactics (a hot-head attacks, a coward hides, a healer heals).
 - Taking control of a character for a round is a touch: better results, but a step closer
@@ -503,12 +505,28 @@ guidance, and later dreams.
 - Some wrong approaches offend a character for good, closing the door for this run.
 
 **Open questions**
-- Is the host always under the player's control in combat, without a touch?
+- In the opening, when does the spirit gain full control of the host: after the first
+  fight, after reaching Lehan, or after the first remnant?
 - How is the touch shown: a hidden value, comments only, or a visible sign on the
   character (a faint glow on the portrait)?
 - How quickly does it grow, and what makes someone reject it?
 - What happens to a character who rejects it: leaves quietly, or might tell others,
   including the sect?
+
+### A game that starts by playing itself
+A new kind of game experience: the spirit has just woken and is weak, so at first the player
+has very little control. Control grows step by step, and that growth *is* the tutorial.
+
+1. **Watching:** the party goes about its job on its own. It walks to the task location,
+   moves around, and the characters talk among themselves. The player watches.
+2. **The first choice:** in a conversation, the player can suddenly choose the host's
+   reply. It is the first real interaction, and the first chance to guide the group.
+3. **The first fight:** the characters fight as they would by their traits. The spirit
+   cannot yet command the host, only help: give the host a bonus, or prevent a wound.
+4. **Full control of the host:** later the spirit can take over the host's actions
+   completely (the host is never a touch). Touching the others comes after that.
+5. From there, each remnant adds a new power or mechanic (R1–R9), so the game keeps
+   opening up.
 
 ### Pre-made followers instead of rolled characters
 The spirit is discovering who it is by gathering and guiding followers, so the player no
