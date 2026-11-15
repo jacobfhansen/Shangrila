@@ -511,6 +511,78 @@ guidance, and later dreams.
 - What happens to a character who rejects it: leaves quietly, or might tell others,
   including the sect?
 
+### Conversations (the dialogue screen)
+Conversations are where recruiting, the touch and the story happen, so they get their own
+screen. It is inspired by the Fallout series (a portrait, the other person's line, and a
+numbered list of replies with tags), with one twist: the player also chooses *who* speaks.
+The scripts are in [DIALOGUES.md](DIALOGUES.md).
+
+**Layout** (640×480, in the parchment style of the existing dialogs)
+
+```
++--------------------------------------------------------------+
+| [portrait]  LISBET FARROW                                    |
+|             "Information costs, love. Everything in Lehan    |
+|              costs."                                         |
+|                                                              |
+|  *You sense she is lying about the price.*    <- inner voice |
+|--------------------------------------------------------------|
+|  Speaking:  [Joss*] [Maera] [Ommuk] [Tikkat]   * = host      |
+|--------------------------------------------------------------|
+|  1. "Fine. How much?"                                        |
+|  2. [Haggle 30] "Half that, and I won't tell the innkeeper   |
+|     where his ale goes."                                     |
+|  3. [Gold 5S] Slide five silver across the table.            |
+|  4. [Greedy] "You and I are going to get along."             |
+|  5. "Never mind." (leave)                                    |
++--------------------------------------------------------------+
+```
+
+**Parts of the screen**
+- **The other person:** portrait, name and their line at the top.
+- **Inner voice:** the spirit's urges and the host's own thoughts, in italics and a separate
+  colour, between the line and the replies. At the start these are only feelings; they grow
+  clearer with each remnant.
+- **Who speaks:** a row of party portraits. The host speaks freely. Letting any other party
+  member speak means taking control of them, so **it counts as a touch** (see "Recruiting and
+  the touch of the spirit"). The replies change with the speaker: their traits, race, class
+  and skills open different options.
+- **Replies:** a numbered list (keys 1–9 or mouse), with tags in brackets for what a reply
+  draws on:
+  - **Skills,** for example `[Haggle 30]` or `[Read & Write]`. As in Fallout: New Vegas, a skill
+    tag shows the level needed. If the speaker has it, the reply works.
+  - **Traits,** for example `[Greedy]` or `[Pious]`. These play to the speaker's own nature.
+    The outcome depends on the listener's hidden traits, so it is never certain.
+  - **Gold and items,** for example `[Gold 5S]` or `[Item: Alnon Leaf]`, which hand over
+    something.
+  - **The spirit,** for example `[Miracle]` or later `[Dream]`. These need faith or a remnant
+    power, and they touch whoever witnesses them.
+  - **Race,** for example `[Nisk]` or `[Thuug]`, which use what a race knows or how it is seen.
+- **Reactions:** after a reply, the others react in a short line ("Maera nods.", "Ommuk
+  frowns."). There are no numbers, in keeping with the hidden traits.
+
+**What the player can see of traits**
+- The spirit lives inside its host, so **the host's traits are known**. That is why the host's
+  trait tags show from the first scene.
+- Other characters' traits show as tags only once the spirit has learned them, from
+  comments, behaviour, or R2 Insight. Until then, those options are simply missing or
+  shown as unnamed instincts.
+
+**Where conversations happen**
+- recruiting (see "Recruiting and the touch of the spirit")
+- story scenes, such as the first choice at the shrine ("A game that starts by playing
+  itself")
+- shops (Talk and Haggle, see Next steps), the inn, and rumours ("World map and travel")
+- quarrels and moods in the party ("Characters with a will of their own")
+- Everything said is kept in the journal.
+
+**Open questions**
+- Is the list limited to a few replies at a time, or can it be long?
+- Should important conversations have a timer or limited chances (for example, one wrong word
+  and the person walks away)?
+- Do companions sometimes interrupt on their own (by their traits), even when not chosen
+  to speak?
+
 ### A game that starts by playing itself
 A new kind of game experience: the spirit has just woken and is weak, so at first the player
 has very little control. Control grows step by step, and that growth *is* the tutorial.
