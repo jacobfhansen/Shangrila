@@ -323,3 +323,48 @@ must travel the whole world for clues and items to undo every lock its jailers s
 - How do followers away from the spirit report back (letters at the inn, a summary when the
   spirit returns)?
 - What happens when the body is freed: the end of the game, or a new phase?
+
+### Pre-made followers instead of rolled characters
+The spirit is discovering who it is by gathering and guiding followers, so the player no
+longer rolls up characters. Every character is pre-made and named, with a story of their own.
+
+**Where they are**
+- Each city or point of interest has a fixed number of characters who can be won over
+  to the cause.
+- The higher a character's level and stats, the harder or more expensive they are to win.
+
+**Winning them over**
+Each character wants something different, a mix of:
+- **a specific item** they want
+- **gold:** some can simply be hired
+- **faith and power:** some are impressed by what the spirit can do
+- **a task:** a personal quest, a debt paid, revenge
+- **persuasion:** the host's Charisma, the spirit's renown in that town, and shared values
+
+**Each character has a story**
+A backstory, fixed hidden traits (see "Characters with a will of their own"), a personal
+quest, and possibly knowledge about the locks or the jailers' heirs.
+
+**Runs and endings**
+- **Start of a run:** the player chooses the first soul, the one who finds the spirit's
+  shrine, from a few candidates. This choice flavours the whole run.
+- **Endings** (good, evil, and others) are decided by key choices, for example at each
+  lock. Different followers make different runs possible: who the spirit has gathered
+  affects which choices are available and how they turn out.
+- Playing again with other followers gives a different story and possibly a different ending.
+
+**What changes in the game today**
+- The Create screen (rolling stats, picking race and class) goes away, or becomes a
+  developer tool for making the pre-made characters.
+- The inn roster becomes the followers the spirit has won. The pool of possible followers
+  lives in the towns and places of the world map.
+- This replaces the "follower cap" counting today's 23 + 6 limits (see "The player is a
+  patron spirit").
+
+**Open questions**
+- How many characters per town, and how many first souls to choose from?
+- Can the player run out of followers? With permanent death and a fixed pool, the run could
+  get stuck. Some characters could return later, or new ones appear as the story moves on.
+- Do characters level up after joining (experience), or stay as they are?
+- Is it right to read "different characters give different endings" as: followers decide
+  which key choices are possible? Or should followers also shift the ending directly?
