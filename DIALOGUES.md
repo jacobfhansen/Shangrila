@@ -244,9 +244,59 @@ host's blow or ward the host, once per round.
 - it only guided blows → *"Where did (host) learn to fight like that?"*
 - it did nothing → *"Lucky. We were lucky."*
 
-> *Something settles inside the host, like a hand closing around a sword hilt. The spirit has
-> found its grip.*
->
-> (From now on the spirit has full control of the host. The others still act on their own.)
+### The spirit's first words: asking for control
+
+For the first time, the spirit finds words. It asks its host to let it take control. The
+player chooses the spirit's pitch; the host's known traits are shown as a hint ("The spirit
+knows Tikkat: Greedy, Cheerful, Cowardly"). Each host has four pitches, and one or two of them
+suit that host (✓). A wrong pitch gets pushback and another try. *(Take hold by force)* is
+always there: it always works, but leaves the host afraid. The game records whether control
+was given or taken (`story.consent`), for later scenes to use.
+
+> *Do not be afraid.*
+
+**Joss** (Brave, Greedy, Proud): *"Afraid? I've been afraid of sergeants and moneylenders. Not of
+voices. Get out of my head."*
+- ✓ "Follow my lead, and you will never count coppers again. Your debt will be the first thing
+  to go." → *Go on, he thinks. I'm listening.*
+- ✓ "Let me guide you, and people will bow to you, as they once bowed to me." → *They'd bow? To
+  me?*
+- "Your friends need you. Let me help you keep them alive." → *They're hired swords, not friends.*
+- "I am old, and tired, and lost. Please." → *Beggars get nothing from me. I've been one.*
+
+**Maera** (Curious, Loyal, Hot-tempered): *"I'm not afraid. I'm angry. Who are you?"*
+- ✓ "Let me in, and I will show you the hall again, and everything behind it." → *Fine. Show me.*
+- ✓ "Your friends nearly died today. Let me help you keep them safe." → *For them. Not for you.*
+- "Be calm. Breathe. You are safe with me." → *Don't tell me to be calm!*
+- "Coin enough for a house by the coast." → *I don't want your coin. I want answers.*
+
+**Ommuk** (Pious, Calm, Generous): *"I have prayed for sixty years. I only wonder what took you
+so long to answer."*
+- ✓ "You prayed for someone to listen. I listened." → *Then I will listen too.*
+- ✓ "Let me in, and together we will help those who need it." → *Help. Yes. That I can agree to.*
+- "Do as I say, and you will be rich." → *What would a Thuug do with riches? Buy a bigger shell?*
+- "Obey me. I was a king." → *Kings have never answered a single one of my prayers.*
+
+**Ithrae** (Curious, Melancholy, Honest): *"I'm afraid of how familiar you feel. What are you?"*
+- ✓ "I do not know what I am. Help me find out." → *That's the first honest thing anyone has said
+  to me in weeks.*
+- ✓ "Let me in, and I will show you what lies behind the hall of light." → *You know I can't say
+  no to that.*
+- "Smile. You are alive, and the day is fine." → *You're already dead. Aren't you?*
+- "You will be powerful. More powerful than any mage alive." → *That word sounds wrong in your
+  voice. I don't know why.*
+
+**Tikkat** (Greedy, Cheerful, Cowardly): *"Everyone says that right before something terrible
+happens. What do you want?"*
+- ✓ "Let me in, and I will keep the blades away from you." → *Deal. Deal, deal, deal.*
+- ✓ "Follow my lead, and your pockets will never be empty again." → *You know exactly what to say
+  to a Nisk, don't you?*
+- "Be brave. Face your fears." → *Brave Nisk are dead Nisk.*
+- "Pray with me." → *I'll leave that to Ommuk.*
+
+**Taken by force:** *The spirit closes around the host's will like a fist. The host fights it,
+and loses. For a moment there is only terror, then a dull, sullen quiet.*
+
+> (From now on you control the host fully in combat. The others still act on their own.)
 >
 > By evening the walls of Lehan rise out of the fields.

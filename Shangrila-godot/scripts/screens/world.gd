@@ -84,6 +84,9 @@ func _road_scene() -> void:
 	box.host = host
 	Ui.place(box, Rect2(20, 52, 600, 248))
 	add_child(box)
+	box.effect.connect(func(name: String):
+		if name.begins_with("consent_"):
+			Game.story["consent"] = "given" if name == "consent_given" else "forced")
 	_move_marker(a, b, 0.0, 0.5, 6.0)
 	box.play(RoadData.before(host))
 	await box.finished

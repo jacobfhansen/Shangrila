@@ -233,6 +233,12 @@ func _new_game_route() -> void:
 	print("ambush over after ", rounds, " rounds, hits: ", Game.party.map(func(c): return c.hits))
 	await get_tree().create_timer(0.5).timeout
 	rb.skip_to_choice()
+	await _shot("22a_consent")
+	rb.choose(2)    # a pitch that does not suit the host
+	rb.skip_to_choice()
+	await _shot("22b_consent_retry")
+	rb.choose(0)    # one that does
+	rb.skip_to_choice()
 	await get_tree().create_timer(0.3).timeout
 	if m.modal_open:
 		m._modal_done.emit(true)

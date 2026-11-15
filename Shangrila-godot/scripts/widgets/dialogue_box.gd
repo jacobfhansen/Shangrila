@@ -226,7 +226,11 @@ func _show_choice(st: Dictionary) -> void:
 	prompt.text = st.get("prompt", "Choose a reply (1-%d)" % opts.size()) + "  ·  Mouse wheel: history"
 	_clear_choices()
 	var y := 0.0
-	if st.get("speakers", false):
+	var sp = st.get("speakers", false)
+	if sp is String and sp == "traits":
+		_show_known_traits()
+		y = 34.0
+	elif sp:
 		_show_speakers()
 		y = 34.0
 	for i in opts.size():
@@ -252,6 +256,14 @@ func _show_choice(st: Dictionary) -> void:
 		b.pressed.connect(choose.bind(i))
 		b.position = Vector2(0, y)
 		y += b.size.y + 3
+
+
+## Only what the spirit knows about its host (when the spirit itself is the one speaking).
+func _show_known_traits() -> void:
+	Ui.frame(speak_row, Rect2(0, -2, size.x, 32), Color(0.08, 0.06, 0.04, 0.92), Color("#5a4428"), 1)
+	var me := _who(host)
+	var l := Ui.label(speak_row, "The spirit knows %s: %s" % [me.name, ", ".join(me.get("traits", []))], Vector2(10, 7), 13, SPIRIT, size.x - 20)
+	l.tooltip_text = "The spirit lives inside its host, so it knows the host's nature."
 
 
 func _show_speakers() -> void:

@@ -70,7 +70,10 @@ ambush the company: the first fight, in a battle window over the map. Everyone f
 own, by their tactics and traits (a Cowardly character hides, a Cautious one may parry). Before
 each round the spirit can only help its host: *Guide the blow* (better aim and a little more
 damage) or *Ward* (the next blow aimed at the host turns aside). Afterwards the companions
-react to what they saw, the spirit takes full hold of its host, and the company reaches Lehan.
+react to what they saw, and the spirit speaks to its host for the first time, asking to be
+let in. The player picks the pitch: one or two of the four suit the host's traits (shown as a
+hint), a wrong one gets pushback and another try, and taking hold by force always works but
+leaves the host afraid. Then the company reaches Lehan.
 The text is in `scripts/data/road.gd`, the window in `scripts/widgets/battle_window.gd`, and the
 dialogue window used by both scenes in `scripts/widgets/dialogue_box.gd`.
 
