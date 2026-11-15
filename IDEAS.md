@@ -206,9 +206,15 @@ Death is permanent, unless the spirit spends faith to bring the follower back. (
 fallen character just comes around with 1 hit point, and a defeated party wakes up at the inn.
 That changes.)
 
-**Losing every follower**
-The spirit goes dormant until a new soul finds its shrine. The game starts over with a new
-follower, but the spirit keeps some of what it learned (the journal, race secrets).
+**Losing the host: game over**
+If the host dies and no follower is close enough to take over, the game is over. The player
+loads the last save or checkpoint. (This replaces the earlier idea of the spirit going
+dormant.)
+
+**The spirit's character sheet**
+A separate sheet for the spirit itself (the player), apart from the followers' sheets. It
+keeps track of the spirit's own stats: for example faith, level, remnants merged, powers and
+miracles, the follower cap, and recovered memories.
 
 **Follower cap**
 How many characters the spirit can hold, in the party and waiting at inns together, starts at
@@ -276,11 +282,14 @@ the Aeldroes know where they come from; what waits at the bottom of the mines.
   record of it. Pieces of the name are found one by one. Who erased it, and why?
 
 ### The spirit's prison and the journey
-The jailers broke the old power apart. Its body, the *vessel*, lies sealed deep in the mines
+The jailers broke the old power apart. Its body lies buried in a sealed tomb deep in the mines
 of Lehan, and its remnants were scattered and hidden across the world. The player is one
 remnant: the one in the roadside shrine, woken after eons by the party camping there.
-To be whole and free again, the spirit must find every other remnant, and bring them all
-back into the vessel.
+To be whole and free again, the spirit must find and merge with every other remnant, then
+open the tomb and enter its body.
+
+(Words used here: the *host* is the follower the spirit rides in; the *body* is the
+spirit's own buried body in the tomb.)
 
 **The host**
 - The spirit rides inside one follower, the *host*. It can only see and act where the host is.
@@ -288,8 +297,8 @@ back into the vessel.
 - Being the host matters: extra devotion and a channel for miracles, but also strain (for
   example nightmares, or the other followers' unease). This ties into "Characters with a will
   of their own".
-- If the host dies, the spirit jumps to another follower nearby. If no follower is near, it
-  falls back to its shrine ("Losing every follower").
+- If the host dies, the spirit jumps to another follower nearby. If no follower is near, the
+  game is over ("Losing the host: game over").
 
 **From one party to many**
 - **Early game:** the spirit travels only with its host's party. Followers left at inns in
@@ -301,24 +310,47 @@ back into the vessel.
   happened.
 
 **The prison in the mines**
-- Deep in the mines lies the sealed chamber that holds the vessel. The party can reach it
-  early, see that it is empty and cannot be woken yet, and must leave again. The player
-  knows the final goal from the start.
+- Deep in the mines lies the gate to the sealed tomb that holds the spirit's body. The party
+  can reach the gate early, see that it cannot be opened yet, and must leave again. The
+  player knows the final goal from the start.
 - The unfinished rubble passages in the mines could become the way toward the chamber.
 - Going deeper brings back memories ("The spirit's forgotten past").
 
 **The remnants** (these replace the earlier idea of locks)
-- The other remnants all sleep in hidden places, like the roadside shrine was. Finding them
-  takes clues and items, and reaching them takes travel and strength.
-- **Claiming a remnant gives:**
+- There are **6–9 remnants**. The other remnants all sleep in hidden places, like the
+  roadside shrine was. Finding them takes clues and items, and reaching them takes travel
+  and strength.
+- **Merging:** a found remnant merges with the travelling spirit at once. This levels the
+  spirit up (shown on the spirit's character sheet).
+- **Each remnant brings:**
   - **memories:** a piece of the spirit's past ("The spirit's forgotten past")
-  - **power:** more faith capacity, new miracles, a higher follower cap
+  - **a new power or mechanic, or a stronger version of one:** see the proposals below
 - **Finding them, as a chain:** the memories in one remnant can point to where the next one
   sleeps. This keeps the guided story chosen earlier for the locks.
 - They can be spread across the regions, and races, of the world. For example, Thuugs
   remember old roads, Nisk tunnels reach hidden places, and Aeldroes are bound to the spirit
   itself.
-- **The final goal:** bring every remnant back into the vessel in the mines.
+- **Proposed remnant powers (to pick from):**
+  - R1 **Free travel:** jump between followers in different towns ("From one party to many").
+  - R2 **Insight:** see followers' hidden traits and moods directly, instead of only through
+    comments.
+  - R3 **Miracles:** the first miracles, and later stronger ones.
+  - R4 **Dream-sending:** speak to followers, and potential followers, in their dreams.
+    A new way to persuade and to reveal memories.
+  - R5 **A wider reach:** a higher follower cap, and followers further away can take over
+    as host.
+  - R6 **Taking a new host at will:** move into another follower in the party, not only when
+    the host dies.
+  - R7 **Hallowed ground:** consecrate places as shrines where followers pray, rest and
+    gain faith.
+  - R8 **Command:** a stronger hold on followers in combat (better discipline and morale).
+  - R9 **Return from death:** bring a dead follower back ("Saving the fallen").
+
+**The ending**
+1. When every remnant is merged, the gate to the tomb can finally be opened or destroyed,
+   after an epic boss battle.
+2. The spirit enters its buried body, which rises from the dead.
+3. Perhaps a second epic boss battle follows. Who, or what, waits for the risen spirit?
 
 **The jailers: hidden among us**
 - The heirs of those who imprisoned the spirit still live on in plain sight. Perhaps the
@@ -328,13 +360,15 @@ back into the vessel.
   as the truth comes out.
 
 **Open questions**
-- How many remnants are there, and in what order are they found?
+- Exactly how many remnants (6–9), and in what order are they found?
+- Which powers go with which remnant?
 - Who exactly are the jailers' heirs, and what do they know?
-- What unlocks free travel: a remnant, a faith level, or a place found on the way?
 - How do followers away from the spirit report back (letters at the inn, a summary when the
   spirit returns)?
-- What happens when the vessel is whole again: the end of the game, or a new phase?
-- How are the remnants carried: does the host carry them, or do they join the spirit at once?
+- Who guards the gate to the tomb (first boss), and what comes after the body rises
+  (second boss)?
+- Where are the checkpoints, and how often?
+- Which stats does the spirit's character sheet have?
 
 ### Pre-made followers instead of rolled characters
 The spirit is discovering who it is by gathering and guiding followers, so the player no
@@ -421,10 +455,6 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 - Who are the adventurers at the shrine, and why do they travel together?
 - Who is the client behind the shrine job? Do they later suspect that something escaped
   from the shrine, and come after the group?
-- With the shrine destroyed, where does the spirit fall back to if its host dies with no
-  follower near, or if it loses every follower? (Both rules mention "its shrine": see
-  "The player is a patron spirit" and "The spirit's prison and the journey".) Perhaps to
-  its body in the mines, or to any old shrine of its worship.
 - Can the player run out of followers? With permanent death and a fixed pool, the run could
   get stuck. Some characters could return later, or new ones appear as the story moves on.
 - Do characters level up after joining (experience), or stay as they are?
