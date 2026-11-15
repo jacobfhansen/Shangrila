@@ -357,9 +357,32 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
 - The spirit awakens at a roadside shrine on the road to Lehan, about a day from the town. It
   is the first location on the world map.
 - A party of 4–5 adventurers, of mixed race and class, is camping at the shrine that night.
-- The player chooses one of them as the first follower and host.
-- The others travel on. They can be found again in the world and won over later,
-  perhaps at a cost.
+- The player chooses one of them, and the spirit takes control of that person **in secret**.
+  The host is the spirit's first follower.
+- **The group's job becomes the first quest:** the party was on its way to finish a job,
+  and the spirit (the player) carries it through with them. It also teaches the game.
+- **The party stays together for the job.** Afterwards, each companion decides whether to stay
+  (and perhaps become a believer) or go their own way. Those who leave can be found again
+  in the world and won over later.
+- **Suspicion grows:** the host acts strangely (miracles, odd knowledge, changed habits). The
+  companions grow uneasy or curious. Revealing the spirit to them is a choice the player
+  makes, and how they take it depends on who they are.
+
+**Proposed first jobs (to pick from)**
+- J1 **The sealed box:** the group is escorting a sealed box to Lehan for one of its old
+  families, which are secretly the jailers' heirs. The box holds something tied to one of the
+  locks, and the host can feel it. Deliver it, open it, or steal it?
+- J2 **Clear the mines:** Lehan's council has hired them to explore the old mine workings,
+  where miners have vanished since something began to stir (the spirit waking). It leads
+  straight toward the spirit's prison and teaches the dungeon.
+- J3 **Tear down the shrine:** someone paid the group to destroy the roadside shrine at
+  dawn. The client is one of the jailers' heirs, who noticed it stirring. The spirit wakes
+  inside one of the people sent to destroy it.
+- J4 **The renegade's bounty:** they are hunting a renegade (the surviving painting "The
+  Enemy") who hides in the mines. The renegade turns out to be searching for the spirit too,
+  for reasons of his own.
+- J5 **The lost girl:** a miner's daughter, an Aeldroe, has gone missing in the mines. She
+  followed a calling no one else could hear. A first hint of the Aeldroe secret.
 
 **What changes in the game today**
 - The Create screen (rolling stats, picking race and class) goes away, or becomes a
@@ -372,6 +395,7 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
 **Open questions**
 - How many characters per town?
 - Who are the adventurers at the shrine, and why do they travel together?
+- Which first job (J1–J5, or a mix)?
 - Can the player run out of followers? With permanent death and a fixed pool, the run could
   get stuck. Some characters could return later, or new ones appear as the story moves on.
 - Do characters level up after joining (experience), or stay as they are?
