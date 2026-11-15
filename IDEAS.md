@@ -505,8 +505,6 @@ guidance, and later dreams.
 - Some wrong approaches offend a character for good, closing the door for this run.
 
 **Open questions**
-- In the opening, when does the spirit gain full control of the host: after the first
-  fight, after reaching Lehan, or after the first remnant?
 - How is the touch shown: a hidden value, comments only, or a visible sign on the
   character (a faint glow on the portrait)?
 - How quickly does it grow, and what makes someone reject it?
@@ -521,9 +519,14 @@ has very little control. Control grows step by step, and that growth *is* the tu
    moves around, and the characters talk among themselves. The player watches.
 2. **The first choice:** in a conversation, the player can suddenly choose the host's
    reply. It is the first real interaction, and the first chance to guide the group.
+   It comes with an **inner dialogue**: the host senses something strange in their head
+   and reacts according to their traits. A Pious host may think it is a blessing, a
+   Superstitious one fears a curse, a Skeptic blames the wine, a Proud one resents the
+   intrusion. Each possible host has their own version of this moment.
 3. **The first fight:** the characters fight as they would by their traits. The spirit
    cannot yet command the host, only help: give the host a bonus, or prevent a wound.
-4. **Full control of the host:** later the spirit can take over the host's actions
+4. **Full control of the host after the first fight:** the host feels the spirit take
+   hold for the first time, and from then on the player controls the host's actions
    completely (the host is never a touch). Touching the others comes after that.
 5. From there, each remnant adds a new power or mechanic (R1–R9), so the game keeps
    opening up.
