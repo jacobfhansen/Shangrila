@@ -369,15 +369,15 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
   makes, and how they take it depends on who they are.
 
 **Chosen opening: J3, then J2**
-1. **Tear down the shrine (J3):** the group was paid to destroy the roadside shrine at dawn.
-   The client is one of the jailers' heirs, who noticed the shrine stirring. That night the
-   spirit wakes inside one of them. At dawn the host refuses, or finds a way to stop the job.
-   This is the first source of the companions' suspicion, and the first enemy, since the
-   client will want to know why the job failed.
-2. **Clear the mines (J2):** with the shrine job gone, the group needs money. In Lehan the
-   council is hiring people to explore the old mine workings, where miners have vanished
-   since something began to stir. That leads straight toward the spirit's prison, and
-   teaches the dungeon.
+1. **Tear down the shrine (J3):** the shrine has lain hidden under undergrowth for ages. The
+   client, one of the jailers' heirs, has only just discovered it, recognised what it is,
+   and paid the group to destroy it. That night the spirit wakes inside one of them.
+   (Possibly the client's clearing of the undergrowth is what let the spirit stir.)
+   The spirit has no attachment to the shrine: it has just woken and its journey begins in
+   its new host. The job can be done as planned, and the group is paid.
+2. **Clear the mines (J2):** the group moves on to Lehan, where the council is hiring
+   people to explore the old mine workings, where miners have vanished since something
+   began to stir. That leads straight toward the spirit's prison, and teaches the dungeon.
 3. After the mines job, each companion decides whether to stay or go their own way.
 
 **All proposed first jobs** (J1, J4 and J5 were not chosen, kept for reference)
@@ -388,8 +388,8 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
   where miners have vanished since something began to stir (the spirit waking). It leads
   straight toward the spirit's prison and teaches the dungeon.
 - J3 **Tear down the shrine:** someone paid the group to destroy the roadside shrine at
-  dawn. The client is one of the jailers' heirs, who noticed it stirring. The spirit wakes
-  inside one of the people sent to destroy it.
+  dawn. The client is one of the jailers' heirs. The spirit wakes inside one of the people
+  sent to destroy it.
 - J4 **The renegade's bounty:** they are hunting a renegade (the surviving painting "The
   Enemy") who hides in the mines. The renegade turns out to be searching for the spirit too,
   for reasons of his own.
@@ -407,9 +407,12 @@ quest, and possibly knowledge about the locks or the jailers' heirs.
 **Open questions**
 - How many characters per town?
 - Who are the adventurers at the shrine, and why do they travel together?
-- Who is the client behind the shrine job, and what do they do when it fails?
-- How does the host stop the destruction (refuse, sabotage, a miracle), and can the player
-  choose?
+- Who is the client behind the shrine job? Do they later suspect that something escaped
+  from the shrine, and come after the group?
+- With the shrine destroyed, where does the spirit fall back to if its host dies with no
+  follower near, or if it loses every follower? (Both rules mention "its shrine": see
+  "The player is a patron spirit" and "The spirit's prison and the journey".) Perhaps to
+  its body in the mines, or to any old shrine of its worship.
 - Can the player run out of followers? With permanent death and a fixed pool, the run could
   get stuck. Some characters could return later, or new ones appear as the story moves on.
 - Do characters level up after joining (experience), or stay as they are?
