@@ -15,8 +15,7 @@ var cmd := {}
 
 func _ready() -> void:
 	Ui.stone_background(self)
-	Ui.btn(self, "Leave Inn", Rect2(20, 20, 100, 28), _on_leave, "Walk out into the city")
-	cmd.create = Ui.btn(self, "Create", Rect2(126, 20, 100, 28), _on_create, "Create a new character")
+	Ui.btn(self, "Leave Inn", Rect2(20, 20, 206, 28), _on_leave, "Back out into the town")
 	Ui.btn(self, "Save", Rect2(20, 54, 100, 28), _on_save, "Save the game")
 	Ui.btn(self, "Quit", Rect2(126, 54, 100, 28), _on_quit, "Back to the main menu")
 
@@ -116,7 +115,6 @@ func refresh() -> void:
 	cmd.dismiss.disabled = member < 0 or Game.roster.size() >= Game.MAX_ROSTER
 	cmd.info.disabled = chosen < 0 and member < 0
 	cmd.kill.disabled = chosen < 0
-	cmd.create.disabled = Game.roster.size() >= Game.MAX_ROSTER
 	gold_label.text = "Party purse: " + Game.money_string(Game.party_copper())
 
 
@@ -167,12 +165,8 @@ func _on_kill() -> void:
 		refresh()
 
 
-func _on_create() -> void:
-	Game.main.goto("create")
-
-
 func _on_leave() -> void:
-	Game.main.goto("city")
+	Game.main.goto("town")
 
 
 func _on_save() -> void:

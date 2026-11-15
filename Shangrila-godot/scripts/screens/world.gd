@@ -6,6 +6,8 @@ const MAP_RECT := Rect2(20, 52, 600, 370)
 
 var layer: MapLayer
 var info: Label
+var buttons: Array = []
+var busy := false
 
 
 func _ready() -> void:
@@ -42,11 +44,72 @@ func _ready() -> void:
 
 	var here: Dictionary = Game.LOCATIONS[Game.location]
 	var enter: String = "Look around" if here.screen == "" else "Enter " + here.name
-	Ui.btn(self, enter, Rect2(20, 436, 150, 32), _on_location.bind(Game.location), here.desc)
-	Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game")
-	Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu")
+	buttons.append(Ui.btn(self, enter, Rect2(20, 436, 150, 32), _on_location.bind(Game.location), here.desc))
+	buttons.append(Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu"))
 	info = Ui.label(self, "", Vector2(180, 444), 12, Ui.TEXT, 284)
 	info.text = "Click a place on the map to travel there."
+	if get_meta("args", {}).get("road", false) and _road_pending("lehan"):
+		_road_scene.call_deferred()
+
+
+## The first trip from the shrine to Lehan is a scene of its own.
+func _road_pending(dest: String) -> bool:
+	return Game.story.has("host") and not Game.story.get("road_done", false) \
+		and Game.location == "shrine" and dest == "lehan"
+
+
+func _set_busy(on: bool) -> void:
+	busy = on
+	for b in buttons:
+		b.disabled = on
+
+
+## Moves the party marker from `a` to `b` (map coordinates) between fractions f0 and f1.
+func _move_marker(a: Vector2, b: Vector2, f0: float, f1: float, secs: float) -> void:
+	var tw := create_tween()
+	tw.tween_method(func(f: float): layer.party_at = a.lerp(b, f), f0, f1, secs).set_trans(Tween.TRANS_SINE)
+	await tw.finished
+
+
+func _road_scene() -> void:
+	_set_busy(true)
+	var host: String = Game.story.host
+	var a: Vector2 = Game.LOCATIONS["shrine"].at
+	var b: Vector2 = Game.LOCATIONS["lehan"].at
+	info.text = "The company sets out for Lehan."
+	var box := DialogueBox.new()
+	box.cast = PrologueData.company_cast()
+	box.cast["brigand"] = RoadData.BRIGAND
+	box.host = host
+	Ui.place(box, Rect2(20, 52, 600, 248))
+	add_child(box)
+	_move_marker(a, b, 0.0, 0.5, 6.0)
+	box.play(RoadData.before(host))
+	await box.finished
+	box.visible = false
+	var battle := BattleWindow.new()
+	battle.title = "Ambush on the road!"
+	battle.box = box
+	for i in Game.party.size():
+		if Game.party[i].name == PrologueData.CAST[host].name:
+			battle.host_index = i
+	Ui.place(battle, MAP_RECT)
+	add_child(battle)
+	battle.start(RoadData.AMBUSH)
+	var r: Array = await battle.done
+	battle.queue_free()
+	box.visible = true
+	_move_marker(a, b, 0.5, 1.0, 6.0)
+	box.play(RoadData.after(host, r[0], r[1]))
+	await box.finished
+	Game.story["road_done"] = true
+	Game.story["host_control"] = true
+	var lines := Game.travel("lehan", 1)
+	if lines.size() > 1:
+		box.log_line(lines[1])
+		await Game.main.message(lines[1])
+	box.show_buttons([["Enter Lehan", func(): Game.main.goto("town")]])
 
 
 func _tip(key: String) -> String:
@@ -60,7 +123,7 @@ func _tip(key: String) -> String:
 
 
 func _on_location(key: String) -> void:
-	if Game.main.modal_open:
+	if Game.main.modal_open or busy:
 		return
 	if key == Game.location:
 		var screen: String = Game.LOCATIONS[key].screen
@@ -81,6 +144,11 @@ func _on_location(key: String) -> void:
 		loc.name, days, "" if days == 1 else "s", Game.TRAVEL_COST * days]
 	if not await Game.main.confirm(q, "Travel"):
 		return
+	if _road_pending(key):
+		_road_scene()
+		return
+	_set_busy(true)
+	await _move_marker(Game.LOCATIONS[Game.location].at, loc.at, 0.0, 1.0, 1.4 * days)
 	await Game.main.message("\n".join(Game.travel(key, days)))
 	Game.main.goto(loc.screen)
 
@@ -97,6 +165,7 @@ func _on_quit() -> void:
 ## Draws the routes and the location markers under the labels and buttons.
 class MapLayer extends Control:
 	var t := 0.0
+	var party_at := Vector2(-1, -1)   # set while travelling; otherwise the party's location
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_PASS
@@ -123,9 +192,12 @@ class MapLayer extends Control:
 				"ruin": _ruin(loc.at, ink)
 				_: _cave(loc.at, ink)
 		# The party: a pulsing red ring around its location.
-		var at: Vector2 = Game.LOCATIONS[Game.location].at
+		var at: Vector2 = party_at if party_at.x >= 0 else Game.LOCATIONS[Game.location].at
 		var pulse := 0.5 + 0.5 * sin(t * 4.0)
 		draw_arc(at, 15 + pulse * 3, 0, TAU, 32, Color(0.75, 0.1, 0.05, 0.5 + 0.4 * pulse), 2.5, true)
+		if party_at.x >= 0:
+			draw_circle(at, 5.5, Color(0.75, 0.1, 0.05))
+			draw_arc(at, 5.5, 0, TAU, 16, Color("#46301a"), 1.2, true)
 
 	func _dashed(a: Vector2, b: Vector2, col: Color) -> void:
 		var len := a.distance_to(b)

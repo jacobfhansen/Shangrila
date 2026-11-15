@@ -71,37 +71,29 @@ func _run() -> void:
 	m.goto("prologue")
 	await get_tree().create_timer(3.2).timeout   # the eyelids, half open
 	await _shot("02a_prologue_waking")
-	var pr: Node = m.current
+	var box: DialogueBox = m.current.box
 	for k in 6:
-		pr._next()
+		box._next()
 	await get_tree().create_timer(2.6).timeout
 	await _shot("02b_prologue_chatter")
-	pr.skip_to_choice()
+	box.skip_to_choice()
 	await _shot("02c_prologue_host_choice")
-	pr.pick_host("ithrae")
-	pr.skip_to_choice()
+	box.choose(PrologueData.ORDER.find("ithrae"))
+	box.skip_to_choice()
 	await get_tree().create_timer(1.6).timeout   # let the touch flash fade
 	await _shot("02d_prologue_choice")
-	pr.choose(0)
-	pr._next()
+	box.choose(0)
+	box._next()
 	await _shot("02e_prologue_after")
-	pr.open_history()
+	box.open_history()
 	await _shot("02f_prologue_history")
-	pr.close_history()
+	box.close_history()
 	Game.new_game()
 	Game.party = [_make("Brand", Game.WARRIOR, 0), _make("Oldo", Game.MAGE, 1), _make("Sira", Game.THIEF, 5),
 		_make("Tavi", Game.RANGER, 9)]
 	Game.roster = [_make("Morn", Game.CLERIC, 12), _make("Fen", Game.MONK, 3)]
 	m.goto("inn")
 	await _shot("03_inn")
-	m.goto("create")
-	var cr: Node = m.current
-	cr._on_reroll()
-	for k in 8:
-		if Game.class_allowed(cr.c, k):
-			cr._on_class(k)
-			break
-	await _shot("04_create")
 	Game.party[0].items[Game.SLOT_RHAND] = 3
 	Game.party[0].items[Game.SLOT_HEAD] = 4
 	Game.party[0].items[Game.PACK_FIRST] = 0
@@ -122,8 +114,9 @@ func _run() -> void:
 	vw.drop(mouth, {"from": "pack", "src": 12, "item": 30})
 	print("after cheese health ", c0.health, " log: ", vw.log_label.text)
 	src.free()
-	m.goto("city")
-	await _shot("06_city")
+	Game.location = "lehan"
+	m.goto("town")
+	await _shot("06_town")
 	m.goto("world")
 	await _shot("06b_world")
 	var hp0: Array = Game.party.map(func(c): return c.health)
@@ -196,29 +189,66 @@ func _run() -> void:
 	get_tree().quit()
 
 
-## New game: prologue -> the Harrow Company at the shrine -> world map -> inn -> Lehan.
+## New game: prologue -> the road to Lehan with the ambush -> the town map of Lehan.
 func _new_game_route() -> void:
 	var m: Node = Game.main
 	m.goto("prologue", {"new_game": true})
-	var pr: Node = m.current
-	pr.skip_to_choice()
-	pr.pick_host("tikkat")
-	pr.skip_to_choice()
-	pr.choose(1)
-	while not pr.finished:
-		pr._next()
+	var box: DialogueBox = m.current.box
+	box.skip_to_choice()
+	box.choose(PrologueData.ORDER.find("tikkat"))
+	box.skip_to_choice()
+	box.choose(1)
+	box.skip_to_choice()
 	await get_tree().create_timer(1.6).timeout
 	await _shot("17_prologue_end")
-	pr._on_continue()
-	await _shot("18_world_at_shrine")
+	m.current._on_continue()
 	print("company: ", Game.party.map(func(c): return "%s %s %s" % [c.name, Game.RACES[c.race], Game.CLASSES[c.cls]]),
 		" at ", Game.location, " known ", Game.known, " story ", Game.story)
-	m.goto("inn")
-	await _shot("19_inn_company")
-	m.goto("city")
+	await get_tree().create_timer(3.0).timeout
+	await _shot("18_road_chatter")
+	var world: Node = m.current
+	var rb: DialogueBox = null
+	for ch in world.get_children():
+		if ch is DialogueBox:
+			rb = ch
+	rb.skip_to_choice()
+	await _shot("19_road_choice")
+	rb.choose(0)
+	rb.skip_to_choice()
+	await get_tree().create_timer(0.5).timeout
+	var battle: BattleWindow = null
+	for ch in world.get_children():
+		if ch is BattleWindow:
+			battle = ch
+	await _shot("20_ambush")
+	var rounds := 0
+	while is_instance_valid(battle) and battle.is_inside_tree() and rounds < 40:
+		if not battle.spirit_btns[1].disabled:
+			battle._on_spirit("ward" if rounds % 2 == 0 else "bless")
+			rounds += 1
+			if rounds == 2:
+				await get_tree().create_timer(0.4).timeout
+				await _shot("21_ambush_fight")
+		await get_tree().create_timer(0.2).timeout
+	print("ambush over after ", rounds, " rounds, hits: ", Game.party.map(func(c): return c.hits))
+	await get_tree().create_timer(0.5).timeout
+	rb.skip_to_choice()
 	await get_tree().create_timer(0.3).timeout
-	await _shot("20_city_rumour")
 	if m.modal_open:
 		m._modal_done.emit(true)
-	await get_tree().process_frame
-	print("known after Lehan: ", Game.known)
+	await get_tree().create_timer(0.3).timeout
+	await _shot("22_road_after")
+	print("story after road: ", Game.story, " at ", Game.location)
+	m.goto("town")
+	await _shot("23_town")
+	m.current._on_place("market")
+	await get_tree().create_timer(0.3).timeout
+	await _shot("24_market_notice")
+	if m.modal_open:
+		m._modal_done.emit(true)
+	await get_tree().create_timer(0.2).timeout
+	if m.modal_open:
+		m._modal_done.emit(true)
+	await get_tree().create_timer(0.3).timeout
+	await _shot("25_town_smith")
+	print("known after market: ", Game.known, " town: ", Game.town_known)

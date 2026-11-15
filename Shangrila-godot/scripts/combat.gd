@@ -24,6 +24,8 @@ const MONSTERS := {
 		"undead": true},
 	"orc": {"name": "Orc", "plural": "Orcs", "hp": [9, 14], "ac": 7, "attack": 72, "dmg": [2, 7],
 		"speed": 2, "xp": 30, "coins": [10, 40], "max": 3, "shape": "orc", "col": "#4a6a4a", "verb": "cleaves"},
+	"brigand": {"name": "Brigand", "plural": "Brigands", "hp": [4, 8], "ac": 4, "attack": 58, "dmg": [1, 4],
+		"speed": 2, "xp": 12, "coins": [5, 30], "max": 4, "shape": "brigand", "col": "#4a4038", "verb": "slashes"},
 	"renegade": {"name": "Renegade", "plural": "Renegades", "hp": [8, 12], "ac": 8, "attack": 75, "dmg": [2, 6],
 		"speed": 3, "xp": 35, "coins": [20, 80], "max": 2, "shape": "enemy", "col": "#6a2020", "verb": "strikes"},
 }
@@ -48,9 +50,21 @@ var hidden := {}         # party index -> rounds left hidden
 var parry := {}          # party index -> true, this round only
 var fled := false
 var round_no := 0
+var blessed := {}        # party index -> true: the spirit guides their blow this round
+var warded := {}         # party index -> true: the spirit turns aside the next blow this round
 
 
-func _init(depth := 0) -> void:
+## `fixed` sets the monsters instead of rolling them: [{"key": "brigand", "n": 3}, ...].
+func _init(depth := 0, fixed: Array = []) -> void:
+	if not fixed.is_empty():
+		for f in fixed:
+			var def: Dictionary = MONSTERS[f.key]
+			var members := []
+			for i in f.n:
+				var hp := Game.my_random(def.hp[0], def.hp[1])
+				members.append({"hp": hp, "max_hp": hp, "sleep": 0})
+			groups.append({"key": f.key, "def": def, "members": members})
+		return
 	var tier := clampi(depth / 7, 0, TIERS.size() - 1)
 	var pool: Array = TIERS[tier].duplicate()
 	pool.shuffle()
@@ -298,6 +312,8 @@ func begin_round(orders: Dictionary) -> Array:
 
 
 func end_round() -> void:
+	blessed.clear()
+	warded.clear()
 	for i in hidden.keys():
 		hidden[i] -= 1
 		if hidden[i] <= 0:
@@ -354,6 +370,9 @@ func _attack(i: int, gi: int) -> Array:
 	if sneak:
 		chance = 95
 		hidden.erase(i)
+	var guided := blessed.has(i)
+	if guided:
+		chance = mini(chance + 30, 95)
 	var verb: String = w.verb
 	if Game.my_random(1, 100) > chance:
 		if w.ranged:
@@ -366,6 +385,9 @@ func _attack(i: int, gi: int) -> Array:
 	if sneak:
 		dmg *= 2
 		how = " from the shadows"
+	if guided:
+		dmg += 2
+		how = " with uncanny sureness"
 	var line := "%s %s%s and hits the %s for %d." % [c.name, verb, how, def.name, dmg]
 	if w.ranged:
 		line = "%s shoots%s and hits the %s for %d." % [c.name, how, def.name, dmg]
@@ -499,6 +521,9 @@ func _monster(gi: int, m: Dictionary) -> Array:
 		if parry.has(t):
 			return ["%s %s %s at %s, who parries." % [art, def.name, def.verb, c.name]]
 		return ["%s %s %s at %s, but misses." % [art, def.name, def.verb, c.name]]
+	if warded.has(t):
+		warded.erase(t)
+		return ["%s %s %s %s, but the blow turns aside as if caught by an unseen hand." % [art, def.name, def.verb, c.name]]
 	var dmg := Game.my_random(def.dmg[0], def.dmg[1])
 	c.hits = maxi(0, c.hits - dmg)
 	var line := "%s %s %s %s for %d." % [art, def.name, def.verb, c.name, dmg]

@@ -208,10 +208,120 @@ def world_map():
     img.save(OUT / "world_map.png")
 
 
+def _seg_dist(px, py, a, b):
+    """Distance from points (px, py) to the segment a-b."""
+    ax, ay = a
+    bx, by = b
+    dx, dy = bx - ax, by - ay
+    t = np.clip(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy), 0, 1)
+    return np.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def town_lehan():
+    """The town plan of Lehan: walls, streets, the market square and rows of houses.
+    The places shown on it (gate, market, inn, smith) are listed in Game.TOWNS."""
+    w, h = 600, 370
+    rng = np.random.default_rng(101)
+    yy, xx = np.mgrid[0:h, 0:w]
+    paper = tile_noise(w, h, 3, 103, 5)
+    rgb = np.array([224, 204, 158]) + ((paper - 0.5) * 34)[..., None]
+    cx, cy, rx, ry = 300, 186, 262, 152
+    inside = ((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2 < 1
+    # Fields outside the walls: a greener tint.
+    rgb = np.where(inside[..., None], rgb, rgb + np.array([-14, -4, -22]))
+    img = to_img(rgb)
+    d = ImageDraw.Draw(img)
+    ink = (70, 48, 26)
+
+    # Field furrows outside the walls.
+    for _ in range(140):
+        x, y = int(rng.integers(0, w)), int(rng.integers(0, h))
+        if ((x - cx) / (rx + 14)) ** 2 + ((y - cy) / (ry + 14)) ** 2 < 1:
+            continue
+        ang = rng.uniform(0, np.pi)
+        for k in range(4):
+            ox, oy = np.cos(ang + np.pi / 2) * k * 4, np.sin(ang + np.pi / 2) * k * 4
+            d.line([(x + ox, y + oy), (x + ox + np.cos(ang) * 22, y + oy + np.sin(ang) * 22)], fill=(150, 140, 96), width=1)
+
+    # Streets: (from, to) in map coordinates. The places sit on them.
+    gate, market, inn, smith = (300, 336), (300, 178), (432, 232), (176, 132)
+    streets = [(gate, market), (market, inn), (market, smith), (market, (300, 40)), (market, (520, 150)),
+               (market, (90, 230)), (inn, (500, 290)), (smith, (130, 70)), ((180, 290), (420, 300)),
+               ((120, 160), (210, 260))]
+    sdist = np.full((h, w), 999.0)
+    for a, b in streets:
+        sdist = np.minimum(sdist, _seg_dist(xx, yy, a, b))
+    px = np.array(img).astype(float)
+    road = (sdist < 6) & inside
+    px[road] = px[road] * 0.6 + np.array([236, 222, 186]) * 0.4
+    edge = (np.abs(sdist - 6) < 0.8) & inside
+    px[edge] = px[edge] * 0.5 + np.array(ink) * 0.5
+    img = Image.fromarray(np.clip(px, 0, 255).astype(np.uint8), "RGB")
+    d = ImageDraw.Draw(img)
+
+    # The market square, with a well.
+    d.rectangle([market[0] - 38, market[1] - 26, market[0] + 38, market[1] + 26], fill=(232, 216, 176), outline=ink, width=1)
+    d.ellipse([market[0] - 5, market[1] - 5, market[0] + 5, market[1] + 5], outline=ink, width=2)
+
+    # Houses: small inked blocks, kept off the streets, the square and the places.
+    keep_clear = [gate, market, inn, smith]
+    placed = 0
+    for _ in range(6000):
+        if placed > 260:
+            break
+        x, y = float(rng.uniform(40, w - 40)), float(rng.uniform(30, h - 30))
+        if ((x - cx) / (rx - 16)) ** 2 + ((y - cy) / (ry - 16)) ** 2 > 1:
+            continue
+        hw, hh = rng.uniform(6, 11), rng.uniform(5, 8)
+        if abs(x - market[0]) < 48 + hw and abs(y - market[1]) < 36 + hh:
+            continue
+        if any(np.hypot(x - p[0], y - p[1]) < 30 for p in keep_clear):
+            continue
+        if min(_seg_dist(np.array([x]), np.array([y]), a, b)[0] for a, b in streets) < 9 + max(hw, hh):
+            continue
+        box = [x - hw, y - hh, x + hw, y + hh]
+        # Skip if it overlaps an earlier house.
+        if np.any(np.array(img.crop([int(box[0]) - 1, int(box[1]) - 1, int(box[2]) + 2, int(box[3]) + 2]))[..., 0] < 120):
+            continue
+        tone = int(rng.integers(176, 200))
+        d.rectangle(box, fill=(tone, tone - 26, tone - 66), outline=ink, width=1)
+        d.line([(box[0], y), (box[2], y)], fill=(130, 100, 64), width=1)   # roof ridge
+        placed += 1
+
+    # The wall, with towers and the south gate.
+    pts = [(cx + rx * np.cos(a), cy + ry * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 120)]
+    gate_a = np.pi / 2
+    for i in range(len(pts) - 1):
+        a = 2 * np.pi * i / (len(pts) - 1)
+        if abs(a - gate_a) < 0.05:
+            continue
+        d.line([pts[i], pts[i + 1]], fill=ink, width=4)
+    for a in np.linspace(0, 2 * np.pi, 15)[:-1]:
+        if abs(a - gate_a) < 0.15:
+            continue
+        x, y = cx + rx * np.cos(a), cy + ry * np.sin(a)
+        d.ellipse([x - 6, y - 6, x + 6, y + 6], fill=(200, 182, 140), outline=ink, width=2)
+    for side in (-1, 1):
+        x = gate[0] + side * 14
+        d.rectangle([x - 6, cy + ry - 9, x + 6, cy + ry + 7], fill=(200, 182, 140), outline=ink, width=2)
+
+    # Vignette and frame, as on the world map.
+    px = np.array(img).astype(float)
+    vx, vy = (xx - w / 2) / (w / 2), (yy - h / 2) / (h / 2)
+    vig = np.clip((vx * vx + vy * vy - 0.55) * 0.35, 0, 0.35)
+    px = px * (1 - vig[..., None]) + np.array([90, 60, 30]) * vig[..., None]
+    img = Image.fromarray(np.clip(px, 0, 255).astype(np.uint8), "RGB")
+    d = ImageDraw.Draw(img)
+    d.rectangle([2, 2, w - 3, h - 3], outline=ink, width=2)
+    d.rectangle([7, 7, w - 8, h - 8], outline=ink, width=1)
+    img.save(OUT / "town_lehan.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
     parchment()
     chain()
     world_map()
+    town_lehan()
     print("wrote textures to", OUT)

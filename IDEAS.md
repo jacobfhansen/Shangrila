@@ -30,6 +30,17 @@ skill), which would also make the Nisk Perception bonus useful.
 Six passages in the mines lead to squares the original never defined, so they show as rubble.
 Extend the map past them, or keep them as rubble that could be cleared later.
 
+### Make the first choice matter
+The reply chosen at the shrine is stored (`story.prologue_reply`), but nothing uses it yet. Ideas:
+- Ithrae's copied inscription turns out to hold part of the spirit's name, or a clue to the
+  first remnant.
+- Tikkat's ancient coins, stamped with a crowned head, are recognised later by a collector or
+  by the sect.
+- The watcher in the woods (Maera's tracks) is the sect leader, checking on the job.
+- Ommuk's saved stone head can be found again, or brought along.
+- The same goes for the reply on the road to Lehan, and for which powers the spirit used in the
+  first fight.
+
 ### Art
 The 47 portraits and the item icons were lost from the original's resource forks, so most are drawn
 in code. Better home-made art could replace them, including portraits for the four races.
@@ -688,8 +699,7 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 **The roster:** the pre-made characters are listed in [CHARACTERS.md](CHARACTERS.md).
 
 **What changes in the game today**
-- The Create screen (rolling stats, picking race and class) goes away, or becomes a
-  developer tool for making the pre-made characters.
+- The Create screen (rolling stats, picking race and class) is gone (done).
 - The inn roster becomes the followers the spirit has won. The pool of possible followers
   lives in the towns and places of the world map.
 - This replaces the "follower cap" counting today's 23 + 6 limits (see "The player is a

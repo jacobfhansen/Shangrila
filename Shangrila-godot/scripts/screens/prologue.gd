@@ -1,197 +1,89 @@
 extends Control
 ## Prologue: "Dawn at the shrine". The spirit wakes (eyelids opening on the camp), listens to
 ## the Harrow Company's morning chatter, chooses whom to hold on to, and makes its first choice
-## through that host. Text lives in scripts/data/prologue.gd.
-##
-## Controls: the scene moves on by itself; click, Space or Enter hurries it. The mouse wheel
-## (or H) opens the history and pauses; scroll past the end, click or Space to resume.
-## P pauses and resumes. 1-9 picks a reply.
+## through that host. The text is in scripts/data/prologue.gd, the dialogue window is DialogueBox.
 
 const P = preload("res://scripts/data/prologue.gd")
-const INNER := Color("#c8b8f0")
-const SPIRIT := Color("#e8d8a0")
-const TAG := Color("#e8c46a")
-const NARR := Color("#e0d4b4")
 
 var host := ""
-var steps: Array = []
-var idx := -1
-var choosing := ""      # "", "host" or "reply"
-var finished := false
-var paused := false
 var chosen := -1
-var history: Array = []  # [bbcode line, ...]
-
-var italic: SystemFont
 var painting: ScenePainting
-var line_portrait: RacePortrait
-var name_label: Label
-var aside_label: Label
-var text_label: Label
-var speak_row: Control
-var replies: Control
-var prompt: Label
-var timer: Timer
-var log_panel: Control
-var log_text: RichTextLabel
+var box: DialogueBox
 
 
 func _ready() -> void:
-	var base: SystemFont = Game.main.theme.default_font
-	italic = base.duplicate()
-	italic.font_italic = true
-	timer = Timer.new()
-	timer.one_shot = true
-	timer.timeout.connect(_next)
-	add_child(timer)
-	_build()
-	steps = P.INTRO.duplicate()
-	_next()
-
-
-func _build() -> void:
 	Ui.stone_background(self, 0.6)
 	painting = ScenePainting.new()
 	add_child(painting)
 	Ui.place(painting, Rect2(8, 8, 624, 150))
 	Ui.frame(self, Rect2(6, 6, 628, 154), Color(0, 0, 0, 0), Color("#a07a40"), 2)
-
-	Ui.frame(self, Rect2(8, 166, 624, 106))
-	line_portrait = RacePortrait.new()
-	line_portrait.visible = false
-	add_child(line_portrait)
-	Ui.place(line_portrait, Rect2(18, 176, 60, 60))
-	name_label = Ui.label(self, "", Vector2(90, 172), 15, Ui.GOLD, 300)
-	aside_label = Ui.label(self, "", Vector2(300, 174), 12, Ui.DIM, 320, HORIZONTAL_ALIGNMENT_RIGHT)
-	aside_label.add_theme_font_override("font", italic)
-	text_label = Label.new()
-	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_label.add_theme_font_size_override("font_size", 14)
-	text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(text_label)
-
-	speak_row = Control.new()
-	speak_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(speak_row)
-	Ui.place(speak_row, Rect2(8, 278, 624, 30))
-	replies = Control.new()
-	replies.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(replies)
-	Ui.place(replies, Rect2(8, 278, 624, 166))
-	prompt = Ui.label(self, "", Vector2(250, 452), 12, Ui.DIM, 376, HORIZONTAL_ALIGNMENT_RIGHT)
-
-	# The history: covers the dialogue area while open.
-	log_panel = Ui.frame(self, Rect2(8, 166, 624, 306), Color(0.06, 0.04, 0.02, 0.97), Color("#a07a40"), 2)
-	log_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	log_panel.visible = false
-	Ui.label(log_panel, "History (paused)", Vector2(12, 6), 14, Ui.GOLD)
-	Ui.label(log_panel, "Scroll down, click or Space to resume", Vector2(250, 8), 12, Ui.DIM, 362, HORIZONTAL_ALIGNMENT_RIGHT)
-	log_text = RichTextLabel.new()
-	log_text.bbcode_enabled = true
-	log_text.scroll_active = true
-	log_text.scroll_following = false
-	log_text.add_theme_font_override("italics_font", italic)
-	log_text.add_theme_color_override("default_color", Ui.TEXT)
-	log_text.add_theme_font_size_override("normal_font_size", 13)
-	log_text.add_theme_font_size_override("italics_font_size", 13)
-	log_text.add_theme_constant_override("paragraph_separation", 6)
-	log_panel.add_child(log_text)
-	Ui.place(log_text, Rect2(12, 30, 600, 268))
-	log_text.gui_input.connect(_on_log_input)
-	log_panel.gui_input.connect(_on_log_input)
+	box = DialogueBox.new()
+	box.cast = P.company_cast()
+	Ui.place(box, Rect2(8, 166, 624, 306))
+	add_child(box)
+	box.effect.connect(_on_effect)
+	box.choice_made.connect(_on_choice)
+	box.finished.connect(_on_finished)
+	var steps: Array = P.INTRO.duplicate()
+	steps[steps.size() - 1] = host_choice()
+	box.play(steps)
 
 
-# ---------------------------------------------------------------- stepping through the scene
-
-func _next() -> void:
-	if choosing != "" or finished or paused:
-		return
-	idx += 1
-	if idx >= steps.size():
-		return
-	var st: Dictionary = steps[idx]
-	timer.stop()
-	if st.has("fx"):
-		if st.fx == "eyes":
-			_eyes_fx()
-			timer.start(5.2)
-		else:
-			_touch_fx()
-			timer.start(1.4)
-		return
-	if st.has("host_choice"):
-		_show_host_choice()
-		return
-	if st.has("choice"):
-		_show_reply_choice()
-		return
-	if st.has("end"):
-		_show_end()
-		return
-	_show_line(st)
-	var text: String = st.get("t", st.get("n", st.get("i", st.get("sp", ""))))
-	timer.start(1.8 + text.length() / 24.0)
-	prompt.text = "Click or Space to continue  ·  Mouse wheel: history  ·  P: pause"
+func host_choice() -> Dictionary:
+	var opts := []
+	for key in P.ORDER:
+		var who: Dictionary = P.CAST[key]
+		opts.append({"portrait": key, "tip": who.blurb,
+			"bb": "[color=#%s]%s[/color], %s %s.  [i]%s[/i]" % [Ui.GOLD.to_html(false), who.name, who.race, who.cls, P.SEEN_AS[key]]})
+	return {"choice": "host", "options": opts, "prompt": "Choose whom to hold on to (1-5)"}
 
 
-func _show_line(st: Dictionary) -> void:
-	aside_label.text = ""
-	if st.has("s"):
-		var who: Dictionary = P.CAST[st.s]
-		line_portrait.visible = true
-		line_portrait.race = who.race
-		line_portrait.look = who.look
-		line_portrait.highlight = st.s == host
-		name_label.text = who.name
-		if st.has("a"):
-			aside_label.text = "(%s)" % st.a
-		_text(Rect2(90, 194, 532, 74), "“%s”" % st.t, Ui.TEXT, false)
-		var aside: String = " [i](%s)[/i]" % st.a if st.has("a") else ""
-		_log("[color=#%s]%s[/color]%s: “%s”" % [Ui.GOLD.to_html(false), who.name, aside, st.t])
-	elif st.has("i"):
-		var me: Dictionary = P.CAST[host]
-		line_portrait.visible = true
-		line_portrait.race = me.race
-		line_portrait.look = me.look
-		line_portrait.highlight = true
-		name_label.text = me.name
-		_text(Rect2(90, 194, 532, 74), st.i, INNER, true)
-		_log("[color=#%s][i]%s[/i][/color]" % [INNER.to_html(false), st.i])
-	elif st.has("sp"):
-		# The spirit itself, before it has a host: no face, no name.
-		line_portrait.visible = false
-		name_label.text = ""
-		_text(Rect2(22, 186, 600, 80), st.sp, SPIRIT, true)
-		text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_log("[center][color=#%s][i]%s[/i][/color][/center]" % [SPIRIT.to_html(false), st.sp])
-		return
+func reply_choice() -> Dictionary:
+	var opts := []
+	for rep in P.HOSTS[host].replies:
+		var o: Dictionary = rep.duplicate()
+		if not o.get("silent", false):
+			o["say"] = host
+		opts.append(o)
+	return {"choice": "reply", "options": opts, "speakers": true, "prompt": "Choose a reply (1-4)"}
+
+
+func _on_choice(id: String, i: int) -> void:
+	if id == "host":
+		host = P.ORDER[i]
+		box.host = host
+		box.log_line("[center][color=#%s][i]The spirit takes hold of %s.[/i][/color][/center]" % [DialogueBox.SPIRIT.to_html(false), P.CAST[host].name])
+		var rest: Array = P.TOUCH.duplicate()
+		for t in P.HOSTS[host].inner:
+			rest.append({"i": t})
+		rest.append(reply_choice())
+		box.queue(rest)
+	elif id == "reply":
+		chosen = i
+		box.queue([{"n": "The Harrow Company sets off down the road to Lehan. Inside one of them, something very old is learning to see."}])
+
+
+func _on_effect(name: String) -> void:
+	if name == "eyes":
+		_eyes_fx()
+	elif name == "touch":
+		_touch_fx()
+
+
+func _on_finished() -> void:
+	if get_meta("args", {}).get("new_game", false):
+		box.show_buttons([["Continue", _on_continue]])
 	else:
-		line_portrait.visible = false
-		name_label.text = ""
-		_text(Rect2(22, 178, 600, 90), st.n, NARR, false)
-		_log("[color=#%s]%s[/color]" % [NARR.to_html(false), st.n])
-	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		box.show_buttons([["Play it again", func(): Game.main.goto("prologue")], ["Main menu", _on_back]])
 
 
-func _text(r: Rect2, t: String, col: Color, is_italic: bool) -> void:
-	text_label.text = t
-	text_label.add_theme_color_override("font_color", col)
-	if is_italic:
-		text_label.add_theme_font_override("font", italic)
-	else:
-		text_label.remove_theme_font_override("font")
-	Ui.place(text_label, r)
+func _on_continue() -> void:
+	Game.start_company(host, chosen)
+	Game.main.goto("world", {"road": true})
 
-
-func _log(bb: String) -> void:
-	history.append(bb)
-
-
-# ---------------------------------------------------------------- effects
 
 ## Eyelids opening on the scene: a few heavy flutters, then wide open.
 func _eyes_fx() -> void:
-	prompt.text = ""
 	var lids := Eyelids.new()
 	add_child(lids)
 	Ui.place(lids, Rect2(0, 0, 640, 480))
@@ -206,7 +98,6 @@ func _eyes_fx() -> void:
 
 
 func _touch_fx() -> void:
-	prompt.text = ""
 	var flash := ColorRect.new()
 	flash.color = Color(1, 0.9, 0.6, 0)
 	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -217,271 +108,13 @@ func _touch_fx() -> void:
 	tw.tween_property(flash, "color:a", 0.0, 1.0)
 	tw.tween_callback(flash.queue_free)
 	painting.glow = 1.0
-	_log("[center][color=#%s]* * *[/color][/center]" % SPIRIT.to_html(false))
-
-
-# ---------------------------------------------------------------- choices
-
-func _clear_choices() -> void:
-	for ch in replies.get_children():
-		ch.queue_free()
-	for ch in speak_row.get_children():
-		ch.queue_free()
-
-
-## The spirit chooses whom to hold on to.
-func _show_host_choice() -> void:
-	choosing = "host"
-	prompt.text = "Choose whom to hold on to (1-5)"
-	_clear_choices()
-	var y := 0.0
-	for i in P.ORDER.size():
-		var key: String = P.ORDER[i]
-		var who: Dictionary = P.CAST[key]
-		var bb := "%d. [color=#%s]%s[/color], %s %s.  [i]%s[/i]" % [i + 1, Ui.GOLD.to_html(false), who.name,
-			who.race, who.cls, P.SEEN_AS[key]]
-		var b := _reply_button(bb, 40)
-		var pic := RacePortrait.new()
-		pic.race = who.race
-		pic.look = who.look
-		b.add_child(pic)
-		Ui.place(pic, Rect2(4, 2, b.size.y - 4, b.size.y - 4))
-		b.tooltip_text = who.blurb
-		b.pressed.connect(pick_host.bind(key))
-		b.position = Vector2(0, y)
-		y += b.size.y + 3
-
-
-func pick_host(key: String) -> void:
-	if choosing != "host":
-		return
-	choosing = ""
-	host = key
-	_clear_choices()
-	_log("[center][color=#%s][i]The spirit takes hold of %s.[/i][/color][/center]" % [SPIRIT.to_html(false), P.CAST[key].name])
-	var rest: Array = P.TOUCH.duplicate()
-	for t in P.HOSTS[host].inner:
-		rest.append({"i": t})
-	rest.append({"choice": true})
-	steps = steps.slice(0, idx + 1) + rest
-	_next()
-
-
-func _show_speakers() -> void:
-	Ui.label(speak_row, "Speaking:", Vector2(4, 6), 13, Ui.DIM)
-	for i in P.ORDER.size():
-		var key: String = P.ORDER[i]
-		var who: Dictionary = P.CAST[key]
-		var pic := RacePortrait.new()
-		pic.race = who.race
-		pic.look = who.look
-		pic.highlight = key == host
-		pic.dim = key != host
-		pic.mouse_filter = Control.MOUSE_FILTER_STOP
-		pic.tooltip_text = "%s (host)\nThe spirit speaks through them freely." % who.name if key == host \
-			else "%s\nThe spirit cannot reach them yet." % who.name
-		speak_row.add_child(pic)
-		Ui.place(pic, Rect2(80 + i * 34, 0, 28, 28))
-	var me: Dictionary = P.CAST[host]
-	var known := Ui.label(speak_row, "Known traits: " + ", ".join(me.traits), Vector2(258, 7), 12, Ui.DIM, 362, HORIZONTAL_ALIGNMENT_RIGHT)
-	known.tooltip_text = "The spirit lives inside its host, so it knows the host's nature."
-
-
-func _show_reply_choice() -> void:
-	choosing = "reply"
-	prompt.text = "Choose a reply (1-4)  ·  Mouse wheel: history"
-	_clear_choices()
-	_show_speakers()
-	var y := 34.0
-	var list: Array = P.HOSTS[host].replies
-	for i in list.size():
-		var rep: Dictionary = list[i]
-		var bb := "%d. " % (i + 1)
-		for tag in rep.tags:
-			bb += "[color=#%s][%s][/color] " % [TAG.to_html(false), tag]
-		if rep.get("silent", false):
-			bb += "[i]%s[/i]" % rep.t
-		else:
-			bb += "“%s”" % rep.t
-		var b := _reply_button(bb, 8)
-		b.pressed.connect(choose.bind(i))
-		b.position = Vector2(0, y)
-		y += b.size.y + 4
-
-
-func _reply_button(bb: String, indent: float) -> Button:
-	var b := Button.new()
-	b.focus_mode = Control.FOCUS_NONE
-	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(0.1, 0.07, 0.04, 0.85)
-	normal.border_color = Color("#5a4428")
-	normal.set_border_width_all(1)
-	normal.set_corner_radius_all(3)
-	var hover := normal.duplicate()
-	hover.bg_color = Color(0.22, 0.15, 0.08, 0.95)
-	hover.border_color = Ui.GOLD
-	b.add_theme_stylebox_override("normal", normal)
-	b.add_theme_stylebox_override("hover", hover)
-	b.add_theme_stylebox_override("pressed", hover)
-	var rt := RichTextLabel.new()
-	rt.bbcode_enabled = true
-	rt.fit_content = true
-	rt.scroll_active = false
-	rt.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rt.add_theme_font_override("italics_font", italic)
-	rt.add_theme_color_override("default_color", Ui.TEXT)
-	rt.add_theme_font_size_override("normal_font_size", 13)
-	rt.add_theme_font_size_override("italics_font_size", 13)
-	rt.text = bb
-	var w := 616.0 - indent
-	b.add_child(rt)
-	replies.add_child(b)
-	# Measure the wrapped text to size the button.
-	var f: Font = Game.main.theme.default_font
-	var h := f.get_multiline_string_size(rt.get_parsed_text(), HORIZONTAL_ALIGNMENT_LEFT, w, 13).y
-	h = maxf(h, 18.0)
-	b.size = Vector2(624, h + 10)
-	rt.position = Vector2(indent, 5)
-	rt.size = Vector2(w, h + 2)
-	return b
-
-
-func choose(i: int) -> void:
-	if choosing != "reply":
-		return
-	choosing = ""
-	chosen = i
-	var rep: Dictionary = P.HOSTS[host].replies[i]
-	_clear_choices()
-	var rest := []
-	if not rep.get("silent", false):
-		rest.append({"s": host, "t": rep.t})
-	else:
-		_log("[i]%s[/i]" % rep.t)
-	rest.append_array(rep.after)
-	rest.append({"n": "The Harrow Company sets off down the road to Lehan. Inside one of them, something very old is learning to see."})
-	rest.append({"end": true})
-	steps = steps.slice(0, idx + 1) + rest
-	_next()
-
-
-func _show_end() -> void:
-	finished = true
-	prompt.text = "Mouse wheel: history"
-	if get_meta("args", {}).get("new_game", false):
-		Ui.btn(replies, "Continue", Rect2(242, 60, 140, 34), _on_continue, "Set out for Lehan")
-		return
-	Ui.label(replies, "End of the prologue.", Vector2(0, 30), 15, Ui.GOLD, 624, HORIZONTAL_ALIGNMENT_CENTER)
-	Ui.btn(replies, "Play it again", Rect2(160, 80, 140, 34), func(): Game.main.goto("prologue"))
-	Ui.btn(replies, "Main menu", Rect2(330, 80, 140, 34), _on_back)
-
-
-func _on_continue() -> void:
-	Game.start_company(host, chosen)
-	Game.main.goto("world")
-
-
-# ---------------------------------------------------------------- pause and history
-
-func set_paused(on: bool) -> void:
-	paused = on
-	if on:
-		timer.paused = true
-	else:
-		timer.paused = false
-		if timer.is_stopped() and choosing == "" and not finished:
-			timer.start(0.6)
-	if not log_panel.visible:
-		prompt.text = "Paused  ·  P or click to resume" if on else ""
-
-
-func open_history() -> void:
-	if log_panel.visible:
-		return
-	log_text.text = "\n".join(history)
-	log_panel.visible = true
-	set_paused(true)
-	await get_tree().process_frame
-	var bar := log_text.get_v_scroll_bar()
-	bar.value = bar.max_value
-
-
-func close_history() -> void:
-	if not log_panel.visible:
-		return
-	log_panel.visible = false
-	set_paused(false)
-	if choosing == "host":
-		prompt.text = "Choose whom to hold on to (1-5)"
-	elif choosing == "reply":
-		prompt.text = "Choose a reply (1-4)  ·  Mouse wheel: history"
-
-
-func _at_bottom() -> bool:
-	var bar := log_text.get_v_scroll_bar()
-	return bar.value >= bar.max_value - bar.page - 2.0
-
-
-func _on_log_input(e: InputEvent) -> void:
-	if e is InputEventMouseButton and e.pressed:
-		if e.button_index == MOUSE_BUTTON_WHEEL_DOWN and _at_bottom():
-			close_history()
-			accept_event()
-		elif e.button_index == MOUSE_BUTTON_LEFT:
-			close_history()
-			accept_event()
+	box.log_line("[center][color=#%s]* * *[/color][/center]" % DialogueBox.SPIRIT.to_html(false))
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if Game.main.modal_open:
-		return
-	if e is InputEventMouseButton and e.pressed:
-		if e.button_index == MOUSE_BUTTON_WHEEL_UP and not history.is_empty():
-			open_history()
-		elif e.button_index == MOUSE_BUTTON_LEFT and not log_panel.visible:
-			if paused:
-				set_paused(false)
-			else:
-				_next()
-		else:
-			return
+	if e is InputEventKey and e.pressed and e.keycode == KEY_ESCAPE and not box.log_panel.visible:
+		_on_back()
 		get_viewport().set_input_as_handled()
-	elif e is InputEventKey and e.pressed and not e.echo:
-		if e.keycode == KEY_ESCAPE:
-			if log_panel.visible:
-				close_history()
-			else:
-				_on_back()
-		elif log_panel.visible:
-			if e.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER, KEY_H]:
-				close_history()
-			else:
-				return
-		elif e.keycode == KEY_H:
-			open_history()
-		elif e.keycode == KEY_P:
-			set_paused(not paused)
-		elif choosing != "" and e.keycode >= KEY_1 and e.keycode <= KEY_9:
-			var n: int = e.keycode - KEY_1
-			if choosing == "host" and n < P.ORDER.size():
-				pick_host(P.ORDER[n])
-			elif choosing == "reply" and n < P.HOSTS[host].replies.size():
-				choose(n)
-		elif e.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
-			if paused:
-				set_paused(false)
-			else:
-				_next()
-		else:
-			return
-		get_viewport().set_input_as_handled()
-
-
-## For the developer tour: run ahead to the next choice.
-func skip_to_choice() -> void:
-	while choosing == "" and not finished and idx < steps.size() - 1:
-		_next()
 
 
 func _on_back() -> void:

@@ -119,6 +119,15 @@ static func draw_monster(ci: CanvasItem, def: Dictionary, r: Rect2, dead: bool) 
 		"enemy":
 			ci.draw_texture_rect_region(Ui.tex("The_Enemy"), r, Rect2(52, 2, 92, 92),
 				Color(0.4, 0.4, 0.4) if dead else Color.WHITE)
+		"brigand":
+			# A hooded figure with a shadowed face and a knife.
+			ci.draw_colored_polygon(PackedVector2Array([c + Vector2(-22, 30) * s, c + Vector2(22, 30) * s,
+				c + Vector2(14, -6) * s, c + Vector2(0, -26) * s, c + Vector2(-14, -6) * s]), col)
+			ci.draw_colored_polygon(_ell(c + Vector2(0, -6) * s, 8 * s, 10 * s), Color(0.08, 0.06, 0.05))
+			ci.draw_circle(c + Vector2(-3, -7) * s, 1.4 * s, eye.darkened(0.3))
+			ci.draw_circle(c + Vector2(3, -7) * s, 1.4 * s, eye.darkened(0.3))
+			ci.draw_line(c + Vector2(16, 14) * s, c + Vector2(30, -4) * s, Color(0.8, 0.8, 0.85), 2 * s)
+			ci.draw_line(c + Vector2(14, 16) * s, c + Vector2(18, 12) * s, Color("#5a3a1a"), 3 * s)
 		"rat":
 			ci.draw_colored_polygon(_ell(c + Vector2(-2, 8) * s, 20 * s, 11 * s), col)
 			ci.draw_colored_polygon(_ell(c + Vector2(17, 3) * s, 10 * s, 7 * s), col)

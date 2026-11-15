@@ -22,7 +22,7 @@ var talk_i := 0
 func _ready() -> void:
 	shop = Game.city.shop
 	Ui.stone_background(self)
-	Ui.btn(self, "Leave", Rect2(12, 20, 50, 30), func(): Game.main.goto("city"), "Back to the city")
+	Ui.btn(self, "Leave", Rect2(12, 20, 50, 30), func(): Game.main.goto("town"), "Back to the town")
 	Ui.btn(self, "Haggle", Rect2(66, 20, 56, 30), _on_haggle, "Try to get a better price")
 	Ui.btn(self, "Talk", Rect2(126, 20, 44, 30), _on_talk, "Talk to the smith")
 

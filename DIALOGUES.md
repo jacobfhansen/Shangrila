@@ -192,3 +192,61 @@ Her reaction carries a dread she cannot explain.
    → The others laugh. Relations in the party improve.
 4. "Did... did anyone else just see a lot of gold?" → Blank stares. Joss tells him to lay off
    the wine. Tikkat decides to keep the next vision to himself.
+
+## The road to Lehan
+
+Played on the world map, in a dialogue window over it, while the party marker moves along
+the road. Lines are given to preferred speakers; if the preferred one is the host, the next one
+speaks instead. The in-game text is in `Shangrila-godot/scripts/data/road.gd`.
+
+> The road to Lehan winds down through wet fields. The company walks in a loose line, tools over
+> their shoulders.
+>
+> **Joss:** Easiest silver we've earned all year. Smash a rock, get paid.
+>
+> **Tikkat:** Easiest? My arms are still shaking.
+>
+> *The host's legs carry them along the road. Through those eyes the spirit drinks in
+> everything: the fields, the sky, the faces. All of it new. None of it new.*
+>
+> **Ommuk:** *(Host)*, you've been quiet since the shrine.
+
+The host's reply (the spirit now chooses it):
+1. "Just tired. Bad night." → Ommuk: "Hm." He does not look convinced.
+2. "Leave it." → Nobody pushes. But the sideways glances keep coming.
+3. *(Look at the sky, and say nothing.)* → Tikkat: "Great. Now *(host)*'s gone strange too."
+
+> **Maera** *(quietly)*: Has anyone noticed *(host)* hasn't blinked in a while?
+>
+> **Tikkat:** Don't. Don't say things like that on an empty road.
+>
+> Where the road dips between two thorn hedges, a bird bursts from the brush. Then it is very
+> quiet.
+>
+> **Brigand** *(stepping out onto the road)*: That's far enough. Purses on the road, and nobody
+> gets hurt. Much.
+>
+> **Joss:** Five of us, three of you. Bad sums, friend.
+>
+> **Brigand:** There's always more of us than you can see.
+>
+> Steel comes out on both sides.
+>
+> *The spirit cannot move the host's sword arm. Not yet. But it can lend a little sureness to a
+> blow, or turn one aside.*
+
+**The first fight:** three brigands. Everyone fights on their own; the spirit can guide the
+host's blow or ward the host, once per round.
+
+**Afterwards**, depending on what the spirit did:
+- it warded the host → *"Did anyone else see that? The blows didn't want to touch (host).
+  They just... turned."*
+- it only guided blows → *"Where did (host) learn to fight like that?"*
+- it did nothing → *"Lucky. We were lucky."*
+
+> *Something settles inside the host, like a hand closing around a sword hilt. The spirit has
+> found its grip.*
+>
+> (From now on the spirit has full control of the host. The others still act on their own.)
+>
+> By evening the walls of Lehan rise out of the fields.

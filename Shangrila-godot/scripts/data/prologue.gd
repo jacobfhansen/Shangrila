@@ -34,10 +34,20 @@ const CAST := {
 
 const ORDER := ["joss", "maera", "ommuk", "ithrae", "tikkat"]
 
+
+## The Harrow Company as DialogueBox cast (flagged so they appear in the Speaking row).
+static func company_cast() -> Dictionary:
+	var c := {}
+	for k in ORDER:
+		var d: Dictionary = CAST[k].duplicate()
+		d["company"] = true
+		c[k] = d
+	return c
+
 ## The waking: the spirit opens its eyes on the camp, before it has a host.
 ## {"sp": text} is the spirit's own thought (it has no host and no face yet).
 const INTRO := [
-	{"fx": "eyes"},
+	{"fx": "eyes", "wait": 5.2},
 	{"sp": "...light."},
 	{"n": "Grey dawn. Mist lies in the ditch along the road. By the embers of a campfire, five shapes are stirring."},
 	{"s": "tikkat", "a": "yawning", "t": "Who decided we sleep next to a haunted rock?"},

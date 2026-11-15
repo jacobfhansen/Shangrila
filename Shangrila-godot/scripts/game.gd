@@ -68,11 +68,26 @@ const DIR_VEC := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 
 const LOCATIONS := {
 	"shrine": {"name": "The Old Shrine", "kind": "ruin", "at": Vector2(168, 292), "screen": "",
 		"desc": "A roadside shrine, long hidden under brambles. Only rubble is left."},
-	"lehan": {"name": "Lehan", "kind": "city", "at": Vector2(236, 252), "screen": "city",
+	"lehan": {"name": "Lehan", "kind": "city", "at": Vector2(236, 252), "screen": "town",
 		"desc": "A walled town with an inn and a weapon smith."},
 	"mines": {"name": "The Mines", "kind": "dungeon", "at": Vector2(292, 200), "screen": "dungeon",
 		"desc": "Old mine workings in the hills above Lehan."},
 }
+## Town maps. Places appear on them as they are discovered; `start` are known on arrival.
+## `at` is the position on the town image (600x370, made by tools/make_textures.py).
+const TOWNS := {
+	"lehan": {"name": "Lehan", "image": "town_lehan", "start": ["gate", "market", "inn"], "places": {
+		"gate": {"name": "South Gate", "kind": "gate", "at": Vector2(300, 336),
+			"desc": "The road leads out into the land."},
+		"market": {"name": "Market Square", "kind": "market", "at": Vector2(300, 178),
+			"desc": "Stalls, a well, and a crier with the council's notices."},
+		"inn": {"name": "The Inn", "kind": "inn", "at": Vector2(432, 232),
+			"desc": "Beds, ale, and people looking for work or company."},
+		"smith": {"name": "Weapon Smith", "kind": "smith", "at": Vector2(176, 132),
+			"desc": "Blades, bows and armour, at Lehan prices."},
+	}},
+}
+
 ## Routes between locations, with the number of days on the road.
 const ROUTES := [["lehan", "mines", 1], ["shrine", "lehan", 1]]
 ## Endurance each character uses per day of travel (food is what refills it).
@@ -91,6 +106,7 @@ var facing := 0           # 0 N, 1 E, 2 S, 3 W
 var location := "lehan"   # key in LOCATIONS: where the party is on the world map
 var known: Array = ["lehan", "mines"]   # discovered locations
 var story := {}           # story state, e.g. {"host": "ithrae", "prologue_reply": 0}
+var town_known := {}      # town key -> [discovered place keys]
 
 var rng := RandomNumberGenerator.new()
 
@@ -546,6 +562,7 @@ func new_game() -> void:
 	location = "lehan"
 	known = ["lehan", "mines"]
 	story = {}
+	town_known = {}
 
 
 ## After the prologue: the Harrow Company becomes the party, with the host first. They stand
@@ -587,7 +604,7 @@ func save_game(screen: String) -> bool:
 	var data := {
 		"version": 2, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
-		"location": location, "known": known, "story": story,
+		"location": location, "known": known, "story": story, "town_known": town_known,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
@@ -642,7 +659,9 @@ func load_game() -> String:
 		location = "lehan"
 	known = data.get("known", ["lehan", "mines"])
 	story = data.get("story", {})
-	return data.get("screen", "inn")
+	town_known = data.get("town_known", {})
+	var screen: String = data.get("screen", "inn")
+	return {"city": "town", "create": "inn"}.get(screen, screen)   # screens that were retired
 
 
 # ---------------------------------------------------------------- world map / travel
@@ -670,3 +689,21 @@ func travel(dest: String, days: int) -> Array:
 		lines.append("%s %s starving and need%s food." % [", ".join(hungry), "is" if hungry.size() == 1 else "are", "s" if hungry.size() == 1 else ""])
 	location = dest
 	return lines
+
+
+# ---------------------------------------------------------------- towns
+
+## The places discovered so far in a town (the starting ones on the first visit).
+func town_places(town: String) -> Array:
+	if not town_known.has(town):
+		town_known[town] = TOWNS[town].start.duplicate()
+	return town_known[town]
+
+
+## Returns true if the place was new.
+func discover_place(town: String, place: String) -> bool:
+	var known_here := town_places(town)
+	if place in known_here:
+		return false
+	known_here.append(place)
+	return true
