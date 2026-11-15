@@ -388,7 +388,8 @@ spirit's own buried body in the tomb.)
 1. When every remnant is merged, the gate to the tomb can finally be opened or destroyed,
    after an epic boss battle.
 2. The spirit enters its buried body, which rises from the dead.
-3. Perhaps a second epic boss battle follows. Who, or what, waits for the risen spirit?
+3. **The sect's last stand:** a second epic boss battle. The sect makes its final attempt to
+   stop the risen spirit, right before the final choice.
 4. **The final choice:** only now, whole and alive again, can the spirit lift the
    Aeldroes' curse, at the cost of its life (see "The player's choice: redemption or
    relapse"). Or it can keep its power and take its revenge. For maximum drama, the spirit
@@ -410,7 +411,7 @@ spirit's own buried body in the tomb.)
 - Who exactly are the jailers' heirs, and what do they know?
 - How do followers away from the spirit report back (letters at the inn, a summary when the
   spirit returns)?
-- Who guards the gate to the tomb (first boss), and what comes after the body rises
+- Who guards the gate to the tomb (first boss)? Who leads the sect in its last stand
   (second boss)?
 - Where are the checkpoints, and how often?
 - Which stats does the spirit's character sheet have?
