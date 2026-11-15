@@ -305,8 +305,8 @@ itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in c
 
 **Open questions**
 - Who was the beloved, and who was her lover? (Their identities are kept a mystery for now.)
-- Was the lover slain or disgraced? (If only disgraced, the lover, or the lover's line,
-  could still matter.)
+- Was the lover slain or disgraced? Either way, the lover's line lives on: Edrin Calloway
+  (see CHARACTERS.md) is a descendant.
 - Where are the ruins of Shangrila, and can they be visited?
 - How can the player learn "the secret" from the elders, and how do the elders react if
   they recognise what the spirit is? Do they tell their own people?

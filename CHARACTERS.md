@@ -217,8 +217,9 @@ Traits: Melancholy, Honest, Brave · Wins them over: a task (one last cause wort
 for)
 
 **Edrin Calloway** – Human Enchanter · Tier 3 ★
-A wandering minstrel with a strange, inherited melody. Possibly a descendant of the
-beloved's lover (see open questions in IDEAS.md).
+A wandering minstrel with a strange, inherited melody. He is a descendant of the beloved's
+lover, though he does not know it. The melody was the lover's. Meeting him is a sharp test of
+redemption or relapse.
 Traits: Cheerful, Fickle, Merciful · Wins them over: persuasion
 
 **Brannoc Hale** – Human Warrior · Tier 3
@@ -250,4 +251,3 @@ spirit, R4)
 - Which characters go in which town or place once the world map grows?
 - Should some characters only appear after certain story events (for example, after the
   first remnant, or after the sect leader's first appearance)?
-- Is Edrin Calloway the descendant of the beloved's lover, or someone else?
