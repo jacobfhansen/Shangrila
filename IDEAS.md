@@ -250,22 +250,25 @@ backbone of the story, a mystery told in fragments.
 - **The ruler of Shangrila:** the spirit was once a powerful individual in a world where
   magic exists. It commanded godlike powers and ruled the realm of Shangrila with
   benevolence, defeating its enemies in glorious battles.
-- **The one thing it could not command: love.** The spirit loved one particular person, and
-  that love was not returned. Out of jealousy, despair and anger, terrible deeds were done.
-- **The beloved** is a mystery, revealed slowly through memories. The beloved was an
-  Aeldroe, and the terrible deeds were done to their people. The Aeldroes' fading, their
-  half-transparency, is the spirit's curse on them. (This becomes an Aeldroe race secret,
-  and Aeldroe followers may react to the spirit in special ways.)
-- **The fall:** in the end its own disgruntled followers overthrew the spirit and entombed
-  it in the mines of Lehan. They swore an oath to guard the grave so that it could never
-  return.
+- **The one thing it could not command: love.** The spirit loved one particular woman, an
+  Aeldroe, and she did not return its love. She loved someone else.
+- **Jealousy:** the spirit had her lover slain or disgraced.
+- **Despair:** the beloved killed herself.
+- **Civil war:** her people, the Aeldroes, revolted. The spirit crushed the rebels with
+  great cruelty. The Aeldroes' fading, their half-transparency, is the spirit's curse on
+  them from that war. (This becomes an Aeldroe race secret, and Aeldroe followers may react
+  to the spirit in special ways.)
+- **The fall:** to end the mad bloodshed, the once loyal nobles turned on the spirit,
+  overthrew it and entombed it in the mines of Lehan. They swore an oath to guard the grave
+  so that it could never return.
 - **The remnants:** before its death the spirit managed to split off remnants of itself
   and hide them across the world. The player is one of them.
 - **The centuries since:** plague and war ravaged the lands, Shangrila fell into ruin and
   legend, and most people forgot what it had all been about.
-- **The sect:** a select few zealots still keep the oath. They are fanatic followers of
-  what is now a secret sect, unknown to most: the jailers' heirs (see "The jailers: hidden
-  among us").
+- **The sect:** a select few zealots, heirs of the nobles, still keep the oath. They are
+  fanatic followers of what is now a secret sect, unknown to most (see "The jailers: hidden
+  among us"). The sect knows about the remnants and hunts them too, to destroy them or keep
+  them from the spirit.
 
 **The player's choice: redemption or relapse**
 The player can try to redeem the spirit, or simply continue where it left off, doing
@@ -273,15 +276,16 @@ terrible things to its enemies. The key choices along the way (see "Runs and end
 decide which.
 
 **How this fits the earlier origin proposals:** O1 (Shangrila, now the realm it ruled),
-O2 (sealed in the mines, now by its own followers), O3 (remnants, now hidden by the spirit
+O2 (sealed in the mines, now by its own nobles), O3 (remnants, now hidden by the spirit
 itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in changed form.
 
 **Open questions**
-- Who was the beloved, and what became of them? (Kept a mystery for now.)
-- What exactly were the terrible deeds?
+- Who was the beloved, and who was her lover? (Their identities are kept a mystery for now.)
+- Was the lover slain or disgraced? (If only disgraced, the lover, or the lover's line,
+  could still matter.)
 - Where are the ruins of Shangrila, and can they be visited?
 - Do the Aeldroes know where their fading comes from?
-- Does the sect know the remnants exist, and are they hunting them too?
+- What does the sect do with a remnant it finds: destroy it, lock it away, or use it?
 
 **All proposed origins** (kept for reference; the backstory above replaces them)
 - O1 **The lost guardian of Shangrila:** the spirit once watched over a hidden valley,
@@ -303,7 +307,7 @@ itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in c
   record of it. Pieces of the name are found one by one. Who erased it, and why?
 
 ### The spirit's prison and the journey
-The spirit's own followers overthrew it and buried its body in a sealed tomb deep in the mines
+The spirit's own nobles overthrew it and buried its body in a sealed tomb deep in the mines
 of Lehan. Before it died, the spirit split off remnants of itself and hid them across the world. The player is one
 remnant: the one in the roadside shrine, woken after eons by the party camping there.
 To be whole and free again, the spirit must find and merge with every other remnant, then
@@ -374,12 +378,14 @@ spirit's own buried body in the tomb.)
 3. Perhaps a second epic boss battle follows. Who, or what, waits for the risen spirit?
 
 **The jailers: hidden among us**
-- The heirs of the followers who overthrew the spirit still live on in plain sight. Most
+- The heirs of the nobles who overthrew the spirit still live on in plain sight. Most
   have forgotten the oath. A select few zealots still keep it, as a secret sect unknown to
   most people. They may hide among the founding families of Lehan, a respected order, or a
   guild.
 - They tie into "People who remember", and could become allies, enemies or a moral choice
   as the truth comes out.
+- **Rivals in the race for the remnants:** the sect hunts the remnants too. A remnant
+  could be found already guarded, taken, or destroyed by them.
 
 **Open questions**
 - Exactly how many remnants (6–9), and in what order are they found?
