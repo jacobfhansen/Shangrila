@@ -256,8 +256,9 @@ backbone of the story, a mystery told in fragments.
 - **Despair:** the beloved killed herself.
 - **Civil war:** her people, the Aeldroes, revolted. The spirit crushed the rebels with
   great cruelty. The Aeldroes' fading, their half-transparency, is the spirit's curse on
-  them from that war. (This becomes an Aeldroe race secret, and Aeldroe followers may react
-  to the spirit in special ways.)
+  them from that war. Only the Aeldroe elders know why their people fade: it is kept among
+  them as "the secret". Ordinary Aeldroes do not know. (This becomes an Aeldroe race secret,
+  and Aeldroe followers may react to the spirit in special ways.)
 - **The fall:** to end the mad bloodshed, the once loyal nobles turned on the spirit,
   overthrew it and entombed it in the mines of Lehan. They swore an oath to guard the grave
   so that it could never return.
@@ -284,7 +285,8 @@ itself) and O5 (the Aeldroes, now the beloved's people, cursed) all live on in c
 - Was the lover slain or disgraced? (If only disgraced, the lover, or the lover's line,
   could still matter.)
 - Where are the ruins of Shangrila, and can they be visited?
-- Do the Aeldroes know where their fading comes from?
+- How can the player learn "the secret" from the elders, and how do the elders react if
+  they recognise what the spirit is? Do they tell their own people?
 - What does the sect do with a remnant it finds: destroy it, lock it away, or use it?
 
 **All proposed origins** (kept for reference; the backstory above replaces them)
