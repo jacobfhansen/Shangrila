@@ -389,7 +389,8 @@ spirit's own buried body in the tomb.)
    after an epic boss battle.
 2. The spirit enters its buried body, which rises from the dead.
 3. **The sect's last stand:** a second epic boss battle. The sect makes its final attempt to
-   stop the risen spirit, right before the final choice.
+   stop the risen spirit, right before the final choice. It is led by the client who paid
+   to have the roadside shrine destroyed at the start of the game.
 4. **The final choice:** only now, whole and alive again, can the spirit lift the
    Aeldroes' curse, at the cost of its life (see "The player's choice: redemption or
    relapse"). Or it can keep its power and take its revenge. For maximum drama, the spirit
@@ -411,8 +412,7 @@ spirit's own buried body in the tomb.)
 - Who exactly are the jailers' heirs, and what do they know?
 - How do followers away from the spirit report back (letters at the inn, a summary when the
   spirit returns)?
-- Who guards the gate to the tomb (first boss)? Who leads the sect in its last stand
-  (second boss)?
+- Who guards the gate to the tomb (first boss)?
 - Where are the checkpoints, and how often?
 - Which stats does the spirit's character sheet have?
 
@@ -462,9 +462,11 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 
 **Chosen opening: J3, then J2**
 1. **Tear down the shrine (J3):** the shrine has lain hidden under undergrowth for ages. The
-   client, one of the jailers' heirs, has only just discovered it, recognised what it is,
-   and paid the group to destroy it. That night the spirit wakes inside one of them.
-   (Possibly the client's clearing of the undergrowth is what let the spirit stir.)
+   client, the leader of the sect (the jailers' heirs), has only just discovered it,
+   recognised what it is, and paid the group to destroy it. That night the party camping
+   there wakes the remnant, and the spirit takes one of them as its host.
+   The client returns at the very end as the second boss, leading the sect's last stand
+   (see "The ending"). The first scene and the last are tied together.
    The spirit has no attachment to the shrine: it has just woken and its journey begins in
    its new host. The job can be done as planned, and the group is paid.
 2. **Clear the mines (J2):** the group moves on to Lehan, where the council is hiring
@@ -499,8 +501,9 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 **Open questions**
 - How many characters per town?
 - Who are the adventurers at the shrine, and why do they travel together?
-- Who is the client behind the shrine job? Do they later suspect that something escaped
-  from the shrine, and come after the group?
+- The client is the sect leader: what is their name and story? When do they first suspect
+  that something escaped from the shrine, and how often do they cross the party's path
+  before the end?
 - Can the player run out of followers? With permanent death and a fixed pool, the run could
   get stuck. Some characters could return later, or new ones appear as the story moves on.
 - Do characters level up after joining (experience), or stay as they are?
