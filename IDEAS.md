@@ -37,7 +37,8 @@ The reply chosen at the shrine is stored (`story.prologue_reply`), but nothing u
 - Tikkat's ancient coins, stamped with a crowned head, are recognised later by a collector or
   by the sect.
 - The watcher in the woods (Maera's tracks) is the sect leader, checking on the job.
-- Ommuk's saved stone head can be found again, or brought along.
+- Ommuk's saved stone head can be handed to the client as proof, or kept (see "Arrival in
+  Lehan: the employer and the split").
 - The same goes for the reply on the road to Lehan, and for which powers the spirit used in the
   first fight.
 
@@ -506,7 +507,8 @@ guidance, and later dreams.
   about the party. An Honest character will not join a party with a known thief, a Merciful
   one is put off by Ruthless followers, and a Thuug with a grudge refuses if there is a Nisk
   in the party. Who you bring along matters, which gives parking followers a purpose.
-- **The shrine party** joins for certain. Everyone else is a challenge.
+- **The shrine party** joins for certain, and after the split in Lehan each one comes back after
+  a short talk. Everyone else is a challenge.
 - **Higher tiers want more:** for example a task *and* persuasion, or an item *and* a show of
   power.
 - **Learning what someone wants is part of the challenge:** through rumours, by watching
@@ -657,11 +659,12 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
   The host is the spirit's first follower.
 - **The group's job becomes the first quest:** the party was on its way to finish a job,
   and the spirit (the player) carries it through with them. It also teaches the game.
-- **The party stays together for the job.** Afterwards, each companion decides whether to stay
-  (and perhaps become a believer) or go their own way. Those who leave can be found again
-  in the world and won over later.
+- **The party stays together for the job.** When they are paid in Lehan, the company splits up
+  at the inn (see "Arrival in Lehan: the employer and the split"). Those who go their own
+  way can be talked round again.
 - **The shrine party joins for certain:** all five are companions from the start, so the
-  game gets going without a struggle.
+  game gets going without a struggle. After the split, winning them back is easy: one short
+  talk each.
 - **They are touched gradually:** the host acts strangely (miracles, odd knowledge, changed
   habits), and the companions begin to feel the spirit themselves. Each reacts according to
   who they are (see "Recruiting and the touch of the spirit").
@@ -675,10 +678,12 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
    (see "The ending"). The first scene and the last are tied together.
    The spirit has no attachment to the shrine: it has just woken and its journey begins in
    its new host. The job can be done as planned, and the group is paid.
-2. **Clear the mines (J2):** the group moves on to Lehan, where the council is hiring
-   people to explore the old mine workings, where miners have vanished since something
-   began to stir. That leads straight toward the spirit's prison, and teaches the dungeon.
-3. After the mines job, each companion decides whether to stay or go their own way.
+2. **Paid off in Lehan:** the company reports to the client, gets paid, and splits up at the
+   inn (see "Arrival in Lehan: the employer and the split").
+3. **Clear the mines (J2):** the council is hiring people to explore the old mine workings,
+   where miners have vanished since something began to stir. To take the job, the host must
+   first win companions back. That leads straight toward the spirit's prison, and teaches the
+   dungeon.
 
 **All proposed first jobs** (J1, J4 and J5 were not chosen, kept for reference)
 - J1 **The sealed box:** the group is escorting a sealed box to Lehan for one of its old
@@ -715,3 +720,81 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
 - Do characters level up after joining (experience), or stay as they are?
 - Is it right to read "different characters give different endings" as: followers decide
   which key choices are possible? Or should followers also shift the ending directly?
+
+### Arrival in Lehan: the employer and the split
+From a playtest of the prologue. Today the company enters Lehan and goes straight on to the
+council's notice. Instead, the shrine job should be properly wrapped up first.
+
+1. **Walking to the employer:** a small map of Lehan with a red dot for the company, moving
+   through the streets while the characters chat, in the same style as the road scene on the
+   world map.
+2. **Meeting the employer:** the client from the shrine job, the sect leader himself, waiting
+   in a rented house or back room. It is only a **temporary hideout**, not the sect's
+   headquarters. The scene is a conversation on the dialogue screen.
+3. **Proof of the deed**, which depends on what happened at the shrine:
+   - If Ommuk saved the crowned stone head, the company can hand it over or keep it. That is a
+     real choice: the client wants it badly, and Ommuk does not want to give it up.
+   - Otherwise they bring a broken piece, or only their word, and the client is suspicious.
+     He may pay less, or ask sharp questions about the night at the shrine.
+4. **The spirit senses an enemy:** during the conversation the host gets a feeling from the
+   inner voice ("You feel a cold certainty that this man would see you destroyed"). It is the
+   first meeting with the final boss, though nobody knows it yet.
+5. **The company splits up at the inn:** the job is done and paid. Everyone except the host
+   leaves the party and goes to the inn's roster of available characters.
+6. **Winning them back:** to go adventuring again (the council's mines job), the host must
+   talk each one round. For the shrine party it is easy, one short talk each, and what each
+   wants fits their traits (a fair share, a drink, a good reason). It is a gentle first lesson
+   in recruiting (see "Recruiting and the touch of the spirit").
+
+**The payment depends on who the host is**
+How the pay is shared matters: a companion who feels cheated is soured, and harder to win back
+at the inn. Each possible host gets their own twist:
+- **Joss (the leader):** the player splits the pay. Keeping more for Joss's debt is tempting
+  (he is Greedy), but an unfair split angers someone.
+- **Tikkat (the thief):** Joss splits as usual, but Tikkat gets the option to pocket some of
+  the money first. The companion with the best Perception may notice, and reacts by their
+  traits: a Greedy one (Joss) wants a cut of the "contraband" before rejoining, an Honest one
+  (Ithrae) is soured instead.
+- **Ommuk, Ithrae and Maera:** Joss splits the pay, and each has a personal twist that fits
+  their traits:
+  - **Ommuk (Pious, Calm, Generous):** he can give his share away.
+    - To the small temple in Lehan: the old priest remembers him, which gives a friendly contact
+      and a quiet place to rest and pray later (ties to prayer and hidden sanctums).
+    - To whoever Joss shorted: that companion comes back at the inn without needing a talk.
+    - Or keep it. The others think he has gone soft, but nobody is soured either way.
+    - Because he is Calm, he can also settle a quarrel over the split, so one soured companion
+      becomes neutral again.
+  - **Ithrae (Curious, Melancholy, Honest):**
+    - If Joss's split is unfair, she can call it out in front of the employer. The shorted
+      companion is grateful, but Joss (Proud) is humiliated and soured toward her.
+    - She can ask the employer what the shrine really was. He brushes her off, but she can give
+      up part of her share for a look at his sketch of the shrine. On it is a small mark she
+      copies into her notes, which can be recognised much later.
+  - **Maera (Curious, Loyal, Hot-tempered):**
+    - She stands up for whoever was shorted. The player picks calm words (the split is put
+      right, Joss grumbles) or angry ones (the shorted one is won over at once, but Joss is
+      soured and harder to win back).
+    - As a tracker she notices things on the way out: a packed cart behind the house and fresh
+      mud from the shrine road on the employer's boots. He was the watcher in the woods, and
+      he is leaving town. This explains the "No reply" later.
+
+**Note on the spirit's warning:** the jailers have not been introduced at this point, so the
+inner voice only gives a vague, cold sense of danger. It does not name the employer as a
+jailer, or connect him to anything.
+
+**The hideout afterwards**
+- It is an ordinary lower-class house, and it stays on the Lehan map.
+- Knocking again during the same visit to Lehan only gets "Our business is done. Go away."
+- After the party has left Lehan once, knocking gets no reply. The employer has left town.
+
+**The hideout dungeon (later)**
+Later in the game a "Break in?" option appears at the door (not in the first version). It
+appears when the spirit realises that the employer in Lehan was connected to the jailers.
+Inside, the house is a small playable dungeon of its own, empty or lightly guarded, and
+searching it gives clues to where the jailers are.
+
+**Open questions**
+- What counts as an unfair split: less than an even share, or less than each one expects by
+  their traits (a Proud leader expects more)?
+- What makes the spirit realise the employer's connection to the jailers? (Decide later.
+  Ithrae's copied mark and Maera's tracks are possible threads.)
