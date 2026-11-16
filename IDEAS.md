@@ -722,8 +722,13 @@ quest, and possibly knowledge about the remnants or the jailers' heirs.
   which key choices are possible? Or should followers also shift the ending directly?
 
 ### Arrival in Lehan: the employer and the split
-From a playtest of the prologue. Today the company enters Lehan and goes straight on to the
-council's notice. Instead, the shrine job should be properly wrapped up first.
+**In the game:** the whole scene below is in (the walk with the red dot, the meeting, the proof,
+the pay split with each host's twist, the parting at the inn and the talks to win them back,
+and the knock replies). The "Break in?" option and the hideout dungeon are still to come. The
+script is in [DIALOGUES.md](DIALOGUES.md).
+
+From a playtest of the prologue. Before, the company entered Lehan and went straight on to the
+council's notice. Now the shrine job is properly wrapped up first.
 
 1. **Walking to the employer:** a small map of Lehan with a red dot for the company, moving
    through the streets while the characters chat, in the same style as the road scene on the

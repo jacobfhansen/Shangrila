@@ -300,3 +300,63 @@ and loses. For a moment there is only terror, then a dull, sullen quiet.*
 > (From now on you control the host fully in combat. The others still act on their own.)
 >
 > By evening the walls of Lehan rise out of the fields.
+
+## Arrival in Lehan
+
+Played on the Lehan town map, in a dialogue window over it, while a red dot walks the company
+from the South Gate to the employer's house, and later on to the inn. Starts by itself the first
+time the company enters Lehan after the road. The in-game text is in
+`Shangrila-godot/scripts/data/lehan.gd`; the design is "Arrival in Lehan" in IDEAS.md.
+
+> Inside the gate, Lehan smells of smoke, wet straw and fresh bread.
+>
+> **Joss:** Pay first, then beds. Our man said he'd wait for us off Tanners' Row.
+>
+> *The streets feel strangely familiar to the spirit, as if they were laid over older ones.*
+>
+> The house is narrow and plain, squeezed between a cooper's yard and a shuttered shop.
+>
+> A man in a plain grey coat lets them in. Nobody lives here. Somebody is only waiting here.
+>
+> **The Employer:** You're late. Well? Is it done?
+>
+> *Something cold stirs behind the host's eyes. Whoever this man is, he would see you destroyed.*
+
+**The proof**
+- *Ommuk saved the head at the shrine:* hand it over (15 gold, and Ommuk aches to see it go) or
+  claim it was all smashed (8 gold; the head stays in Ommuk's pack as the Crowned Head).
+- *Otherwise:* a chip of the crown, and sharp questions about the night. "Nothing happened"
+  (10 gold) · "The stone was warm" (10 gold; he goes very still, and the spirit knows he is lying,
+  and afraid) · *(say nothing)* (9 gold).
+
+**Ithrae as host** can ask what the shrine was ("A nobody's. An old eyesore on a road my family
+wants widened."), then give up a gold piece of her share for a look at his sketch, and copy the
+mark in its corner: a ring, cut through by a single line.
+
+**The pay split**: Joss, unless he is the host, takes a double share and gives Tikkat half.
+- **Joss:** the player shares it: even · *[Greedy]* double for Joss (Maera soured) · *[Proud]*
+  double, and Tikkat's share against his debt (Tikkat and Maera soured).
+- **Tikkat:** can palm 2 gold from the purse first. The sharpest pair of eyes may notice: Joss
+  wants half of it before rejoining, Ithrae is soured, the others keep quiet.
+- **Ommuk:** *[Generous]* gives his share to Tikkat (Tikkat won over) · *[Pious]* gives it to
+  Lehan's temple (the old priest remembers him) · *[Calm]* talks Joss down to three quarters
+  for Tikkat (nobody soured) · *(say nothing)* (Tikkat soured).
+- **Ithrae:** *[Honest]* calls it out in front of the employer: even shares, Tikkat grateful,
+  Joss humbled and soured · *(say nothing)* (Tikkat soured).
+- **Maera:** *[Loyal]* calm words: even shares, Joss grumbles · *[Hot-tempered]* angry words:
+  even shares, Tikkat won over, Joss soured · *(say nothing)* (Tikkat soured). On the way out
+  she spots a packed cart and boots with mud from the shrine road: he was the watcher in the
+  trees, and he is leaving town.
+
+**At the inn** everyone says goodbye in their own way (soured ones bitterly), and everyone except
+the host goes to the inn's list. Until the crier in the market square has announced the mines
+job, they all turn the host down ("No job, no Tikkat. Wake me when there's coin in it."). After
+that, Muster starts a short talk: each wants something small that
+fits their traits (Joss: his debt or his pride; Maera: the mystery or the company; Ommuk:
+people in need; Ithrae: answers, or not being alone; Tikkat: a drink and a full share, or a
+safe spot at the back). The wrong approach means "not yet". Soured companions want it put
+right first (the coin they were short, an apology, a round for the table). Those won over just
+come.
+
+**Knocking again** at the house: "Our business is done. Go away." After the company has left
+Lehan once: no reply.

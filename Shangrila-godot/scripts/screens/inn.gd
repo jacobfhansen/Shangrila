@@ -70,6 +70,12 @@ func _ready() -> void:
 		var c := Ui.label(b, "", Vector2(104, 4), 11, Ui.DIM, 72)
 		roster_rows.append({"btn": b, "name": n, "cls": c})
 	refresh()
+	if get_meta("args", {}).get("split", false):
+		_split_notice.call_deferred()
+
+
+func _split_notice() -> void:
+	await Game.main.message("The company has split up. Your old companions are here at the inn.\n\nThey won't come without a job. Find work first (the market square is where news is cried), then choose one here and press Muster to talk them round.")
 
 
 func refresh() -> void:
@@ -137,10 +143,56 @@ func _on_scroll(d: int) -> void:
 
 
 func _on_muster() -> void:
-	Game.party.append(Game.roster[chosen])
-	Game.roster.remove_at(chosen)
+	var c: Dictionary = Game.roster[chosen]
+	if c.get("rejoin", "") != "":
+		if not await _rejoin_talk(c):
+			refresh()
+			return
+		c.erase("rejoin")
+		c.erase("grudge")
+		c.erase("owed")
+	Game.party.append(c)
+	Game.roster.erase(c)
 	chosen = -1
 	refresh()
+
+
+## A companion who left after the split must be talked round before they join again.
+## Plays a short conversation over the inn; returns true if they agree.
+func _rejoin_talk(c: Dictionary) -> bool:
+	var key := ""
+	for k in PrologueData.ORDER:
+		if PrologueData.CAST[k].name == c.name:
+			key = k
+	if key == "":
+		return true
+	var host: String = Game.story.get("host", "")
+	var ov := ColorRect.new()
+	ov.color = Color(0, 0, 0, 0.6)
+	ov.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(ov)
+	Ui.place(ov, Rect2(0, 0, 640, 480))
+	Ui.frame(ov, Rect2(10, 110, 620, 280), Color("#1a120a"), Color("#a07a40"), 2)
+	Ui.label(ov, "Talking to " + c.name, Vector2(20, 86), 15, Ui.GOLD)
+	var box := DialogueBox.new()
+	box.cast = PrologueData.company_cast()
+	box.host = host
+	ov.add_child(box)
+	Ui.place(box, Rect2(20, 120, 600, 260))
+	var result := {"join": false}
+	box.effect.connect(func(fx: String):
+		if fx == "join":
+			result.join = true
+		elif fx.begins_with("pay:"):
+			Game.pay(int(fx.substr(4)))
+			refresh())
+	box.play(LehanData.rejoin_talk(key, c, host, Game.party_copper()))
+	await box.finished
+	var label := "%s joins the party" % c.name.split(" ")[0] if result.join else "Maybe later"
+	box.show_buttons([[label, func(): box.finished.emit()]])
+	await box.finished
+	ov.queue_free()
+	return result.join
 
 
 func _on_dismiss() -> void:

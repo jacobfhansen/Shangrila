@@ -85,6 +85,8 @@ const TOWNS := {
 			"desc": "Beds, ale, and people looking for work or company."},
 		"smith": {"name": "Weapon Smith", "kind": "smith", "at": Vector2(176, 132),
 			"desc": "Blades, bows and armour, at Lehan prices."},
+		"hideout": {"name": "The Employer's House", "kind": "house", "at": Vector2(160, 272),
+			"desc": "A narrow, plain house off Tanners' Row, where the company was paid."},
 	}},
 }
 
@@ -176,6 +178,7 @@ func _make_items() -> void:
 	_it(30, "Cheese", "cheese", "#e8c040", 15, 111, {"dims": true, "food": true, "health": [20, 25]}, "A good wedge of hard cheese.")
 	_it(31, "Clasp Knife", "knife", "#c8ccd4", 5, 110, {"dmg": [1, 3], "weapon": true, "dagger": true}, "A folding knife.")
 	_it(32, "Bardiche", "bardiche", "#a0a6b0", 125, 700, {"dmg": [2, 8], "weapon": true, "axe": true}, "A long-hafted axe with a crescent blade.")
+	_it(33, "Crowned Head", "stonehead", "#a8a090", 150, 0, {"dims": true}, "The stone head from the old shrine. Its face is worn smooth, but the crown is still clear, and it is faintly warm.")
 
 
 func item(id: int) -> Dictionary:

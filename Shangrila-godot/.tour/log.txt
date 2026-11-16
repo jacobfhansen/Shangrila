@@ -1,34 +1,81 @@
-Script started on 2026-11-13 11:10:56+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
-/snap/godot-4/40/gnome-platform/command-chain/desktop-launch: line 538: /home/jacob/snap/alacritty/common/.cache/gdk-pixbuf-loaders.cache: Permission denied
+Script started on 2026-11-16 13:30:37+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
+/snap/godot-4/40/gnome-platform/command-chain/desktop-launch: line 543: /home/jacob/snap/alacritty/common/.cache/gdk-pixbuf-loaders.cache: Permission denied
 Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
 OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
 
 shot 01_about
 shot 02_title
+shot 02a_prologue_waking
+shot 02b_prologue_chatter
+shot 02c_prologue_host_choice
+shot 02d_prologue_choice
+shot 02e_prologue_after
+shot 02f_prologue_history
 shot 03_inn
-shot 04_create
 shot 05_view
 fits boots on feet: true helmet on feet: false
 feet now 7 pack15 0
-after cheese health 21 log: Brand eats the Cheese. +20 health
-shot 06_city
+after cheese health 23 log: Brand eats the Cheese. +22 health
+shot 06_town
+shot 06b_world
+travel: ["After 1 day on the road the party reaches The Mines."] endurance [23, 55, 66, 54] -> [15, 47, 58, 46] at mines
 shot 07_shop
 paid: 740 expected 740; brand pack: [32, 13, 13, 10, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 shot 08_dungeon
 shot 09_dungeon_corridor
 shot 10_dungeon_room
 shot 11_map
-depth 0: won 100%, avg 2.3 rounds, avg hp lost 4%
-depth 7: won 87%, avg 5.5 rounds, avg hp lost 29%
-depth 14: won 53%, avg 8.2 rounds, avg hp lost 62%
-depth 20: won 45%, avg 8.1 rounds, avg hp lost 67%
+depth 0: won 100%, avg 1.9 rounds, avg hp lost 3%
+depth 7: won 93%, avg 4.4 rounds, avg hp lost 21%
+depth 14: won 69%, avg 7.3 rounds, avg hp lost 52%
+depth 20: won 60%, avg 7.4 rounds, avg hp lost 59%
 shot 12_combat_command
 shot 13_combat_target
 shot 14_tactics
 shot 15_combat_resolve
 shot 16_combat_end
-combat over, phase '' log: ["Sira punches at the Kobold, but misses.", "Brand swings the Longsword and hits the Kobold for 4. The Kobold dies!", "Victory! Each survivor gains 14 experience and 0G, 1S, 1C.", "Brand finds a Cheese."]
+combat over, phase '' log: ["Sira punches at the Skeleton, but misses.", "Brand swings the Longsword and hits the Skeleton for 7. The Skeleton dies!", "Victory! Each survivor gains 23 experience and 0G, 0S, 5C.", "Brand finds a Clasp Knife."]
 save ok: true
 load -> dungeon party 4==4 pos (17, 17) name Brand items type 2
+shot 17_prologue_end
+company: ["Tikkat Nisk Thief", "Joss Harrow Human Warrior", "Maera Vell Human Ranger", "Ommuk Thuug Cleric", "Ithrae Aeldroe Mage"] at shrine known ["shrine", "lehan"] story { "host": "tikkat", "prologue_reply": 1 }
+shot 18_road_chatter
+shot 19_road_choice
+shot 20_ambush
+shot 21_ambush_fight
+ambush over after 3 rounds, hits: [6, 18, 15, 7, 13]
+shot 22a_consent
+shot 22b_consent_retry
+shot 22_road_after
+story after road: { "host": "tikkat", "prologue_reply": 1, "consent": "given", "road_done": true, "host_control": true } at lehan
+shot 23a_lehan_walk
+shot 23b_lehan_night
+shot 23c_lehan_pocket
+shot 23d_lehan_parting
+lehan: { "answer": "warm", "pocket": "yes", "noticer": "maera", "shares": { "joss": 293, "maera": 145, "ommuk": 145, "ithrae": 145, "tikkat": 272 } } party ["Tikkat"] roster ["Joss Harrow:talk:0", "Maera Vell:talk:0", "Ommuk:talk:0", "Ithrae:talk:0"]
+shot 23e_inn_split
+shot 23e2_no_job
+before the job: party ["Tikkat"]
+shot 23f_rejoin_talk
+shot 23g_rejoined
+after talk: party ["Tikkat", "Joss Harrow"] purse 2740
+host joss {  } -> shares { "joss": 180, "maera": 180, "ommuk": 180, "ithrae": 180, "tikkat": 180 } moods ["maera:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
+host joss { "split": "double" } -> shares { "joss": 300, "maera": 150, "ommuk": 150, "ithrae": 150, "tikkat": 150 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
+host joss { "split": "docked", "answer": "lie" } -> shares { "joss": 367, "maera": 181, "ommuk": 181, "ithrae": 181, "tikkat": 90 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
+host maera { "stood_up": "calm", "split": "even" } -> shares { "joss": 180, "maera": 180, "ommuk": 180, "ithrae": 180, "tikkat": 180 } moods ["joss:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
+host maera { "stood_up": "angry", "split": "even" } -> shares { "joss": 180, "maera": 180, "ommuk": 180, "ithrae": 180, "tikkat": 180 } moods ["joss:soured:angry", "ommuk:talk", "ithrae:talk", "tikkat:won"]
+host maera { "saw_cart": "yes" } -> shares { "joss": 330, "maera": 163, "ommuk": 163, "ithrae": 163, "tikkat": 81 } moods ["joss:talk", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
+host ommuk { "proof": "head", "gift": "tikkat" } -> shares { "joss": 548, "maera": 272, "ommuk": 0, "ithrae": 272, "tikkat": 408 } moods ["joss:talk", "maera:talk", "ithrae:talk", "tikkat:won"]
+host ommuk { "proof": "kept", "gift": "temple" } -> shares { "joss": 293, "maera": 145, "ommuk": 0, "ithrae": 145, "tikkat": 72 } moods ["joss:talk", "maera:talk", "ithrae:talk", "tikkat:soured:docked"]
+host ommuk { "calmed": "yes" } -> shares { "joss": 315, "maera": 156, "ommuk": 156, "ithrae": 156, "tikkat": 117 } moods ["joss:talk", "maera:talk", "ithrae:talk", "tikkat:talk"]
+host ithrae { "mark": "yes", "called_out": "yes", "split": "even" } -> shares { "joss": 180, "maera": 180, "ommuk": 180, "ithrae": 80, "tikkat": 180 } moods ["joss:soured:humbled", "maera:talk", "ommuk:talk", "tikkat:won"]
+host ithrae {  } -> shares { "joss": 330, "maera": 163, "ommuk": 163, "ithrae": 163, "tikkat": 81 } moods ["joss:talk", "maera:talk", "ommuk:talk", "tikkat:soured:docked"]
+host tikkat { "pocket": "yes", "noticer": "joss" } -> shares { "joss": 256, "maera": 127, "ommuk": 127, "ithrae": 127, "tikkat": 263 } moods ["joss:cut", "maera:talk", "ommuk:talk", "ithrae:talk"]
+host tikkat { "pocket": "yes", "noticer": "ithrae" } -> shares { "joss": 256, "maera": 127, "ommuk": 127, "ithrae": 127, "tikkat": 263 } moods ["joss:talk", "maera:talk", "ommuk:talk", "ithrae:soured:theft"]
+host tikkat {  } -> shares { "joss": 330, "maera": 163, "ommuk": 163, "ithrae": 163, "tikkat": 81 } moods ["joss:talk", "maera:talk", "ommuk:talk", "ithrae:talk"]
+shot 23_town
+shot 24_market_notice
+shot 25_town_smith
+known after market: ["shrine", "lehan", "mines"] town: { "lehan": ["gate", "market", "inn", "hideout", "smith"] }
 
-Script done on 2026-11-13 11:11:15+01:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2026-11-16 13:31:44+01:00 [COMMAND_EXIT_CODE="0"]

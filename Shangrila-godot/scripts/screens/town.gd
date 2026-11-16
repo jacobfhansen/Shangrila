@@ -7,6 +7,8 @@ const MAP_RECT := Rect2(20, 52, 600, 370)
 var town := "lehan"
 var layer: TownLayer
 var info: Label
+var buttons: Array = []
+var busy := false
 
 
 func _ready() -> void:
@@ -22,11 +24,13 @@ func _ready() -> void:
 	Ui.place(layer, MAP_RECT)
 	_build_places()
 
-	Ui.btn(self, "Leave town", Rect2(20, 436, 110, 32), _on_place.bind("gate"), "Out through the gate, onto the world map")
-	Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game")
-	Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu")
+	buttons.append(Ui.btn(self, "Leave town", Rect2(20, 436, 110, 32), _on_place.bind("gate"), "Out through the gate, onto the world map"))
+	buttons.append(Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu"))
 	var who := "Party: " + (", ".join(Game.party.map(func(c): return c.name)) if Game.party.size() > 0 else "nobody")
 	info = Ui.label(self, who, Vector2(140, 444), 12, Ui.TEXT, 320)
+	if _arrival_pending():
+		_arrival.call_deferred()
 
 
 func _build_places() -> void:
@@ -59,17 +63,107 @@ func _build_places() -> void:
 
 
 func _on_place(key: String) -> void:
-	if Game.main.modal_open:
+	if Game.main.modal_open or busy:
 		return
 	match Game.TOWNS[town].places[key].kind:
 		"gate":
+			if Game.story.has("employer"):
+				Game.story["left_lehan"] = true
 			Game.main.goto("world")
+		"house":
+			await _knock()
 		"inn":
 			Game.main.goto("inn")
 		"smith":
 			Game.main.goto("shop")
 		"market":
 			await _market()
+
+
+# ---------------------------------------------------------------- arriving in Lehan
+
+## The first visit after the road: the walk to the employer, the meeting, and the split.
+func _arrival_pending() -> bool:
+	return town == "lehan" and Game.story.get("road_done", false) and Game.story.has("host") \
+		and not Game.story.has("employer")
+
+
+func _set_busy(on: bool) -> void:
+	busy = on
+	for b in buttons:
+		b.disabled = on
+
+
+## Moves the red party dot along a list of points (town map coordinates).
+func _walk(points: Array, secs: float) -> void:
+	var lens := [0.0]
+	for i in range(1, points.size()):
+		lens.append(lens[-1] + (points[i] as Vector2).distance_to(points[i - 1]))
+	var total: float = lens[-1]
+	var tw := create_tween()
+	tw.tween_method(func(d: float):
+		var i := 1
+		while i < points.size() - 1 and lens[i] < d:
+			i += 1
+		var seg: float = maxf(0.001, lens[i] - lens[i - 1])
+		layer.party_at = (points[i - 1] as Vector2).lerp(points[i], clampf((d - lens[i - 1]) / seg, 0.0, 1.0)),
+		0.0, total, secs).set_trans(Tween.TRANS_SINE)
+	await tw.finished
+
+
+func _arrival() -> void:
+	_set_busy(true)
+	var host: String = Game.story.host
+	Game.discover_place(town, "hideout")
+	_build_places()
+	info.text = "The company makes its way to the employer's house."
+	var box := DialogueBox.new()
+	box.cast = PrologueData.company_cast()
+	box.cast["employer"] = LehanData.EMPLOYER
+	box.host = host
+	Ui.place(box, Rect2(20, 52, 600, 248))
+	add_child(box)
+	box.effect.connect(_on_scene_fx)
+	layer.party_at = LehanData.TO_HOUSE[0]
+	_walk(LehanData.TO_HOUSE, 10.0)
+	box.play(LehanData.walk(host))
+	await box.finished
+	box.play(LehanData.meeting(host))
+	await box.finished
+	LehanData.settle(host)
+	Game.story["employer"] = "met"
+	info.text = "Off to the inn."
+	_walk(LehanData.TO_INN, 9.0)
+	box.play(LehanData.parting(host))
+	await box.finished
+	box.show_buttons([["Go into the inn", func(): Game.main.goto("inn", {"split": true})]])
+
+
+func _on_scene_fx(name: String) -> void:
+	if name.contains("="):
+		LehanData.record(name)
+	elif name == "split":
+		_split_company()
+
+
+## Everyone except the host goes to the inn's roster.
+func _split_company() -> void:
+	var host_name: String = PrologueData.CAST[Game.story.host].name
+	for c in Game.party.duplicate():
+		if c.name != host_name:
+			Game.party.erase(c)
+			Game.roster.append(c)
+	info.text = "Party: " + ", ".join(Game.party.map(func(c): return c.name))
+
+
+## Knocking at the employer's door after the meeting.
+func _knock() -> void:
+	if Game.story.get("left_lehan", false):
+		await Game.main.message("You knock. No reply.\n\nThe shutters are closed, and no lamp burns behind them. The house looks empty.")
+	elif Game.story.has("employer"):
+		await Game.main.message("The door opens a crack. A grey sleeve, an eye.\n\n\"Our business is done. Go away.\"\n\nThe door shuts, and a bolt slides home.")
+	else:
+		await Game.main.message("A narrow, plain house. Nobody answers.")
 
 
 ## The market square: the crier's notice about the mines, and a first look around.
@@ -100,9 +194,16 @@ func _on_quit() -> void:
 ## Draws a marker for each discovered place.
 class TownLayer extends Control:
 	var town := ""
+	var party_at := Vector2(-1, -1)   # the red dot while the company walks through town
+	var t := 0.0
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_PASS
+
+	func _process(delta: float) -> void:
+		if party_at.x >= 0:
+			t += delta
+			queue_redraw()
 
 	func _draw() -> void:
 		var ink := Color("#46301a")
@@ -128,7 +229,17 @@ class TownLayer extends Control:
 					draw_rect(Rect2(p.x - 5, p.y - 6, 9, 12), ink, false, 1.6)
 					draw_arc(p + Vector2(5, 0), 3, -PI / 2, PI / 2, 8, ink, 1.6, true)
 					draw_line(p + Vector2(-5, -3), p + Vector2(4, -3), ink, 1.2)
+				"house":
+					# A narrow house.
+					draw_colored_polygon(PackedVector2Array([p + Vector2(-6, -1), p + Vector2(0, -8), p + Vector2(6, -1)]), ink)
+					draw_rect(Rect2(p.x - 5, p.y - 1, 10, 8), ink, false, 1.5)
+					draw_rect(Rect2(p.x - 1.5, p.y + 2, 3, 5), ink)
 				"smith":
 					# An anvil.
 					draw_colored_polygon(PackedVector2Array([p + Vector2(-8, -4), p + Vector2(7, -4), p + Vector2(4, 0),
 						p + Vector2(2, 0), p + Vector2(4, 5), p + Vector2(-4, 5), p + Vector2(-2, 0), p + Vector2(-5, 0)]), ink)
+		if party_at.x >= 0:
+			var pulse := 0.5 + 0.5 * sin(t * 4.0)
+			draw_arc(party_at, 10 + pulse * 3, 0, TAU, 24, Color(0.75, 0.1, 0.05, 0.5 + 0.4 * pulse), 2.0, true)
+			draw_circle(party_at, 5.5, Color(0.75, 0.1, 0.05))
+			draw_arc(party_at, 5.5, 0, TAU, 16, ink, 1.2, true)

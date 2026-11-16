@@ -245,6 +245,7 @@ func _new_game_route() -> void:
 	await get_tree().create_timer(0.3).timeout
 	await _shot("22_road_after")
 	print("story after road: ", Game.story, " at ", Game.location)
+	await _lehan_arrival()
 	m.goto("town")
 	await _shot("23_town")
 	m.current._on_place("market")
@@ -258,3 +259,122 @@ func _new_game_route() -> void:
 	await get_tree().create_timer(0.3).timeout
 	await _shot("25_town_smith")
 	print("known after market: ", Game.known, " town: ", Game.town_known)
+
+
+## Arrival in Lehan with Tikkat as host: the walk, the meeting, palming coins, the split, and
+## talking a companion round at the inn.
+func _lehan_arrival() -> void:
+	var m: Node = Game.main
+	m.goto("town")
+	await get_tree().create_timer(3.0).timeout
+	await _shot("23a_lehan_walk")
+	var town: Node = m.current
+	var box: DialogueBox = null
+	for ch in town.get_children():
+		if ch is DialogueBox:
+			box = ch
+	box.skip_to_choice()
+	await _shot("23b_lehan_night")
+	box.choose(1)     # "The stone was warm."
+	box.skip_to_choice()
+	await _shot("23c_lehan_pocket")
+	box.choose(0)     # palm a few coins
+	box.skip_to_choice()
+	await get_tree().create_timer(4.0).timeout
+	box.skip_to_choice()
+	await get_tree().create_timer(1.0).timeout
+	await _shot("23d_lehan_parting")
+	print("lehan: ", Game.story.get("lehan"), " party ", Game.party.map(func(c): return c.name),
+		" roster ", Game.roster.map(func(c): return "%s:%s:%s" % [c.name, c.get("rejoin", ""), c.get("owed", 0)]))
+	m.goto("inn", {"split": true})
+	await get_tree().create_timer(0.4).timeout
+	await _shot("23e_inn_split")
+	if m.modal_open:
+		m._modal_done.emit(true)
+	await get_tree().process_frame
+	# No job yet: they turn the host down.
+	var inn: Node = m.current
+	inn.chosen = 0
+	inn._on_muster()
+	await get_tree().create_timer(0.3).timeout
+	for ch in inn.get_children():
+		for g in ch.get_children():
+			if g is DialogueBox:
+				g.skip_to_choice()
+				await _shot("23e2_no_job")
+				g.finished.emit()
+	await get_tree().create_timer(0.3).timeout
+	print("before the job: party ", Game.party.map(func(c): return c.name))
+	# Hear the crier in the market, then try again.
+	m.goto("town")
+	await get_tree().process_frame
+	m.current._on_place("market")
+	for i in 2:
+		await get_tree().create_timer(0.3).timeout
+		if m.modal_open:
+			m._modal_done.emit(true)
+	await get_tree().create_timer(0.2).timeout
+	m.goto("inn")
+	await get_tree().process_frame
+	inn = m.current
+	inn.chosen = 0
+	inn._on_muster()
+	await get_tree().create_timer(0.3).timeout
+	var tb: DialogueBox = null
+	for ch in inn.get_children():
+		for g in ch.get_children():
+			if g is DialogueBox:
+				tb = g
+	tb.skip_to_choice()
+	await _shot("23f_rejoin_talk")
+	tb.choose(0)
+	tb.skip_to_choice()
+	await get_tree().create_timer(0.3).timeout
+	tb.finished.emit()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("23g_rejoined")
+	print("after talk: party ", Game.party.map(func(c): return c.name), " purse ", Game.party_copper())
+	_lehan_all_hosts()
+
+
+## Runs the settle/parting/talk code for every host and twist, to catch errors.
+func _lehan_all_hosts() -> void:
+	var saved_party := Game.party
+	var saved_roster := Game.roster
+	var saved_story := Game.story
+	var saved := [Game.location, Game.known, Game.town_known, Game.visited, Game.pos, Game.facing]
+	var cases := {
+		"joss": [{}, {"split": "double"}, {"split": "docked", "answer": "lie"}],
+		"maera": [{"stood_up": "calm", "split": "even"}, {"stood_up": "angry", "split": "even"}, {"saw_cart": "yes"}],
+		"ommuk": [{"proof": "head", "gift": "tikkat"}, {"proof": "kept", "gift": "temple"}, {"calmed": "yes"}],
+		"ithrae": [{"mark": "yes", "called_out": "yes", "split": "even"}, {}],
+		"tikkat": [{"pocket": "yes", "noticer": "joss"}, {"pocket": "yes", "noticer": "ithrae"}, {}],
+	}
+	for host in cases:
+		for fx in cases[host]:
+			Game.start_company(host, 1)
+			LehanData.walk(host)
+			LehanData.meeting(host)
+			for k in fx:
+				LehanData.record("%s=%s" % [k, fx[k]])
+			LehanData.settle(host)
+			LehanData.parting(host)
+			var moods := []
+			for c in Game.party:
+				if c.has("rejoin"):
+					var key := ""
+					for k2 in PrologueData.ORDER:
+						if PrologueData.CAST[k2].name == c.name:
+							key = k2
+					LehanData.rejoin_talk(key, c, host, 5000)
+					moods.append("%s:%s%s" % [key, c.rejoin, (":" + c.grudge) if c.grudge != "" else ""])
+			print("host %s %s -> shares %s moods %s" % [host, fx, Game.story.lehan.shares, moods])
+	Game.party = saved_party
+	Game.roster = saved_roster
+	Game.story = saved_story
+	Game.location = saved[0]
+	Game.known = saved[1]
+	Game.town_known = saved[2]
+	Game.visited = saved[3]
+	Game.pos = saved[4]
+	Game.facing = saved[5]
