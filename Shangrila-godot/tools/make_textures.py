@@ -540,6 +540,57 @@ def town_gate():
     img.save(OUT / "town_gate.png")
 
 
+def _arched_window(d, x0, y0, x1, y1, frame):
+    d.rectangle([x0, y0 + (x1 - x0) // 2, x1, y1], fill=(30, 28, 34), outline=frame, width=4)
+    d.pieslice([x0, y0, x1, y0 + (x1 - x0)], 180, 360, fill=(30, 28, 34), outline=frame, width=4)
+    d.rectangle([x0 + 4, y0 + (x1 - x0) // 2 + 2, x1 - 4, y0 + (x1 - x0) // 2 + 6], fill=frame)
+    mx = (x0 + x1) // 2
+    d.line([(mx, y0 + 4), (mx, y1)], fill=frame, width=3)
+
+
+def council_house():
+    """The council house on the square: dressed stone, arched windows, a double door under the
+    town's banner (a gold tower on blue)."""
+    w = h = 256
+    stone = (132, 124, 112)
+    frame = (84, 76, 68)
+    # Ground floor beside the door.
+    img = blocks(w, h, 6, 3, 600, mortar=3, base=stone, jitter=12)
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, h - 24, w, h], fill=(100, 94, 86))
+    _arched_window(d, 70, 60, 186, 200, frame)
+    img.save(OUT / "council_low.png")
+    # The door: steps, a double door in a round arch, the banner above.
+    img = blocks(w, h, 6, 3, 601, mortar=3, base=stone, jitter=12)
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, h - 24, w, h], fill=(100, 94, 86))
+    d.rectangle([40, h - 16, 216, h], fill=(150, 144, 134))
+    d.rectangle([56, 120, 200, h - 16], fill=(86, 54, 30), outline=frame, width=6)
+    d.pieslice([56, 50, 200, 194], 180, 360, fill=(86, 54, 30), outline=frame, width=6)
+    d.line([(128, 64), (128, h - 16)], fill=(50, 32, 20), width=4)
+    for x in (92, 164):
+        d.ellipse([x - 5, 170, x + 5, 180], fill=(190, 160, 80))
+    for y in (140, 210):
+        d.line([(60, y), (196, y)], fill=(60, 40, 24), width=3)
+    # The banner hangs from a pole over the arch.
+    d.line([(96, 8), (160, 8)], fill=(50, 40, 30), width=5)
+    d.polygon([(100, 10), (156, 10), (156, 52), (128, 62), (100, 52)], fill=(40, 60, 130), outline=(200, 170, 70))
+    d.rectangle([120, 24, 136, 48], fill=(220, 180, 60))
+    for k in range(3):
+        d.rectangle([118 + k * 7, 18, 122 + k * 7, 24], fill=(220, 180, 60))
+    d.rectangle([125, 38, 131, 48], fill=(40, 60, 130))
+    img.save(OUT / "council_door.png")
+    # Upper storey: tall arched windows and a cornice.
+    img = blocks(w, h, 6, 3, 602, mortar=3, base=(142, 134, 122), jitter=12)
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, w, 16], fill=(110, 102, 92))
+    d.rectangle([0, 16, w, 22], fill=(160, 152, 140))
+    _arched_window(d, 44, 50, 112, 230, frame)
+    _arched_window(d, 144, 50, 212, 230, frame)
+    d.rectangle([0, h - 10, w, h], fill=(160, 152, 140))
+    img.save(OUT / "council_up.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -556,4 +607,5 @@ if __name__ == "__main__":
     planks()
     inn_front()
     town_gate()
+    council_house()
     print("wrote textures to", OUT)

@@ -8,6 +8,7 @@ extends RefCounted
 ##   .  cobbles you can walk on        #  a house front
 ##   G  the south gate     I  the inn's door     D  the weapon smith's door
 ##   H  the employer's house (Tanners' Row)
+##   K  the council house's door    k  the rest of its front (north side of the square)
 ##   W  the well    S  a stall    C  a cart    B  barrels
 ##   1-9  people (MarketData.PEOPLE)
 ## Houses and doors block the way; walking into a door or a person uses it.
@@ -15,7 +16,7 @@ extends RefCounted
 const MAP := [
 	"#######################",
 	"####D##################",
-	"####.##################",
+	"####.###kkkkKkkk#######",
 	"####.###S..S..SB#######",
 	"####.###.6......#######",
 	"####..........2.#######",
@@ -36,8 +37,8 @@ const MAP := [
 ]
 const CELL := DungeonView.CELL
 const STOREY := 2.0           # height of one storey of a house front
-const BUILDING := "#DIGH"
-const EXITS := {"D": "smith", "I": "inn", "G": "gate", "H": "hideout"}
+const BUILDING := "#DIGHKk"
+const EXITS := {"D": "smith", "I": "inn", "G": "gate", "H": "hideout", "K": "council"}
 ## Where each place on the town map is entered: the street cell in front of it, and the
 ## direction of the door from there. The market is the square's south side.
 const ENTRANCES := {
@@ -46,6 +47,7 @@ const ENTRANCES := {
 	"inn": {"cell": Vector2i(20, 6), "dir": 1},
 	"smith": {"cell": Vector2i(4, 2), "dir": 0},
 	"hideout": {"cell": Vector2i(5, 15), "dir": 3},
+	"council": {"cell": Vector2i(12, 3), "dir": 0},
 }
 ## The company's walk on arriving (see LehanData): waypoints, turned and walked to in order.
 const PATH_TO_HOUSE := [Vector2i(11, 15), Vector2i(5, 15)]
@@ -151,6 +153,8 @@ func build(root: Node3D, cam: Camera3D) -> void:
 					"I": low = "inn_front"
 					"G": low = "town_gate"
 					"H": low = "house_low_0"
+					"K": low = "council_door"
+					"k": low = "council_low"
 				# How the wall ends on either side (along `side`): 1 at an outside corner (the
 				# building ends), -1 at an inside corner (another wall meets it), 0 if it runs on.
 				# Overhangs grow or shrink by their depth at the corners so neighbours meet.
@@ -161,6 +165,8 @@ func build(root: Node3D, cam: Camera3D) -> void:
 				_tool(by_tex, low)
 				_quad(by_tex[low], wall_c + Vector3(0, STOREY / 2.0, 0), -dv, Vector3.UP, h, STOREY / 2.0)
 				var up := "house_up_%d" % ((variant + 1) % 4)
+				if ch == "K" or ch == "k":
+					up = "council_up"
 				_tool(by_tex, up)
 				_tool(by_tex, "planks")
 				var jut := 0.12   # the upper storey juts out a little over the street, as in old towns

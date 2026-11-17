@@ -398,6 +398,57 @@ func _new_game_route() -> void:
 			Game.party.map(func(c): return c.name.split(" ")[0]), Game.roster.size(), Game.known])
 	if m.modal_open:
 		m._modal_done.emit(true)
+	await _council_visits()
+
+
+## The council house: Joss alone, then Tikkat with the whole company. Tries every argument,
+## then accepts.
+func _council_visits() -> void:
+	var m: Node = Game.main
+	for setup in [["joss", false], ["tikkat", true]]:
+		Checkpoints.start("council", setup[0])
+		await get_tree().create_timer(1.0).timeout
+		if setup[1]:
+			for c in Game.roster.duplicate():
+				for k in ["rejoin", "grudge", "owed"]:
+					c.erase(k)
+				Game.roster.erase(c)
+				Game.party.append(c)
+			var st: Node = m.current
+			st.area.place_at("market", true)
+			st.view.snap()
+			await get_tree().create_timer(0.6).timeout
+			await _shot("31a_council_front")
+		m.goto("council")
+		await get_tree().create_timer(1.0).timeout
+		var box: DialogueBox = m.current.box
+		await _until_choice(box)
+		await _shot("31b_council_%s" % setup[0])
+		for round in 8:
+			var opts: Array = box.choice_step.options
+			print("council %s: offer %d patience %d options %s" % [setup[0], Game.story.council.offer,
+				Game.story.council.patience, opts.map(func(o): return o.key)])
+			var pick := 0
+			for i in opts.size():
+				if not opts[i].key in ["accept", "leave"]:
+					pick = i
+					break
+			box.choose(pick)
+			if opts[pick].key == "accept":
+				break
+			await _until_choice(box)
+		for i in 100:
+			if not box.running:
+				break
+			box.skip_to_choice()
+			await get_tree().create_timer(0.1).timeout
+		await _shot("31c_council_done_%s" % setup[0])
+		print("council %s done: job %s, mines known %s, host silver %d, xp %d" % [setup[0], Game.story.get("mines_job"),
+			"mines" in Game.known, Game.party[0].silver, Game.party[0].xp])
+		m.goto("council")   # a second visit after the job is taken
+		await get_tree().create_timer(1.0).timeout
+		m.current.box.skip_to_choice()
+		print("council revisit: ", m.current.box.history.slice(-2))
 
 
 ## Arrival in Lehan with Tikkat as host: the walk, the meeting, palming coins, the split, and

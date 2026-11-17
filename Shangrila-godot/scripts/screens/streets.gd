@@ -104,6 +104,8 @@ func _after_move() -> void:
 				var nm := _place_name(t.to)
 				if t.to == "smith" and not "smith" in Game.town_places(TOWN):
 					nm = "a shop with a sword on its sign"
+				if t.to == "council" and not "council" in Game.town_places(TOWN):
+					nm = "a stone hall with the town's banner over the door"
 				hint.text = "Ahead: %s.  Walk on or press Space to go in." % nm
 		"prop":
 			hint.text = {"well": "The town well. The council's notices are pinned to its post.",
@@ -118,6 +120,8 @@ func _where() -> String:
 	var p := area.pos
 	if p == LehanStreets.ENTRANCES.hideout.cell:
 		return "Tanners' Row, at the door of a narrow, plain house."
+	if p == LehanStreets.ENTRANCES.council.cell:
+		return "The north side of the square, below the council house's banner."
 	if p == LehanStreets.ENTRANCES.inn.cell:
 		return "The lane's end, at the door of the inn."
 	if p.x >= 8 and p.x <= 15 and p.y >= 3 and p.y <= 10:
@@ -168,6 +172,12 @@ func _use(t: Dictionary) -> void:
 					Game.main.goto("shop")
 				"inn":
 					Game.main.goto("inn")
+				"council":
+					if not LehanData.has_job():
+						await Game.main.message("A clerk blocks the door of the stone hall.\n\n\"The council sits on council business. Have you any?\"\n\nNot yet, it seems.")
+						return
+					Game.discover_place(TOWN, "council")
+					Game.main.goto("council")
 				"hideout":
 					await Game.main.message(LehanData.knock_text())
 				"gate":
@@ -315,8 +325,9 @@ func _talk(id: String) -> void:
 
 
 func _on_effect(fx: String) -> void:
-	if fx == "mines" and not "mines" in Game.known:
-		Game.known.append("mines")
+	if fx == "notice":
+		Game.story["job_notice"] = true
+		Game.discover_place(TOWN, "council")
 		Game.discover_place(TOWN, "smith")
 
 

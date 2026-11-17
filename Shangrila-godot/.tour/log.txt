@@ -1,4 +1,4 @@
-Script started on 2026-11-17 18:06:00+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
+Script started on 2026-11-17 18:34:51+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
 /snap/godot-4/40/gnome-platform/command-chain/desktop-launch: line 543: /home/jacob/snap/alacritty/common/.cache/gdk-pixbuf-loaders.cache: Permission denied
 Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
 OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
@@ -15,10 +15,10 @@ shot 03_inn
 shot 05_view
 fits boots on feet: false helmet on feet: false
 feet now 7 pack15 0
-after cheese health 26 log: Brand eats the Cheese. +25 health
+after cheese health 22 log: Brand eats the Cheese. +21 health
 shot 06_town
 shot 06b_world
-travel: ["After 1 day on the road the party reaches The Mines."] endurance [26, 70, 70, 70] -> [18, 62, 62, 62] at mines
+travel: ["After 1 day on the road the party reaches The Mines."] endurance [22, 70, 70, 70] -> [14, 62, 62, 62] at mines
 shot 07_shop
 paid: 14 expected 14; brand pack: [32, 13, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 shot 08_dungeon
@@ -26,28 +26,28 @@ shot 09_dungeon_corridor
 shot 10_dungeon_room
 shot 11_map
 Joss Harrow: combat 2, toughness 1, talk 1 | hits 13 mana 0 enc 1350 silver 19 power 3 raise unit 270
-Maera Vell: combat 1, missile 2, perception 1, survival 1 | hits 10 mana 0 enc 1200 silver 11 power 2 raise unit 270
-Ommuk: combat 1, toughness 2, lore 1, magic 1 | hits 19 mana 5 enc 1500 silver 16 power 3 raise unit 200
-Ithrae: perception 1, lore 1, magic 2 | hits 7 mana 8 enc 1200 silver 13 power 2 raise unit 300
-Tikkat: stealth 2, thievery 1, perception 1 | hits 9 mana 0 enc 1200 silver 12 power 0 raise unit 150
+Maera Vell: combat 1, missile 2, perception 1, survival 1 | hits 10 mana 0 enc 1200 silver 19 power 2 raise unit 270
+Ommuk: combat 1, toughness 2, lore 1, magic 1 | hits 19 mana 5 enc 1500 silver 17 power 3 raise unit 200
+Ithrae: perception 1, lore 1, magic 2 | hits 7 mana 8 enc 1200 silver 12 power 2 raise unit 300
+Tikkat: stealth 2, thievery 1, perception 1 | hits 9 mana 0 enc 1200 silver 14 power 0 raise unit 150
 joss raise costs: combat 270 toughness 180 stealth 135 (human -10%)
 raise toughness: true -> 2 hits 13 -> 16 xp left 120; raise again (too poor): false
 xp for joss by fight level: L0 0.00, L1 0.68, L2 1.35, L3 2.70, L4 5.40, L5 10.80, L6 21.60, L7 43.20
 hid all fight: 0.0; fell: 1.35
 50 fights at the entrance: won 50, experience in total (all five) 474
-story xp, third of a raise: 100 -> [133, 185, 106, 196, 251]
-money: 71 silver pay 30: true -> 41
-depth 0: won 100%, avg 1.4 rounds, avg hp lost 1%
-depth 7: won 100%, avg 2.6 rounds, avg hp lost 5%
-depth 14: won 98%, avg 4.8 rounds, avg hp lost 17%
-depth 20: won 97%, avg 5.7 rounds, avg hp lost 22%
+story xp, third of a raise: 100 -> [133, 173, 105, 206, 254]
+money: 81 silver pay 30: true -> 51
+depth 0: won 100%, avg 1.5 rounds, avg hp lost 1%
+depth 7: won 100%, avg 2.9 rounds, avg hp lost 6%
+depth 14: won 98%, avg 5.5 rounds, avg hp lost 18%
+depth 20: won 99%, avg 5.1 rounds, avg hp lost 17%
 shot 12_combat_command
 shot 13_combat_target
 shot 14_tactics
 shot 15_combat_resolve
 shot 16_combat_end
 shot 16b_log_scrolled
-combat over, phase '' log: ["Victory! Each survivor finds 1 silver.", "Experience: Brand 11, Oldo 21, Sira 21, Tavi 21.", "Sira comes around, badly bruised.", "Brand finds a Alnon Leaf."]
+combat over, phase '' log: ["Brand swings the Longsword and hits the Giant Spider for 4. The Giant Spider dies!", "Victory! Each survivor finds 1 silver.", "Experience: Brand 6, Oldo 6, Sira 21, Tavi 10.", "Oldo comes around, badly bruised."]
 save ok: true
 load -> dungeon party 4==4 pos (17, 17) name Brand items type 2
 shot 17_prologue_end
@@ -56,7 +56,7 @@ shot 18_road_chatter
 shot 19_road_choice
 shot 20_ambush
 shot 21_ambush_fight
-ambush over after 2 rounds, hits: [9, 13, 7, 19, 7]
+ambush over after 2 rounds, hits: [9, 13, 9, 19, 4]
 shot 22a_consent
 shot 22b_consent_retry
 shot 22_road_after
@@ -71,10 +71,10 @@ lehan: { "answer": "warm", "pocket": "yes", "noticer": "maera", "shares": { "jos
 shot 23e_inn_split
 shot 23e2_no_job
 before the job: party ["Tikkat"]
-market: at (11, 7) known ["shrine", "lehan", "mines"] town ["gate", "market", "inn", "hideout", "smith"]
+market: at (11, 7) known ["shrine", "lehan"] town ["gate", "market", "inn", "hideout", "council", "smith"]
 shot 23f_rejoin_talk
 shot 23g_rejoined
-after talk: party ["Tikkat", "Joss Harrow"] purse 69
+after talk: party ["Tikkat", "Joss Harrow"] purse 74
 host joss {  } -> shares { "joss": 12, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 12 } moods ["maera:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "double" } -> shares { "joss": 20, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 10 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "docked", "answer": "lie" } -> shares { "joss": 28, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 6 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
@@ -93,12 +93,12 @@ shot 23_town
 shot 24a_market
 shot 24b_market_crier
 shot 24c_market_talk
-market: at (11, 7) known ["shrine", "lehan", "mines"] town ["gate", "market", "inn", "hideout", "smith"]
+market: at (11, 7) known ["shrine", "lehan"] town ["gate", "market", "inn", "hideout", "council", "smith"]
 shot 24d_market_west
 shot 24e_market_south
 shot 24f_market_east
 shot 24g_town_plan
-plan spots: ["gate", "market", "inn", "smith", "hideout"]
+plan spots: ["gate", "market", "inn", "smith", "hideout", "council"]
 shot 24h_at_inn
 travel inn: at (20, 6) facing 1 ahead { "kind": "exit", "to": "inn" }
 shot 24i_tanners_row
@@ -106,7 +106,7 @@ shot 24j_tanners_row_east
 shot 24k_at_smith
 shot 24l_at_gate
 shot 25_town_smith
-known after market: ["shrine", "lehan", "mines"] town: { "lehan": ["gate", "market", "inn", "hideout", "smith"] }
+known after market: ["shrine", "lehan"] town: { "lehan": ["gate", "market", "inn", "hideout", "council", "smith"] }
 shot 30_checkpoint_road
 checkpoint road: screen world.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan"]
 shot 30_checkpoint_lehan
@@ -115,7 +115,25 @@ shot 30_checkpoint_split
 checkpoint split: screen inn.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
 shot 30_checkpoint_market
 checkpoint market: screen streets.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
+shot 30_checkpoint_council
+checkpoint council: screen streets.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
 shot 30_checkpoint_mines
 checkpoint mines: screen dungeon.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan", "mines"]
+shot 31b_council_joss
+council joss: offer 130 patience 3 options ["accept", "danger", "hale", "trait", "leave"]
+council joss: offer 130 patience 2 options ["accept", "hale", "trait", "leave"]
+council joss: offer 130 patience 1 options ["accept", "trait", "leave"]
+council joss: offer 130 patience 1 options ["accept", "leave"]
+shot 31c_council_done_joss
+council joss done: job { "pay": 130, "advance": 0 }, mines known true, host silver 26, xp 90
+council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 130 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
+shot 31a_council_front
+shot 31b_council_tikkat
+council tikkat: offer 170 patience 2 options ["accept", "danger", "hale", "trait", "leave"]
+council tikkat: offer 170 patience 1 options ["accept", "hale", "trait", "leave"]
+council tikkat: offer 170 patience 0 options ["accept", "leave"]
+shot 31c_council_done_tikkat
+council tikkat done: job { "pay": 170, "advance": 0 }, mines known true, host silver 21, xp 50
+council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 170 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
 
-Script done on 2026-11-17 18:07:58+01:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2026-11-17 18:36:59+01:00 [COMMAND_EXIT_CODE="0"]

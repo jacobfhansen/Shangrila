@@ -984,7 +984,12 @@ and without opening it.
    start when haggling at the council.
 
 ### The town council
-**Agreed, not built yet.** A new place in Lehan: the council house, with a door on or near the
+**Built** (except reporting back): `scripts/data/council.gd`, `scripts/screens/council.gd`. The
+council house is on the north side of the square; the councillors are Alderman Brannoc, Mistress
+Brask and Master Hale. The crier still gives the notice straight away, because the Lehan quests
+are not written yet.
+
+A new place in Lehan: the council house, with a door on or near the
 market square. The crier's notice puts it on the map, instead of the Mines.
 - **Accepting the job:** the company takes the mines job formally at the council. Only then do
   the Mines appear on the world map.

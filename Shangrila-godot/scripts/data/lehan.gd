@@ -419,8 +419,9 @@ static func knock_text() -> String:
 	return "A narrow, plain house. Nobody answers."
 
 
+## The crier has announced the mines job (the old companions will listen from then on).
 static func has_job() -> bool:
-	return "mines" in Game.known
+	return Game.story.get("job_notice", false) or "mines" in Game.known
 
 
 ## A short talk at the inn. Effects: "pay:N" (the host pays N silver), "join", "notyet".

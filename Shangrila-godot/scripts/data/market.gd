@@ -36,21 +36,27 @@ static func _host_first(host: String) -> String:
 	return PrologueData.CAST[host].name.split(" ")[0] if PrologueData.CAST.has(host) else "friend"
 
 
-## The conversation with the person on map digit `id`. Effects: "mines" (the crier's notice puts
-## the mines on the map and points out the smith).
+## The conversation with the person on map digit `id`. Effects: "notice" (the crier's notice puts
+## the council house on the town map and points out the smith; the job itself is taken at the
+## council, see CouncilData).
 static func talk(id: String, host: String) -> Array:
 	var who: String = PEOPLE[id].key
 	var h := _host_first(host)
 	match who:
 		"crier":
-			if not "mines" in Game.known:
+			if not LehanData.has_job():
 				return [
 					{"s": "crier", "t": "Hear ye! A notice from the council of Lehan!"},
 					{"s": "crier", "t": "Miners have gone missing in the old workings above the town. Six good men, and not a word from them in nine days."},
-					{"s": "crier", "t": "The council will pay well for anyone willing to look into it. Ask at the council house, or just go up there and come back alive."},
+					{"s": "crier", "t": "The council will pay well for anyone willing to look into it. Ask at the council house, there on the north side of the square."},
 					{"s": host, "t": "Paid work. Finally."},
-					{"fx": "mines", "wait": 0.1},
-					{"n": "(The Mines are now on your map. Across the square hangs the sign of a weapon smith: the Weapon Smith is on the town map.)"},
+					{"fx": "notice", "wait": 0.1},
+					{"n": "(The Council House is now on the town map. Your old companions at the inn may listen now that there is a job. Across the square hangs the sign of a weapon smith: the Weapon Smith is on the town map too.)"},
+				]
+			if not CouncilData.accepted():
+				return [
+					{"s": "crier", "t": "The council's notice stands: miners missing in the old workings above the town. Ask at the council house."},
+					{"s": "crier", "t": "Bring friends when you go in. The council haggles harder with a lone sword."},
 				]
 			return [
 				{"s": "crier", "t": "The council's notice stands: miners missing in the old workings above the town. The council pays well."},

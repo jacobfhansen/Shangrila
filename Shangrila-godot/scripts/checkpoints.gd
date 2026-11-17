@@ -10,7 +10,8 @@ const LIST := [
 	["lehan", "Arriving in Lehan", "At the gate: the walk to the employer, the meeting and the split."],
 	["split", "The inn after the split", "The company has split up; nobody will come without a job."],
 	["market", "The market square", "After the split, before the crier: the walkable square."],
-	["mines", "The Mines", "The mines job is known and the whole company is back together."],
+	["council", "The council house", "The crier has cried the mines job; the company is still at the inn. At the council's door."],
+	["mines", "The Mines", "The mines job is taken and the whole company is back together."],
 ]
 
 
@@ -47,7 +48,18 @@ static func start(key: String, host: String) -> void:
 			Game.main.goto("inn", {"split": true})
 		"market":
 			Game.main.goto("streets", {"at": "market", "into": true})
+		"council":
+			Game.story["job_notice"] = true
+			Game.discover_place("lehan", "council")
+			Game.discover_place("lehan", "smith")
+			Game.main.goto("streets", {"at": "council", "into": true})
 		"mines":
+			Game.story["job_notice"] = true
+			Game.discover_place("lehan", "council")
+			var cs := CouncilData.state()
+			cs.accepted = true
+			cs.met = true
+			Game.story["mines_job"] = {"pay": cs.offer, "advance": 0}
 			Game.known.append("mines")
 			Game.discover_place("lehan", "smith")
 			for c in Game.roster.duplicate():
