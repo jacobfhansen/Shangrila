@@ -20,16 +20,8 @@ func _shot(name: String) -> void:
 	print("shot ", name)
 
 
-func _make(nm: String, cls: int, icon: int) -> Dictionary:
-	var c := Game.blank_character()
-	c.icon = icon
-	for i in 500:
-		Game.roll_character(c)
-		if Game.class_allowed(c, cls):
-			break
-	Game.set_class(c, cls)
-	Game.finish_character(c, nm)
-	return c
+func _make(nm: String, cls: int, icon: int, race := Game.HUMAN) -> Dictionary:
+	return Game.make_character(nm, cls, race, icon)
 
 
 ## Plays many fights with default actions only, to check the balance.
@@ -61,6 +53,78 @@ func _simulate() -> void:
 				lost_hp += 1.0 - float(c.hits) / c.max_hits
 		print("depth %d: won %d%%, avg %.1f rounds, avg hp lost %d%%" % [depth, won / 2, rounds / 200.0, lost_hp / (200 * Game.party.size()) * 100])
 	Game.party = saved
+
+
+## Rule checks for abilities, silver and experience, then the balance check with the real
+## starting company. Restores the tour's party afterwards.
+func _mechanics() -> void:
+	var keep_party := Game.party
+	var keep_roster := Game.roster
+	var keep_story := Game.story.duplicate(true)
+	var keep := [Game.location, Game.known.duplicate(), Game.town_known.duplicate(true), Game.pos]
+	Game.start_company("joss", 0)
+	for c in Game.party:
+		var ab := []
+		for k in Game.ABILITIES:
+			if c.abilities[k] > 0:
+				ab.append("%s %d" % [k, c.abilities[k]])
+		print("%s: %s | hits %d mana %d enc %d silver %d power %d raise unit %d" % [c.name, ", ".join(ab),
+			c.max_hits, c.max_magic, c.max_encum, c.silver, Game.power(c), Game.raise_unit(c)])
+	var joss: Dictionary = Game.party[0]
+	print("joss raise costs: combat %d toughness %d stealth %d (human -10%%)" % [Game.raise_cost(joss, "combat"),
+		Game.raise_cost(joss, "toughness"), Game.raise_cost(joss, "stealth")])
+	joss.xp = 300
+	var hp0: int = joss.max_hits
+	print("raise toughness: ", Game.raise_ability(joss, "toughness"), " -> ", joss.abilities.toughness,
+		" hits ", hp0, " -> ", joss.max_hits, " xp left ", joss.xp, "; raise again (too poor): ", Game.raise_ability(joss, "toughness"))
+	joss.abilities.toughness = 1
+	Game.update_derived(joss)
+	joss.xp = 0
+	# Experience by fight level for Joss (power 3): even 1%, +1 doubles, -3 nothing.
+	var cb := Combat.new(0, [{"key": "rat", "n": 1}])
+	var row := []
+	for lvl in range(0, 8):
+		cb.level = lvl
+		cb.seen = {0: true}
+		row.append("L%d %.2f" % [lvl, cb.xp_for(0)])
+	print("xp for joss by fight level: ", ", ".join(row))
+	cb.level = 3
+	cb.seen = {}
+	cb.hidden = {0: 2}
+	print("hid all fight: ", cb.xp_for(0), "; fell: ", (func(): cb.hidden = {}; cb.fell = {0: true}; return cb.xp_for(0)).call())
+	var won := 0
+	var xp_total := 0
+	for n in 50:
+		var fight := Combat.new(0)
+		var keep_xp: Array = Game.party.map(func(c): return c.xp)
+		for c in Game.party:
+			c.hits = c.max_hits
+		while fight.outcome() == "" and fight.round_no < 60:
+			var o := {}
+			for i in Game.party.size():
+				if Game.party[i].hits > 0:
+					o[i] = fight.default_order(i)
+			for a in fight.begin_round(o):
+				fight.act(a, o)
+			fight.end_round()
+		if fight.outcome() == "won":
+			won += 1
+			fight.rewards()
+		for i in Game.party.size():
+			xp_total += Game.party[i].xp - keep_xp[i]
+	print("50 fights at the entrance: won %d, experience in total (all five) %d" % [won, xp_total])
+	print("story xp, third of a raise: ", Game.story_xp(1.0 / 3.0), " -> ", Game.party.map(func(c): return c.xp))
+	print("money: ", Game.money_string(Game.party_silver()), " pay 30: ", Game.pay(30), " -> ", Game.party_silver())
+	for c in Game.party:
+		c.xp = 0
+	_simulate()
+	Game.party = keep_party
+	Game.roster = keep_roster
+	Game.story = keep_story
+	Game.location = keep[0]
+	Game.known = keep[1]
+	Game.town_known = keep[2]
+	Game.pos = keep[3]
 
 
 func _run() -> void:
@@ -130,9 +194,9 @@ func _run() -> void:
 	sh.drop(null, {"item": 13})
 	sh.drop(null, {"item": 13})
 	await _shot("07_shop")
-	var before := Game.party_copper()
+	var before := Game.party_silver()
 	await sh._on_pay()
-	print("paid: ", before - Game.party_copper(), " expected 740; brand pack: ", Game.party[0].items.slice(10, 28))
+	print("paid: ", before - Game.party_silver(), " expected 14; brand pack: ", Game.party[0].items.slice(10, 28))
 	m.goto("dungeon")
 	await _shot("08_dungeon")
 	var dg: Node = m.current
@@ -151,7 +215,7 @@ func _run() -> void:
 	dg.map_btn.button_pressed = false
 	dg._on_map()
 	# --- combat
-	_simulate()
+	_mechanics()
 	Game.pos = Vector2i(17, 17)
 	Game.rng.seed = 7
 	dg.start_combat(Combat.new(12))
@@ -225,8 +289,9 @@ func _new_game_route() -> void:
 	await _shot("20_ambush")
 	var rounds := 0
 	while is_instance_valid(battle) and battle.is_inside_tree() and rounds < 40:
-		if not battle.spirit_btns[1].disabled:
-			battle._on_spirit("ward" if rounds % 2 == 0 else "bless")
+		if not battle.spirit_btns[2].disabled:
+			# With the host down only "none" is left.
+			battle._on_spirit(("ward" if rounds % 2 == 0 else "bless") if not battle.spirit_btns[1].disabled else "none")
 			rounds += 1
 			if rounds == 2:
 				await get_tree().create_timer(0.4).timeout
@@ -332,7 +397,7 @@ func _lehan_arrival() -> void:
 	tb.finished.emit()
 	await get_tree().create_timer(0.3).timeout
 	await _shot("23g_rejoined")
-	print("after talk: party ", Game.party.map(func(c): return c.name), " purse ", Game.party_copper())
+	print("after talk: party ", Game.party.map(func(c): return c.name), " purse ", Game.party_silver())
 	_lehan_all_hosts()
 
 

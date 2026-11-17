@@ -177,7 +177,7 @@ func _run() -> void:
 	else:
 		for c in Game.party:
 			c.hits = maxi(c.hits, 1)
-			Game.add_copper(c, -Game.char_copper(c) / 2)
+			Game.add_silver(c, -c.silver / 2)
 		_say("The company falls.")
 	_refresh()
 	await get_tree().create_timer(1.6).timeout

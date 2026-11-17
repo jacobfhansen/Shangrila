@@ -26,6 +26,7 @@ var strip_first := 0
 
 var slots := {}
 var stat_labels := {}
+var ability_rows := {}   # key -> {name, pips, plus, hover}
 var strip := []      # [{slot, portrait, name, bars}]
 var name_label: Label
 var cls_label: Label
@@ -58,15 +59,28 @@ func _ready() -> void:
 	Ui.btn(self, "◀", Rect2(584, 18, 42, 28), _on_strip_scroll.bind(-1), "Previous character")
 	Ui.btn(self, "▶", Rect2(584, 50, 42, 28), _on_strip_scroll.bind(1), "Next character")
 
-	# Statistics (ViewCha 70-94).
+	# Abilities (0-10, shown as pips) with a button to raise each one, then the derived values.
 	Ui.frame(self, Rect2(8, 92, 228, 378))
-	var rows := [["Strength", "str"], ["Dexterity", "dex"], ["Constitution", "con"], ["Intelligence", "int"],
-		["Will", "wil"], ["Charisma", "cha"], ["Hits", "hits"], ["Health", "health"], ["Mana", "mana"],
-		["Encumbrance", "enc"], ["Armour Class", "ac"], ["To Hit  R / L", "hit"], ["Damage  R / L", "dam"], ["Experience", "xp"]]
+	for i in Game.ABILITIES.size():
+		var k: String = Game.ABILITIES[i]
+		var y := 98 + i * 20
+		var hover := Control.new()
+		hover.mouse_filter = Control.MOUSE_FILTER_PASS
+		add_child(hover)
+		Ui.place(hover, Rect2(14, y, 180, 20))
+		var nl := Ui.label(self, Game.ABILITY_NAMES[k], Vector2(18, y + 1), 12, Ui.TEXT)
+		var pips := _Pips.new()
+		add_child(pips)
+		Ui.place(pips, Rect2(122, y + 6, 70, 8))
+		var plus := Ui.btn(self, "+", Rect2(200, y + 1, 26, 18), _on_raise.bind(k))
+		plus.add_theme_font_size_override("font_size", 12)
+		ability_rows[k] = {"name": nl, "pips": pips, "plus": plus, "hover": hover}
+	var rows := [["Hits", "hits"], ["Health", "health"], ["Mana", "mana"], ["Encumbrance", "enc"],
+		["Armour", "ac"], ["To Hit  R / L", "hit"], ["Damage  R / L", "dam"], ["Experience", "xp"]]
 	for i in rows.size():
-		var y := 100 + i * 26
-		Ui.label(self, rows[i][0], Vector2(18, y), 13, Ui.TEXT)
-		stat_labels[rows[i][1]] = Ui.label(self, "", Vector2(124, y), 14, Ui.GOLD, 104, HORIZONTAL_ALIGNMENT_RIGHT)
+		var y := 306 + i * 20
+		Ui.label(self, rows[i][0], Vector2(18, y), 12, Ui.DIM)
+		stat_labels[rows[i][1]] = Ui.label(self, "", Vector2(124, y), 13, Ui.GOLD, 104, HORIZONTAL_ALIGNMENT_RIGHT)
 
 	name_label = Ui.title(self, "", Vector2(250, 88), 20)
 	cls_label = Ui.label(self, "", Vector2(400, 94), 14, Ui.TEXT, 100)
@@ -103,7 +117,7 @@ func _ready() -> void:
 		s.hint = "Backpack"
 		slots[k] = s
 
-	log_label = Ui.label(self, "Drag items between the body, the backpack and other characters.", Vector2(244, 462), 11, Ui.DIM, 390)
+	log_label = Ui.label(self, "Drag items to move them. + spends experience on an ability.", Vector2(244, 462), 11, Ui.DIM, 390)
 	refresh()
 
 
@@ -116,19 +130,27 @@ func refresh() -> void:
 	name_label.text = c.name
 	cls_label.text = Game.CLASSES[c.cls]
 	race_label.text = Game.RACES[c.race]
-	stat_labels["str"].text = str(c.strength)
-	stat_labels["dex"].text = str(c.dexterity)
-	stat_labels["con"].text = str(c.constitution)
-	stat_labels["int"].text = str(c.intelligence)
-	stat_labels["wil"].text = str(c.will)
-	stat_labels["cha"].text = str(c.charisma)
+	for k in ability_rows:
+		var row: Dictionary = ability_rows[k]
+		var v := Game.ability(c, k)
+		var fav := Game.is_favoured(c, k)
+		var cost := Game.raise_cost(c, k)
+		row.pips.value = v
+		row.name.add_theme_color_override("font_color", Ui.GOLD if fav else Ui.TEXT)
+		row.plus.disabled = cost < 0 or c.xp < cost
+		var tip := "%s %d / %d%s\n%s" % [Game.ABILITY_NAMES[k], v, Game.MAX_ABILITY,
+			" (favoured by the %s class)" % Game.CLASSES[c.cls] if fav else "", Game.ABILITY_INFO[k]]
+		if cost >= 0:
+			tip += "\nRaising it to %d costs %d experience." % [v + 1, cost]
+		row.hover.tooltip_text = tip
+		row.plus.tooltip_text = tip
 	stat_labels["hits"].text = "%d / %d" % [c.hits, c.max_hits]
 	stat_labels["health"].text = "%d / %d" % [c.health, c.max_health]
 	stat_labels["mana"].text = "%d / %d" % [c.magic, c.max_magic]
 	var enc := Game.encumbrance(c)
 	stat_labels["enc"].text = "%d / %d" % [enc, c.max_encum]
 	stat_labels["enc"].add_theme_color_override("font_color", Ui.RED if enc > c.max_encum else Ui.GOLD)
-	stat_labels["ac"].text = str(Game.armor_class(c))
+	stat_labels["ac"].text = str(Game.armor(c))
 	stat_labels["hit"].text = "%d / %d" % [Game.to_hit(c, Game.SLOT_RHAND), Game.to_hit(c, Game.SLOT_LHAND)]
 	stat_labels["dam"].text = "%s / %s" % [Game.damage_string(c, Game.SLOT_RHAND), Game.damage_string(c, Game.SLOT_LHAND)]
 	stat_labels["xp"].text = str(c.xp)
@@ -162,6 +184,14 @@ func _on_strip_click(s: Slot) -> void:
 
 func _on_strip_scroll(d: int) -> void:
 	strip_first = posmod(strip_first + d, list.size())
+	refresh()
+
+
+func _on_raise(key: String) -> void:
+	var c := viewed()
+	var cost := Game.raise_cost(c, key)
+	if Game.raise_ability(c, key):
+		log_label.text = "%s spends %d experience: %s is now %d." % [c.name, cost, Game.ABILITY_NAMES[key], Game.ability(c, key)]
 	refresh()
 
 
@@ -215,6 +245,26 @@ func drop(s: Slot, data: Dictionary) -> void:
 				c.items[src] = 0
 				log_label.text = "%s gave the %s to %s." % [c.name, Game.item(id).name, other.name]
 	refresh()
+
+
+## Ten pips for an ability's value: filled up to the value, the rest hollow.
+class _Pips:
+	extends Control
+	var value := 0:
+		set(v):
+			value = v
+			queue_redraw()
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		for i in Game.MAX_ABILITY:
+			var p := Vector2(3.5 + i * 7, 4)
+			if i < value:
+				draw_circle(p, 3, Ui.GOLD)
+			else:
+				draw_arc(p, 2.5, 0, TAU, 12, Color(0.66, 0.6, 0.47, 0.6), 1.0)
 
 
 ## Faint figure behind the equipment slots (stands in for the "Character Map" picture).

@@ -11,10 +11,11 @@ extends RefCounted
 const EMPLOYER := {"name": "The Employer", "race": "Human",
 	"look": {"skin": "#d8b898", "hair": "#8a8a8a", "cloth": "#4a4a50"}}
 
-## What the job pays, in copper, by how the proof and the questions went.
-const PAY := {"head": 1500, "kept": 800, "lie": 1000, "warm": 1000, "silent": 900}
-const POCKET := 200      # what Tikkat can palm from the purse
-const SKETCH := 100      # what Ithrae gives up for a look at the sketch
+## What the job pays, in silver, by how the proof and the questions went.
+const PAY := {"head": 100, "kept": 60, "lie": 70, "warm": 70, "silent": 60}
+const POCKET := 15       # what Tikkat can palm from the purse
+const SKETCH := 5        # what Ithrae gives up for a look at the sketch
+const MEETING_XP := 1.0 / 3.0   # of a raise, for everyone at the meeting
 
 ## Where things are on the Lehan town map (see Game.TOWNS), and the streets between them.
 const TO_HOUSE := [Vector2(300, 336), Vector2(300, 292), Vector2(190, 292), Vector2(160, 272)]
@@ -37,9 +38,9 @@ static func _first(key: String) -> String:
 	return _name(key).split(" ")[0]
 
 
-## "15 gold pieces" (the job is paid in whole gold).
-static func _coins(copper: int) -> String:
-	return "%d gold pieces" % (copper / 100)
+## "100 silver pieces".
+static func _coins(silver: int) -> String:
+	return "%d silver pieces" % silver
 
 
 static func state() -> Dictionary:
@@ -69,6 +70,7 @@ static func head_saved() -> bool:
 
 
 ## Who would notice Tikkat palming coins: the best Perception, with Curious eyes a little sharper.
+## Ties go to the earlier member of the company.
 static func noticer(host: String) -> String:
 	var best := ""
 	var top := -999
@@ -78,9 +80,9 @@ static func noticer(host: String) -> String:
 		var c := member(k)
 		if c.is_empty():
 			continue
-		var p: int = c.skills[17] + Game.stat_bonus(c.intelligence) / 5
+		var p: int = Game.ability(c, "perception") * 2
 		if "Curious" in PrologueData.CAST[k].traits:
-			p += 5
+			p += 1
 		if p > top:
 			top = p
 			best = k
@@ -181,10 +183,10 @@ static func _sketch_choice() -> Dictionary:
 			{"s": "employer", "t": "A nobody's. An old eyesore on a road my family wants widened. You are paid to break things, not to ask about them."},
 			{"n": "Half under his gloves lies a sheet of paper: a sketch of the shrine, drawn with care."},
 			{"choice": "sketch", "speakers": true, "prompt": "Choose a reply (1-2)", "options": [
-				{"tags": ["Curious"], "t": "Let me look at that sketch, and keep a gold piece of my share.", "say": "ithrae", "after": [
+				{"tags": ["Curious"], "t": "Let me look at that sketch, and keep five silver of my share.", "say": "ithrae", "after": [
 					{"fx": "mark=yes", "wait": 0.1},
 					{"n": "He hesitates, then shrugs and slides it across. While the others talk, Ithrae copies a small mark from its corner into her notes: a ring, cut through by a single line."},
-					{"s": "employer", "t": "Satisfied? A gold piece lighter, and none the wiser."}]},
+					{"s": "employer", "t": "Satisfied? Five silver lighter, and none the wiser."}]},
 				{"t": "Never mind.", "say": "ithrae", "after": []},
 			]}]},
 		{"t": "(Say nothing.)", "silent": true, "after": []},
@@ -315,7 +317,7 @@ static func settle(host: String) -> void:
 	for k in shares:
 		var c := member(k)
 		if not c.is_empty():
-			Game.add_copper(c, shares[k])
+			Game.add_silver(c, shares[k])
 	# Who is soured, who is won over, who wants a cut.
 	var mood := {}
 	for k in PrologueData.ORDER:
@@ -347,6 +349,7 @@ static func settle(host: String) -> void:
 		c["rejoin"] = mood[k].state
 		c["grudge"] = mood[k].get("grudge", "")
 		c["owed"] = mood[k].get("owed", 0)
+	st["xp"] = Game.story_xp(MEETING_XP)
 
 
 # ---------------------------------------------------------------- at the inn
@@ -357,6 +360,7 @@ static func parting(host: String) -> Array:
 	var steps: Array = [
 		{"n": "The inn is warm and loud, and for the first time in a week nobody is carrying a crowbar."},
 		{"n": "Nobody says it out loud, but everyone knows it: the job is done, the pay is shared, and the Harrow Company has no more work."},
+		{"n": "(The job is done: everyone gains experience. Spend it at the inn, under Info.)"},
 	]
 	for k in PrologueData.ORDER:
 		if k == host:
@@ -416,7 +420,7 @@ static func has_job() -> bool:
 	return "mines" in Game.known
 
 
-## A short talk at the inn. Effects: "pay:N" (the host pays N copper), "join", "notyet".
+## A short talk at the inn. Effects: "pay:N" (the host pays N silver), "join", "notyet".
 ## `purse` is what the party has, so unaffordable offers say so.
 static func rejoin_talk(k: String, c: Dictionary, host: String, purse: int) -> Array:
 	var h := _first(host)

@@ -8,25 +8,31 @@ extends RefCounted
 ##   {"i": text}                          inner experience (the spirit's touch, the host's thoughts)
 ##   {"fx": "touch"}                      the spirit's first touch (a flash of light)
 
-## The Harrow Company. `look` drives RacePortrait.
+## The Harrow Company. `look` drives RacePortrait; `abilities` are their starting values
+## (race bonus included, see IDEAS.md).
 const CAST := {
 	"joss": {"name": "Joss Harrow", "race": "Human", "cls": "Warrior",
+		"abilities": {"combat": 2, "toughness": 1, "talk": 1},
 		"traits": ["Brave", "Greedy", "Proud"],
 		"blurb": "The company's leader. A town guard thrown out for taking bribes.",
 		"look": {"skin": "#d8a878", "hair": "#4a3018", "cloth": "#6a2a20", "beard": true}},
 	"maera": {"name": "Maera Vell", "race": "Human", "cls": "Ranger",
+		"abilities": {"combat": 1, "missile": 2, "perception": 1, "survival": 1},
 		"traits": ["Curious", "Loyal", "Hot-tempered"],
 		"blurb": "A poacher's daughter who knows every forest path to the coast.",
 		"look": {"skin": "#f0c8a0", "hair": "#a0502a", "cloth": "#3a5a2a", "hood": true}},
 	"ommuk": {"name": "Ommuk", "race": "Thuug", "cls": "Cleric",
+		"abilities": {"combat": 1, "toughness": 2, "lore": 1, "magic": 1},
 		"traits": ["Pious", "Calm", "Generous"],
 		"blurb": "A slow, patient healer who prays to whoever listens.",
 		"look": {"skin": "#6f8a5c", "shell": "#5a4630", "cloth": "#d8c8a0"}},
 	"ithrae": {"name": "Ithrae", "race": "Aeldroe", "cls": "Mage",
+		"abilities": {"perception": 1, "lore": 1, "magic": 2},
 		"traits": ["Curious", "Melancholy", "Honest"],
 		"blurb": "A young Aeldroe who left her people to study magic.",
 		"look": {"skin": "#dce6f2", "hair": "#f0f4ff", "cloth": "#4a4a8a"}},
 	"tikkat": {"name": "Tikkat", "race": "Nisk", "cls": "Thief",
+		"abilities": {"stealth": 2, "thievery": 1, "perception": 1},
 		"traits": ["Greedy", "Cheerful", "Cowardly"],
 		"blurb": "The lock-picker. Came cheap, talks too much, owes the most.",
 		"look": {"skin": "#8a7866", "cloth": "#3a3030"}},

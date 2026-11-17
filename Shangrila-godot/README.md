@@ -10,9 +10,8 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
 - **Screens and flow:** About picture, then main menu (New / Resume / Quit), Inn, View
   Character, Weapon Smith and the Mines. The original's Create Character screen and painted
   city view are retired: characters are pre-made, and Lehan is now a town map (see below).
-- **Character rules:** 3×(2–6) stat rolls, hit points, endurance, the starting
-  purse, class requirements, the 22 skills and their formulas, starting kits per class, and max
-  encumbrance. The bonus tables are copied exactly from `ShangrilaUtils.p`.
+- **Character rules:** the classes, their starting kits and encumbrance. (The original's rolled
+  attributes and 22 skills are replaced by simpler abilities, see below.)
 - **Items:** the full item pool (31 items) with the original weights, defense values, slot rules
   (`DoesItFit`), food effects (`EatAndDrink`), armour class and to-hit calculations.
 - **Inn:** a roster of 23 characters, a party of 6, plus Muster / Dismiss / Info / Kill / scroll.
@@ -20,7 +19,7 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
   on Info to examine it, on Eat to eat it, on Trash to throw it away, or on another character's
   portrait to give it to them.
 - **Shop:** the Lehan weapon smith stock (including the three duplicate longswords), plus the
-  basket and money display (1 G = 10 S = 100 C).
+  basket and money display. Prices are now in silver.
 - **Mines:** the exact 66-square map from `InitData`, with movement (turn, step, strafe), the
   compass and map mode with a pulsating party marker. The view is now real 3D instead of the
   original's pre-drawn strips.
@@ -30,11 +29,17 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
 
 ## What had to be filled in
 
-- **Races:** the original Dwarf, Elf, Half Elf, Halfling and Human are replaced by Humans
-  (+1 Str), Thuugs (slow, turtle-like folk: +1 Str, +2 Con, -2 Dex, -1 Cha, +1 armour class
-  from the shell), Aeldroes (slim, half-transparent beings with a gift for magic: +2 Int, +1 Will,
-  -1 Str, -2 Con, +10 Hide and Magic Arts) and Nisk (wiry rat-folk: +2 Dex, +1 Con, -1 Str,
-  -1 Cha, +10 Climb, +5 Perception). Old saves are converted when loaded.
+- **Races:** the original Dwarf, Elf, Half Elf, Halfling and Human are replaced by Humans,
+  Thuugs (slow, turtle-like folk with a shell), Aeldroes (slim, half-transparent beings with a
+  gift for magic) and Nisk (wiry rat-folk). Old saves are converted when loaded.
+- **Abilities and silver (new rules):** ten abilities from 0 to 10 (Combat, Missile Weapons,
+  Toughness, Stealth, Thievery, Perception, Survival, Lore, Magic, Talk), shown as pips on the
+  character sheet. Checks are d10 + ability against 6 / 9 / 12. The class sets the starting
+  values and the *favoured* abilities (gold names, cheaper to raise), and the race adds +1 and a
+  quirk. Hit points come from race + 3 × Toughness, mana from Magic. Experience is spent with
+  the **+** buttons on the character sheet (the inn's *Info*): raising to N costs N × 100, or
+  N × 150 if not favoured, and Humans pay 10% less. All money is silver. The rules are in
+  `scripts/game.gd`; the full plan is "Simpler mechanics" in `IDEAS.md`.
 - The resource forks (all UI pictures, the item icons and the 47 portraits) were empty in the
   copy, so the UI is rebuilt in code. Item icons and most portraits are drawn procedurally.
 - Save and Resume were stubs in the original. Here they save to `user://shangrila_save.json`.
@@ -117,15 +122,19 @@ and finally orcs and renegades (the surviving "The Enemy" painting).
   who still has no order their default and fights the round.
 - **Auto-combat** (off at the start of every fight): toggle *Auto* and every round uses the
   default actions and races through. Untoggle it to take over again.
-- Rules: hit chance uses the original weapon skills and armour class. Weapons now have damage
+- Rules: to hit, d10 + Combat (Missile Weapons for bows) must reach the monster's defence; a
+  monster hits on d10 + its attack against 8 + Combat + half the armour. Weapons have damage
   ranges. The first three party members take most of the blows. Parry makes you harder to hit.
   Hide makes monsters ignore you and doubles your next hit. Clerics and paladins can turn undead.
   Bows need arrows somewhere on the character (they are picked up again after the fight).
-- Spells: mages (Fire Dart), enchanters (Slumber) and clerics (Mend) now get a mana pool from
-  Magic Arts (the original kept max magic at 0).
-- Winning gives experience, coins and sometimes an item. Fallen characters come around with 1 hit
-  point. If the whole party falls, they wake up at the inn, robbed of half their coins.
-  (Experience has no use yet: the original had no levels.)
+- Spells: mages (Fire Dart), enchanters (Slumber) and clerics (Mend) with at least 1 in Magic
+  get a mana pool of 2 + 3 × Magic (the original kept max magic at 0).
+- Winning gives experience, silver and sometimes an item. Experience is scaled so grinding does
+  not pay: a fight at a character's own power (best fighting ability + Toughness) gives 1% of
+  their next raise, each monster level above doubles it, each below halves it, and three below
+  gives nothing. Hiding the whole fight gives nothing, falling halves it. Most experience comes
+  from the story. Fallen characters come around with 1 hit point. If the whole party falls,
+  they wake up at the inn, robbed of half their silver.
 
 ## Controls in the mines
 

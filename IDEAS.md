@@ -15,7 +15,8 @@ Items marked **Open question** need a decision before work starts.
 ## Next steps
 
 ### Simpler mechanics: abilities 1-10 and silver only
-**Agreed, not built yet.** To do before the story continues. It replaces the 1997 rules: six
+**Built** (except the parts no scene uses yet: climbing, traps and the Nisk nose, more spells).
+Still to tune: monster numbers once the party grows. It replaces the 1997 rules: six
 attributes rolled 3-18, 22 percentage skills, and coins in copper, silver and gold.
 
 **Ten abilities, from 0 to 10.** 0 means untrained: poor, but you may still try. Some things need
@@ -41,7 +42,7 @@ Weapons) + the weapon's bonus against 5 + the target's defence and armour.
 
 **Derived values:**
 - Health: a race base (Human 10, Thuug 13, Aeldroe 7, Nisk 9) + 3 × Toughness.
-- Mana: 3 × Magic, for spell casters only.
+- Mana: 2 + 3 × Magic, for spell casters only (with only 3 × Magic, Ommuk could cast Mend once).
 - Carrying limit: grows with Toughness.
 
 **Classes stay**, as a title and a starting point. The class decides which abilities start above 0
@@ -911,3 +912,73 @@ searching it gives clues to where the jailers are.
   their traits (a Proud leader expects more)?
 - What makes the spirit realise the employer's connection to the jailers? (Decide later.
   Ithrae's copied mark and Maera's tracks are possible threads.)
+
+### A solo adventure before the mines job
+**Agreed, not built yet.** After the company splits at the inn, the host is on their own. Before
+the mines job is announced, the host takes on one small solo adventure. The reward is a new
+character who joins the inn's list and can be mustered (see [CHARACTERS.md](CHARACTERS.md)).
+
+**The player picks a path.** After the split, the market and the inn offer two or three small
+hooks. The one the host takes on decides who joins. The others are not lost: they stay as
+characters to win over later. Suggested paths, from the tier-1 Lehan characters:
+- **Skee (Nisk Ranger):** the rat-catcher has seen strange lights in the old tunnels under the
+  town. A short cellar crawl with a hint of something old below Lehan (the streets "laid over
+  older ones" that the spirit felt on the walk in).
+- **Boddo (Thuug Warrior):** a dock porter with a debt of honour he can't pay himself. A town
+  errand solved by talk, wits or a scuffle.
+- **Lisbet Farrow (Human Thief):** the inn's errand runner, who sells rumours. A small job that
+  shows how Lehan works. She knows who is hiring, which leads to the crier.
+
+**Mostly abilities and talk.** Each adventure has a few obstacles, and each obstacle has more
+than one way through:
+- a check on one of the host's abilities (Stealth, Perception, Talk, Thievery, Lore...);
+- a dialogue choice that suits the host's traits;
+- a small fight as a last resort.
+Every host can finish every path, in their own way. A host who passes an obstacle with an
+ability gets story experience (see "Simpler mechanics").
+
+**The crier waits.** After the split, the market has no mines news yet, only the hooks. The
+crier announces the mines job once the solo adventure is done. So the companions' "no job yet"
+still makes sense, and the new character can join the company for the mines.
+
+**The spirit takes part, quietly.** For the first time it is alone with its host. It can help a
+little, for example a nudge on one check (like *Guide the blow* in the first fight), and the
+host's inner voice reacts to it. This is a good place to show the bond between spirit and host,
+and how it differs between hosts.
+
+**Where the hooks are found:** in the walkable market square (see "A walkable market square").
+Skee, Boddo and Lisbet stand in the square or at its edges, and the host finds them by walking
+up and talking.
+
+- **Open question:** what does each adventure look like, scene by scene, and which abilities
+  does each obstacle test?
+- **Open question:** should the new character's mustering talk use the same "short talk" as
+  the old companions, or a first meeting (they don't know the host yet)?
+
+### A walkable market square
+**Agreed, not built yet.** Lehan's market square becomes a small first-person 3D area that you
+walk around, like the Mines. It has medieval house fronts, stalls and people standing about who
+can be talked to. It is the home of the solo-adventure hooks.
+
+- **Market first.** Only the market square, about 8 × 8 squares. The town map stays for getting
+  around, and other places can become walkable later.
+- **Grid steps, like the Mines.** The same step-and-turn movement, keys and compass.
+- **One engine for every area.** The 3D view (`scripts/widgets/dungeon_view.gd`) is tied to the
+  mines map. It should read any small map instead: walls, open sky or ceiling, textures, props
+  and people. The same engine can then serve the tunnels under Lehan (Skee's path) and the
+  employer's house dungeon later.
+- **Outdoors:** sky and daylight instead of a ceiling, cobbles, house fronts (timber,
+  plaster, shop signs, doors) generated by `tools/make_textures.py`, and simple 3D props: stalls
+  with awnings, the well, barrels, a cart.
+- **People:** flat cut-out figures that always face the viewer, drawn in code like the race
+  portraits (all four races, clothes and colours). Real art can replace them later. Walking up
+  to someone and facing them opens a talk in the dialogue window.
+- **Who stands there:**
+  - the crier by the well, who only has the mines notice once the solo adventure is done;
+  - Skee, Boddo and Lisbet (the solo-adventure hooks);
+  - a few townsfolk with a line or two of gossip.
+- **Doors:** some doors lead on, such as the smith's shop or back to the town map. Others are
+  just walls for now.
+
+- **Open question:** what else should be in the square (market sounds, time of day, a
+  pickpocket who tests Perception)?

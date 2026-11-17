@@ -103,12 +103,12 @@ func refresh() -> void:
 			basket_slots[i].item_id = 0
 			basket_counts[i].text = ""
 	cost_label.text = "Total cost:  " + Game.money_string(_sum())
-	var purse := Game.party_copper()
+	var purse := Game.party_silver()
 	purse_label.text = "Party money: " + Game.money_string(purse)
 	cost_label.add_theme_color_override("font_color", Ui.RED if _sum() > purse else Ui.TEXT)
 	for i in party_boxes.size():
 		var c: Dictionary = Game.party[i]
-		party_boxes[i].text = "%d gold\n%d silver\n%d copper" % [c.gold, c.silver, c.copper]
+		party_boxes[i].text = "%d silver" % c.silver
 
 
 func can_drop(s: Slot, data: Dictionary) -> bool:
@@ -151,7 +151,7 @@ func _on_pay() -> void:
 		await Game.main.message("You have no party to carry the goods.")
 		return
 	var sum := _sum()
-	if Game.party_copper() < sum:
+	if Game.party_silver() < sum:
 		await Game.main.message("You can't afford that!")
 		return
 	var count := 0
@@ -187,10 +187,10 @@ func _on_haggle() -> void:
 	var best := -99
 	var who := ""
 	for c in Game.party:
-		if c.skills[13] > best:
-			best = c.skills[13]
+		if Game.ability(c, "talk") > best:
+			best = Game.ability(c, "talk")
 			who = c.name
 	if who == "":
 		talk_label.text = "\"Haggle with whom? You are alone.\""
 	else:
-		talk_label.text = "%s tries to haggle (skill %d).\n\n\"My prices are fair, friend. Take it or leave it.\"" % [who, best]
+		talk_label.text = "%s tries to haggle (Talk %d).\n\n\"My prices are fair, friend. Take it or leave it.\"" % [who, best]

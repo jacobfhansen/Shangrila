@@ -1,15 +1,16 @@
 extends Node
-## Global game state and rules, ported from Shangrila.p / ShangrilaUtils.p (1997).
+## Global game state and rules. Started as a port of Shangrila.p / ShangrilaUtils.p (1997); the
+## character rules are now the simpler ones in IDEAS.md: ten abilities from 0 to 10, silver only.
 
 const SAVE_PATH := "user://shangrila_save.json"
 
 const RACES := ["Human", "Thuug", "Aeldroe", "Nisk"]
 enum { HUMAN, THUUG, AELDROE, NISK }
 const RACE_INFO := [
-	"Humans: adaptable and strong-armed.",
-	"Thuugs: slow, turtle-like folk. Their shell gives +1 armour class.",
-	"Aeldroes: slim, half-transparent beings with a gift for magic and hiding.",
-	"Nisk: quick, wiry rat-folk who climb well and miss little.",
+	"Humans: adaptable and quick to learn. +1 in a favoured ability, raises cost 10% less.",
+	"Thuugs: slow, turtle-like folk. +1 Toughness, the shell gives +1 armour, but they act late.",
+	"Aeldroes: slim, half-transparent beings. +1 Magic, +2 Stealth in the dark, but frail.",
+	"Nisk: quick, wiry rat-folk. +1 Stealth, natural climbers with a keen nose.",
 ]
 ## Saves before version 2 used the original 1997 races; map them onto the new ones.
 const OLD_RACE_MAP := [THUUG, AELDROE, HUMAN, NISK, HUMAN]  # Dwarf, Elf, Half Elf, Halfling, Human
@@ -18,12 +19,56 @@ const CLASSES := ["Cleric", "Enchanter", "Mage", "Monk", "Paladin", "Ranger", "T
 enum { CLERIC, ENCHANTER, MAGE, MONK, PALADIN, RANGER, THIEF, WARRIOR }
 const NO_CLASS := -1
 
-## Skill names in the original order (Skills[1..22] -> index 0..21).
-const SKILLS := [
-	"Axes", "Blunt", "Bows", "Daggers", "Hands & Feet", "Pole Arms", "Swords", "Thrown",
-	"Climb", "Disarm Traps", "Evaluate", "First Aid", "Foraging", "Haggle", "Herb Lore",
-	"Hide", "Magic Arts", "Perception", "Pick Locks", "Read & Write", "Steal", "Tracking",
-]
+## The ten abilities, 0 (untrained) to 10 (legendary). Checks: d10 + ability against a
+## difficulty (EASY, NORMAL, HARD).
+const ABILITIES := ["combat", "missile", "toughness", "stealth", "thievery", "perception",
+	"survival", "lore", "magic", "talk"]
+const ABILITY_NAMES := {
+	"combat": "Combat", "missile": "Missile Weapons", "toughness": "Toughness", "stealth": "Stealth",
+	"thievery": "Thievery", "perception": "Perception", "survival": "Survival", "lore": "Lore",
+	"magic": "Magic", "talk": "Talk",
+}
+const ABILITY_INFO := {
+	"combat": "Melee hits, parrying and dodging blows.",
+	"missile": "Bows and thrown weapons.",
+	"toughness": "Hit points, carrying, resisting poison and fear.",
+	"stealth": "Hiding, sneaking and slipping away.",
+	"thievery": "Locks, traps and pockets. Needs at least 1.",
+	"perception": "Spotting and noticing things, and acting first in a fight.",
+	"survival": "Foraging, tracking and climbing.",
+	"lore": "Herbs, first aid, reading and judging what things are worth.",
+	"magic": "Spells and mana. Casting needs at least 1.",
+	"talk": "Haggling and persuading.",
+}
+const MAX_ABILITY := 10
+const EASY := 6
+const NORMAL := 9
+const HARD := 12
+
+## Abilities a class makes cheaper to raise. The first one gets the Human +1.
+const FAVOURED := {
+	CLERIC: ["magic", "lore", "combat", "toughness"],
+	ENCHANTER: ["magic", "talk", "lore"],
+	MAGE: ["magic", "lore", "perception"],
+	MONK: ["combat", "toughness", "stealth"],
+	PALADIN: ["combat", "toughness", "magic", "talk"],
+	RANGER: ["missile", "survival", "perception", "combat"],
+	THIEF: ["stealth", "thievery", "perception", "talk"],
+	WARRIOR: ["combat", "toughness", "missile"],
+}
+## What a character of each class starts with, before the race bonus.
+const CLASS_START := {
+	CLERIC: {"magic": 1, "lore": 1, "combat": 1},
+	ENCHANTER: {"magic": 1, "talk": 1},
+	MAGE: {"magic": 1, "lore": 1},
+	MONK: {"combat": 1, "toughness": 1},
+	PALADIN: {"combat": 1, "toughness": 1},
+	RANGER: {"missile": 1, "survival": 1},
+	THIEF: {"stealth": 1, "thievery": 1},
+	WARRIOR: {"combat": 1, "toughness": 1},
+}
+const RACE_ABILITY := ["", "toughness", "magic", "stealth"]   # Humans: the class's first favoured
+const RACE_HITS := [10, 13, 7, 9]
 
 const MAX_ROSTER := 23
 const MAX_PARTY := 6
@@ -146,38 +191,39 @@ func _it(id: int, nm: String, shape: String, col: String, weight: int, price: in
 
 
 func _make_items() -> void:
-	# Same pool, same numbers as InitData. Prices of 111 were placeholders in the original.
-	_it(2, "Red Shirt", "shirt", "#b02a20", 20, 111, {"armor": true, "chest": true}, "A plain shirt of red linen.")
-	_it(3, "Longsword", "sword", "#d0d4dc", 60, 1500, {"dmg": [2, 7], "weapon": true, "sword": true}, "A fine straight blade, balanced for one hand.")
-	_it(4, "Iron Helmet", "helmet", "#8a8f99", 45, 111, {"armor": true, "head": true, "defense": 2}, "Dented, but it has saved a skull or two.")
-	_it(5, "Small Sack", "sack", "#a08050", 5, 111, {"dims": true}, "Holds a few odds and ends.")
-	_it(6, "Heavy Robe", "robe", "#5a4a7a", 50, 111, {"armor": true, "chest": true, "defense": 1}, "Thick wool, warm in cold halls.")
-	_it(7, "Heavy Boots", "boots", "#5a3a20", 60, 111, {"armor": true, "feet": true, "defense": 1}, "Iron-shod boots for long marches.")
-	_it(8, "Sandals", "sandals", "#b08850", 10, 111, {"armor": true, "feet": true}, "Light and cool, little protection.")
-	_it(9, "Leather Pants", "pants", "#7a5030", 20, 111, {"armor": true, "legs": true, "defense": 1}, "Supple boiled leather.")
-	_it(10, "Leather Armor", "armor", "#8a5a30", 200, 111, {"armor": true, "chest": true, "defense": 3}, "A studded leather jerkin.")
-	_it(11, "Longbow", "bow", "#8a6030", 50, 6000, {"dmg": [1, 6], "gun": true, "bow": true}, "Tall yew bow. Needs arrows.")
-	_it(12, "Quiver", "quiver", "#6a4020", 30, 111, {"dims": true, "quiver": true}, "A leather quiver for arrows.")
-	_it(13, "Arrow", "arrow", "#c0a070", 2, 20, {"misil": true, "quiver": true}, "Goose-feathered, iron tipped.")
-	_it(14, "Mace", "mace", "#9aa0aa", 50, 400, {"dmg": [2, 5], "weapon": true, "blunt": true}, "A flanged iron head on an ash haft.")
-	_it(15, "Wooden Shield", "shield", "#8a6234", 30, 111, {"armor": true, "defense": 1}, "Oak planks bound with iron.")
-	_it(16, "Dark Pants", "pants", "#2a2a35", 20, 111, {"armor": true, "legs": true}, "Dark cloth trousers.")
-	_it(17, "Yellow Robe", "robe", "#c8a020", 40, 111, {"armor": true, "chest": true}, "The saffron robe of a monk.")
-	_it(18, "Staff", "staff", "#7a5530", 50, 3, {"dmg": [1, 4], "weapon": true, "blunt": true}, "A sturdy walking staff.")
-	_it(19, "Spell Book", "book", "#5a2030", 100, 111, {"dims": true}, "Pages full of crabbed arcane script.")
-	_it(20, "Magicuser Hat", "hat", "#30307a", 15, 111, {"armor": true, "head": true}, "Tall, pointed and starry.")
-	_it(21, "Holy Symbol", "symbol", "#d4a830", 10, 111, {"neck": true, "dims": true}, "Blessed by the temple priests.")
-	_it(22, "Holy Water", "flask", "#80b0e0", 20, 111, {"dims": true}, "A vial of blessed water.")
-	_it(23, "First Aid Kit", "kit", "#e8e0d0", 100, 111, {"dims": true}, "Bandages, salves and a needle.")
-	_it(24, "Lockpick Kit", "lockpick", "#6a4a2a", 100, 111, {"dims": true}, "Picks and tension tools. Not strictly legal.")
-	_it(25, "Shoes", "shoes", "#4a3020", 25, 111, {"armor": true, "feet": true}, "Soft leather shoes.")
-	_it(26, "Wood Axe", "axe", "#9aa0aa", 50, 100, {"dmg": [1, 6], "weapon": true, "axe": true}, "Meant for trees, works on other things.")
-	_it(27, "Rope", "rope", "#c0a060", 50, 111, {"dims": true}, "Fifty feet of hemp rope.")
-	_it(28, "Alnon Leaf", "leaf", "#40a040", 1, 111, {"dims": true, "food": true, "health": [10, 30]}, "A healing herb. Chew it.")
-	_it(29, "Alman Root", "root", "#a07040", 1, 111, {"dims": true, "food": true, "hits": [1, 4]}, "Bitter root that closes wounds.")
-	_it(30, "Cheese", "cheese", "#e8c040", 15, 111, {"dims": true, "food": true, "health": [20, 25]}, "A good wedge of hard cheese.")
-	_it(31, "Clasp Knife", "knife", "#c8ccd4", 5, 110, {"dmg": [1, 3], "weapon": true, "dagger": true}, "A folding knife.")
-	_it(32, "Bardiche", "bardiche", "#a0a6b0", 125, 700, {"dmg": [2, 8], "weapon": true, "axe": true}, "A long-hafted axe with a crescent blade.")
+	# Same pool as InitData. Prices are in silver (the original's copper prices were mostly
+	# placeholders of 111).
+	_it(2, "Red Shirt", "shirt", "#b02a20", 20, 1, {"armor": true, "chest": true}, "A plain shirt of red linen.")
+	_it(3, "Longsword", "sword", "#d0d4dc", 60, 15, {"dmg": [2, 7], "weapon": true, "sword": true}, "A fine straight blade, balanced for one hand.")
+	_it(4, "Iron Helmet", "helmet", "#8a8f99", 45, 6, {"armor": true, "head": true, "defense": 2}, "Dented, but it has saved a skull or two.")
+	_it(5, "Small Sack", "sack", "#a08050", 5, 1, {"dims": true}, "Holds a few odds and ends.")
+	_it(6, "Heavy Robe", "robe", "#5a4a7a", 50, 3, {"armor": true, "chest": true, "defense": 1}, "Thick wool, warm in cold halls.")
+	_it(7, "Heavy Boots", "boots", "#5a3a20", 60, 3, {"armor": true, "feet": true, "defense": 1}, "Iron-shod boots for long marches.")
+	_it(8, "Sandals", "sandals", "#b08850", 10, 1, {"armor": true, "feet": true}, "Light and cool, little protection.")
+	_it(9, "Leather Pants", "pants", "#7a5030", 20, 2, {"armor": true, "legs": true, "defense": 1}, "Supple boiled leather.")
+	_it(10, "Leather Armor", "armor", "#8a5a30", 200, 12, {"armor": true, "chest": true, "defense": 3}, "A studded leather jerkin.")
+	_it(11, "Longbow", "bow", "#8a6030", 50, 25, {"dmg": [1, 6], "gun": true, "bow": true}, "Tall yew bow. Needs arrows.")
+	_it(12, "Quiver", "quiver", "#6a4020", 30, 2, {"dims": true, "quiver": true}, "A leather quiver for arrows.")
+	_it(13, "Arrows", "arrow", "#c0a070", 2, 1, {"misil": true, "quiver": true}, "A bundle of goose-feathered, iron-tipped arrows. Most can be picked up again after a fight.")
+	_it(14, "Mace", "mace", "#9aa0aa", 50, 8, {"dmg": [2, 5], "weapon": true, "blunt": true}, "A flanged iron head on an ash haft.")
+	_it(15, "Wooden Shield", "shield", "#8a6234", 30, 4, {"armor": true, "defense": 1}, "Oak planks bound with iron.")
+	_it(16, "Dark Pants", "pants", "#2a2a35", 20, 1, {"armor": true, "legs": true}, "Dark cloth trousers.")
+	_it(17, "Yellow Robe", "robe", "#c8a020", 40, 3, {"armor": true, "chest": true}, "The saffron robe of a monk.")
+	_it(18, "Staff", "staff", "#7a5530", 50, 1, {"dmg": [1, 4], "weapon": true, "blunt": true}, "A sturdy walking staff.")
+	_it(19, "Spell Book", "book", "#5a2030", 100, 10, {"dims": true}, "Pages full of crabbed arcane script.")
+	_it(20, "Magicuser Hat", "hat", "#30307a", 15, 2, {"armor": true, "head": true}, "Tall, pointed and starry.")
+	_it(21, "Holy Symbol", "symbol", "#d4a830", 10, 5, {"neck": true, "dims": true}, "Blessed by the temple priests.")
+	_it(22, "Holy Water", "flask", "#80b0e0", 20, 3, {"dims": true}, "A vial of blessed water.")
+	_it(23, "First Aid Kit", "kit", "#e8e0d0", 100, 5, {"dims": true}, "Bandages, salves and a needle.")
+	_it(24, "Lockpick Kit", "lockpick", "#6a4a2a", 100, 5, {"dims": true}, "Picks and tension tools. Not strictly legal.")
+	_it(25, "Shoes", "shoes", "#4a3020", 25, 2, {"armor": true, "feet": true}, "Soft leather shoes.")
+	_it(26, "Wood Axe", "axe", "#9aa0aa", 50, 3, {"dmg": [1, 6], "weapon": true, "axe": true}, "Meant for trees, works on other things.")
+	_it(27, "Rope", "rope", "#c0a060", 50, 2, {"dims": true}, "Fifty feet of hemp rope.")
+	_it(28, "Alnon Leaf", "leaf", "#40a040", 1, 2, {"dims": true, "food": true, "health": [10, 30]}, "A healing herb. Chew it.")
+	_it(29, "Alman Root", "root", "#a07040", 1, 2, {"dims": true, "food": true, "hits": [1, 4]}, "Bitter root that closes wounds.")
+	_it(30, "Cheese", "cheese", "#e8c040", 15, 1, {"dims": true, "food": true, "health": [20, 25]}, "A good wedge of hard cheese.")
+	_it(31, "Clasp Knife", "knife", "#c8ccd4", 5, 2, {"dmg": [1, 3], "weapon": true, "dagger": true}, "A folding knife.")
+	_it(32, "Bardiche", "bardiche", "#a0a6b0", 125, 12, {"dmg": [2, 8], "weapon": true, "axe": true}, "A long-hafted axe with a crescent blade.")
 	_it(33, "Crowned Head", "stonehead", "#a8a090", 150, 0, {"dims": true}, "The stone head from the old shrine. Its face is worn smooth, but the crown is still clear, and it is faintly warm.")
 
 
@@ -193,90 +239,140 @@ func _make_world() -> void:
 	}
 
 
-# ---------------------------------------------------------------- bonus tables (ShangrilaUtils.p)
-
-func stat_bonus(v: int) -> int:
-	var t := [-30, -25, -20, -15, -10, -5, -2, -1, 0, 0, 0, 0, 1, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
-	return t[clampi(v, 1, 25) - 1]
-
-
-func hits_bonus(con: int) -> int:
-	var t := [-5, -5, -5, -5, -4, -3, -2, -1, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7]
-	return t[clampi(con, 1, 25) - 1]
-
-
-func armor_bonus(dex: int) -> int:
-	var t := [-7, -6, -5, -3, -2, -1, -1, -1, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-	return t[clampi(dex, 1, 25) - 1]
-
-
-func weight_bonus(str_: int) -> int:
-	var t := [-1500, -1000, -350, -250, -250, -150, -150, -50, -50, 0, 0, 100, 100, 200, 200,
-		350, 500, 750, 1000, 1250, 1500, 2000, 3000, 4000, 5000]
-	return t[clampi(str_, 1, 25) - 1]
-
-
 # ---------------------------------------------------------------- characters
 
 func blank_character() -> Dictionary:
 	var it := []
 	it.resize(31)
 	it.fill(0)
-	var sk := []
-	sk.resize(22)
-	sk.fill(-25)
+	var ab := {}
+	for k in ABILITIES:
+		ab[k] = 0
 	return {
-		"name": "", "icon": 2, "level": 0, "race": HUMAN, "cls": NO_CLASS,
+		"name": "", "icon": 2, "race": HUMAN, "cls": NO_CLASS,
 		"max_health": 0, "health": 0, "max_hits": 0, "hits": 0, "max_magic": 0, "magic": 0,
-		"strength": 0, "dexterity": 0, "constitution": 0, "intelligence": 0, "will": 0, "charisma": 0,
-		"max_encum": 0, "xp": 0, "tactic": "", "skills": sk, "gold": 0, "silver": 0, "copper": 0, "items": it,
+		"abilities": ab, "max_encum": 0, "xp": 0, "tactic": "", "silver": 0, "items": it,
 	}
 
 
-func _d(lo: int, hi: int, n: int) -> int:
-	var s := 0
-	for i in n:
-		s += my_random(lo, hi)
-	return s
+func ability(c: Dictionary, key: String) -> int:
+	return c.get("abilities", {}).get(key, 0)
 
 
-## MakeRandomCharacter + the extra rolls done by the Reroll button.
-func roll_character(c: Dictionary) -> void:
-	c.strength = _d(2, 6, 3); c.dexterity = _d(2, 6, 3); c.constitution = _d(2, 6, 3)
-	c.intelligence = _d(2, 6, 3); c.will = _d(2, 6, 3); c.charisma = _d(2, 6, 3)
-	c.max_hits = _d(2, 5, 3) + hits_bonus(c.constitution)
+## A check: d10 + ability + bonus against a difficulty (EASY 6, NORMAL 9, HARD 12).
+func check(c: Dictionary, key: String, difficulty: int, bonus := 0) -> bool:
+	return my_random(1, 10) + ability(c, key) + bonus >= difficulty
+
+
+## The starting abilities for a class and race (nobody starts above 2).
+func start_abilities(cls: int, race: int) -> Dictionary:
+	var ab := {}
+	for k in ABILITIES:
+		ab[k] = 0
+	ab.merge(CLASS_START.get(cls, {}), true)
+	var extra: String = RACE_ABILITY[race]
+	if extra == "" and FAVOURED.has(cls):
+		extra = FAVOURED[cls][0]
+	if extra != "":
+		ab[extra] = mini(ab[extra] + 1, 2)
+	return ab
+
+
+## A new character of the given class and race, ready to go.
+func make_character(nm: String, cls: int, race: int, icon: int, abilities := {}) -> Dictionary:
+	var c := blank_character()
+	c.race = race
+	c.icon = icon
+	set_class(c, cls)
+	c.abilities = abilities.duplicate() if not abilities.is_empty() else start_abilities(cls, race)
+	for k in ABILITIES:
+		if not c.abilities.has(k):
+			c.abilities[k] = 0
+	c.silver = my_random(10, 20)
+	finish_character(c, nm)
 	c.hits = c.max_hits
-	match c.race:
-		HUMAN:
-			c.strength += 1
-		THUUG:
-			c.strength += 1; c.constitution += 2; c.dexterity -= 2; c.charisma -= 1
-		AELDROE:
-			c.intelligence += 2; c.will += 1; c.strength -= 1; c.constitution -= 2
-		NISK:
-			c.dexterity += 2; c.constitution += 1; c.strength -= 1; c.charisma -= 1
-	c.max_health = c.will + (c.strength + c.constitution) * 4
-	c.health = c.max_health / 2
-	c.max_magic = 0
-	c.magic = 0
-	c.gold = my_random(1, 10)
-	c.silver = my_random(1, 20)
-	c.copper = my_random(1, 40)
+	c.health = c.max_health
+	c.magic = c.max_magic
+	return c
 
 
-func class_allowed(c: Dictionary, k: int) -> bool:
-	if c.strength == 0:
+func is_favoured(c: Dictionary, key: String) -> bool:
+	return key in FAVOURED.get(c.cls, [])
+
+
+## Experience needed to raise an ability by one: the new value x 100, or x 150 if the class
+## does not favour it. Humans pay 10% less. -1 when it is already at the top.
+func raise_cost(c: Dictionary, key: String) -> int:
+	var to := ability(c, key) + 1
+	if to > MAX_ABILITY:
+		return -1
+	var cost := to * (100 if is_favoured(c, key) else 150)
+	if c.race == HUMAN:
+		cost = cost * 9 / 10
+	return cost
+
+
+func raise_ability(c: Dictionary, key: String) -> bool:
+	var cost := raise_cost(c, key)
+	if cost < 0 or c.xp < cost:
 		return false
-	match k:
-		CLERIC: return c.will >= 13
-		ENCHANTER: return c.intelligence >= 14 and c.will >= 13 and c.dexterity >= 12
-		MAGE: return c.intelligence >= 13 and c.dexterity >= 12
-		MONK: return c.strength >= 13 and c.will >= 14 and c.dexterity >= 13 and c.constitution >= 11
-		PALADIN: return c.strength >= 12 and c.intelligence >= 9 and c.will >= 13 and c.constitution >= 9 and c.charisma >= 15
-		RANGER: return c.strength >= 12 and c.intelligence >= 10 and c.will >= 10 and c.constitution >= 12
-		THIEF: return c.dexterity >= 12
-		WARRIOR: return c.strength >= 12 and c.constitution >= 10
-	return false
+	c.xp -= cost
+	c.abilities[key] += 1
+	var hp_before: int = c.max_hits
+	var mana_before: int = c.max_magic
+	update_derived(c)
+	c.hits += c.max_hits - hp_before
+	c.magic += c.max_magic - mana_before
+	return true
+
+
+## The best of the fighting abilities (Combat, Missile Weapons, or Magic for casters).
+func best_fighting(c: Dictionary) -> String:
+	var best := "combat"
+	for k in ["missile", "magic"]:
+		if k == "magic" and spell_for(c).is_empty():
+			continue
+		if ability(c, k) > ability(c, best):
+			best = k
+	return best
+
+
+## How strong a fighter the character is, to compare with a monster's level.
+func power(c: Dictionary) -> int:
+	return ability(c, best_fighting(c)) + ability(c, "toughness")
+
+
+## One raise's worth of experience for this character (their next raise in their best fighting
+## ability). Fights pay a small part of it, story moments a bigger one.
+func raise_unit(c: Dictionary) -> int:
+	return maxi(100, raise_cost(c, best_fighting(c)))
+
+
+## Rounds a fraction up or down at random, so small amounts still add up on average.
+func round_random(v: float) -> int:
+	var whole := floori(v)
+	return whole + (1 if rng.randf() < v - whole else 0)
+
+
+## Story experience: everyone in the party gets `fraction` of a raise.
+func story_xp(fraction: float) -> int:
+	var total := 0
+	for c in party:
+		var x := roundi(raise_unit(c) * fraction)
+		c.xp += x
+		total = maxi(total, x)
+	return total
+
+
+## Hit points, mana and carrying limit, from race and abilities.
+func update_derived(c: Dictionary) -> void:
+	c.max_hits = RACE_HITS[c.race] + 3 * ability(c, "toughness")
+	c.max_health = 70 + 10 * ability(c, "toughness")
+	c.max_encum = 1200 + 150 * ability(c, "toughness")
+	c.max_magic = 2 + 3 * ability(c, "magic") if not spell_for(c).is_empty() and ability(c, "magic") > 0 else 0
+	c.hits = mini(c.hits, c.max_hits)
+	c.health = mini(c.health, c.max_health)
+	c.magic = mini(c.magic, c.max_magic)
 
 
 const CLASS_ITEMS := {
@@ -296,57 +392,11 @@ func set_class(c: Dictionary, k: int) -> void:
 	var list: Array = CLASS_ITEMS[k]
 	for i in 6:
 		c.items[PACK_FIRST + i] = list[i]
-	update_skills(c)
-
-
-## UpdateSkills.
-func update_skills(c: Dictionary) -> void:
-	var sk: Array = c.skills
-	for i in 22:
-		sk[i] = -25
-	var s := stat_bonus(c.strength)
-	var d := stat_bonus(c.dexterity)
-	var n := stat_bonus(c.intelligence)
-	var w := stat_bonus(c.will)
-	sk[8] = 5 + roundi((s + d) / 2.0)
-	sk[10] = 5 + n
-	sk[13] = 5 + stat_bonus(c.charisma)
-	sk[15] = 5
-	sk[17] = 5
-	var ssd := roundi((s + s + d) / 3.0)
-	var sdd := roundi((s + d + d) / 3.0)
-	match c.cls:
-		CLERIC:
-			sk[1] = 5 + ssd; sk[11] = 10; sk[16] = 5 + roundi((n + w) / 2.0); sk[19] = 40 + n
-		ENCHANTER:
-			sk[14] = 5 + n; sk[16] = 10 + roundi((n + w) / 2.0); sk[19] = 40 + n
-		MAGE:
-			sk[16] = 10 + roundi((n + w) / 2.0); sk[19] = 40 + n
-		MONK:
-			sk[4] = 10 + roundi((s + d) / 2.0); sk[7] = 5 + sdd; sk[8] = 15 + roundi((s + d) / 2.0)
-			sk[14] = 7 + n; sk[19] = 30 + n
-		PALADIN:
-			sk[6] = 10 + ssd; sk[11] = 5; sk[19] = 25 + n
-		RANGER:
-			sk[0] = 5 + ssd; sk[2] = 10 + sdd; sk[12] = 7; sk[21] = 10
-		THIEF:
-			sk[3] = 5 + ssd; sk[8] = 10 + roundi((s + d) / 2.0); sk[9] = 5 + d; sk[18] = 7 + d; sk[20] = 10 + d
-		WARRIOR:
-			sk[0] = 5 + ssd; sk[5] = 2 + ssd; sk[6] = 10 + ssd
-	match c.race:
-		AELDROE:
-			sk[15] += 10  # Hide: hard to see
-			if sk[16] > -25:
-				sk[16] += 10  # Magic Arts
-		NISK:
-			sk[8] += 10  # Climb
-			sk[17] += 5  # Perception
 
 
 func finish_character(c: Dictionary, nm: String) -> void:
 	c.name = nm
-	c.max_encum = 1500 + weight_bonus(c.strength)
-	refresh_magic(c)
+	update_derived(c)
 
 
 func encumbrance(c: Dictionary) -> int:
@@ -354,11 +404,12 @@ func encumbrance(c: Dictionary) -> int:
 	for i in range(1, 31):
 		if c.items[i] != 0:
 			e += item(c.items[i]).weight
-	return e + c.gold + c.silver + c.copper
+	return e + c.silver / 10
 
 
-func armor_class(c: Dictionary) -> int:
-	var ac: int = 7 + armor_bonus(c.dexterity)
+## Armour from what is worn (and a Thuug's shell).
+func armor(c: Dictionary) -> int:
+	var ac := 0
 	if c.race == THUUG:
 		ac += 1  # shell
 	for i in [1, 2, 3, 4, 5, 8, 9]:
@@ -373,17 +424,18 @@ func armor_class(c: Dictionary) -> int:
 	return ac
 
 
+## The ability used with the weapon in a hand: Missile Weapons for bows and thrown weapons.
+func weapon_ability(c: Dictionary, slot: int) -> String:
+	var id: int = c.items[slot]
+	if id != 0 and (item(id).gun or item(id).throw):
+		return "missile"
+	return "combat"
+
+
+## What the character adds to a d10 when attacking with the weapon in a hand.
 func to_hit(c: Dictionary, slot: int) -> int:
 	var id: int = c.items[slot]
-	if id == 0:
-		return c.skills[4]
-	var it := item(id)
-	var t := 0
-	var kinds := ["axe", "blunt", "bow", "dagger", "unarm", "pole", "sword", "throw"]
-	for k in kinds.size():
-		if it[kinds[k]]:
-			t += c.skills[k]
-	return t
+	return ability(c, weapon_ability(c, slot)) + (item(id).attack if id != 0 else 0)
 
 
 ## Damage range of the weapon in a hand, as text for the View Character screen.
@@ -397,8 +449,8 @@ func damage_string(c: Dictionary, slot: int) -> String:
 
 # ---------------------------------------------------------------- combat helpers (new)
 
-## One spell per spell-casting class. The 1997 game kept max magic at 0 and had no spells,
-## only a "Spells" button and the Magic Arts skill.
+## One spell per spell-casting class so far (more open up later as Magic rises: at 3, 5, ...).
+## The 1997 game had no spells, only a "Spells" button and the Magic Arts skill.
 const SPELLS := {
 	MAGE: {"name": "Fire Dart", "cost": 2, "target": "enemy", "desc": "A bolt of flame that never misses."},
 	ENCHANTER: {"name": "Slumber", "cost": 3, "target": "enemy", "desc": "Puts a whole group of foes to sleep."},
@@ -411,16 +463,11 @@ const TACTICS := {
 }
 
 
+## The class's spell, if the character has at least 1 in Magic.
 func spell_for(c: Dictionary) -> Dictionary:
+	if ability(c, "magic") < 1:
+		return {}
 	return SPELLS.get(c.cls, {})
-
-
-## Gives spell casters a mana pool based on Magic Arts.
-func refresh_magic(c: Dictionary) -> void:
-	if spell_for(c).is_empty() or c.max_magic > 0:
-		return
-	c.max_magic = 4 + maxi(0, c.skills[16]) / 4
-	c.magic = c.max_magic
 
 
 func tactics_for(c: Dictionary) -> Array:
@@ -441,11 +488,8 @@ func tactic(c: Dictionary) -> String:
 	return "spell" if not spell_for(c).is_empty() else "attack"
 
 
-func add_copper(c: Dictionary, amount: int) -> void:
-	var have := char_copper(c) + amount
-	c.gold = have / 100
-	c.silver = (have % 100) / 10
-	c.copper = have % 10
+func add_silver(c: Dictionary, amount: int) -> void:
+	c.silver = maxi(0, c.silver + amount)
 
 
 ## How far into the mines the party is - deeper means tougher monsters.
@@ -457,7 +501,7 @@ func depth() -> int:
 func party_defeated() -> void:
 	for c in party:
 		c.hits = 1
-		add_copper(c, -char_copper(c) / 2)
+		add_silver(c, -c.silver / 2)
 	pos = MINES_START
 	facing = 0
 	location = "lehan"
@@ -506,40 +550,28 @@ func eat(c: Dictionary, id: int) -> String:
 	return "%s eats the %s. %s" % [c.name, it.name, ", ".join(parts)]
 
 
-# ---------------------------------------------------------------- money (1 G = 10 S = 100 C)
+# ---------------------------------------------------------------- money (silver only)
 
-func char_copper(c: Dictionary) -> int:
-	return c.gold * 100 + c.silver * 10 + c.copper
-
-
-func party_copper() -> int:
+func party_silver() -> int:
 	var t := 0
 	for c in party:
-		t += char_copper(c)
+		t += c.silver
 	return t
 
 
-func money_string(copper: int) -> String:
-	var g := copper / 100
-	var s := (copper % 100) / 10
-	return "%dG, %dS, %dC" % [g, s, copper % 10]
+func money_string(silver: int) -> String:
+	return "%d silver" % silver
 
 
-## Takes `amount` copper from the party, member by member, making change where needed.
+## Takes `amount` silver from the party, member by member.
 func pay(amount: int) -> bool:
-	if party_copper() < amount:
+	if party_silver() < amount:
 		return false
 	var left := amount
 	for c in party:
-		if left <= 0:
-			break
-		var have := char_copper(c)
-		var take := mini(have, left)
-		have -= take
+		var take := mini(c.silver, left)
+		c.silver -= take
 		left -= take
-		c.gold = have / 100
-		c.silver = (have % 100) / 10
-		c.copper = have % 10
 	return true
 
 
@@ -578,18 +610,9 @@ func start_company(host: String, reply: int) -> void:
 	order.push_front(host)
 	for key in order:
 		var src: Dictionary = cast[key]
-		var c := blank_character()
-		c.race = RACES.find(src.race)
-		c.icon = PORTRAIT_CAST + PrologueData.ORDER.find(key)
-		var cls: int = CLASSES.find(src.cls)
-		for i in 500:
-			roll_character(c)
-			if class_allowed(c, cls):
-				break
-		set_class(c, cls)
-		finish_character(c, src.name)
+		var c := make_character(src.name, CLASSES.find(src.cls), RACES.find(src.race),
+			PORTRAIT_CAST + PrologueData.ORDER.find(key), src.abilities)
 		c["traits"] = src.traits.duplicate()   # hidden from the player
-		c.health = c.max_health
 		party.append(c)
 	location = "shrine"
 	known = ["shrine", "lehan"]
@@ -605,7 +628,7 @@ func save_game(screen: String) -> bool:
 	for k in visited:
 		v.append([k.x, k.y])
 	var data := {
-		"version": 2, "screen": screen, "roster": roster, "party": party,
+		"version": 3, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
 		"location": location, "known": known, "story": story, "town_known": town_known,
 	}
@@ -633,6 +656,27 @@ func _ints(v: Variant) -> Variant:
 	return v
 
 
+## Saves before version 3 had six attributes, 22 skills and three kinds of coin. Money is
+## converted (copper / 10, rounded up); abilities restart from the class and race.
+func _convert_v3(c: Dictionary) -> void:
+	var copper: int = c.get("gold", 0) * 100 + c.get("silver", 0) * 10 + c.get("copper", 0)
+	c.silver = ceili(copper / 10.0)
+	var cast_ab := {}
+	for k in PrologueData.ORDER:
+		if PrologueData.CAST[k].name == c.name:
+			cast_ab = PrologueData.CAST[k].abilities
+	c.abilities = cast_ab.duplicate() if not cast_ab.is_empty() else start_abilities(c.cls, c.race)
+	c.xp = 0
+	for k in ["gold", "copper", "level", "skills", "strength", "dexterity", "constitution",
+			"intelligence", "will", "charisma"]:
+		c.erase(k)
+	update_derived(c)
+	c.hits = c.max_hits
+	c.magic = c.max_magic
+	if c.get("owed", 0) > 0:
+		c.owed = ceili(c.owed / 10.0)
+
+
 ## Returns the screen name to resume on, or "" on failure.
 func load_game() -> String:
 	if not has_save():
@@ -647,8 +691,11 @@ func load_game() -> String:
 		# The party is saved as separate copies, so convert both lists.
 		for c in roster + party:
 			c.race = OLD_RACE_MAP[clampi(c.race, 0, OLD_RACE_MAP.size() - 1)]
+	if data.get("version", 1) < 3:
+		for c in roster + party:
+			_convert_v3(c)
 	for c in roster + party:
-		refresh_magic(c)
+		update_derived(c)
 	visited = {}
 	for p in data.get("visited", []):
 		visited[Vector2i(p[0], p[1])] = true

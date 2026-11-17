@@ -121,7 +121,7 @@ func refresh() -> void:
 	cmd.dismiss.disabled = member < 0 or Game.roster.size() >= Game.MAX_ROSTER
 	cmd.info.disabled = chosen < 0 and member < 0
 	cmd.kill.disabled = chosen < 0
-	gold_label.text = "Party purse: " + Game.money_string(Game.party_copper())
+	gold_label.text = "Party purse: " + Game.money_string(Game.party_silver())
 
 
 func _on_member(i: int) -> void:
@@ -189,7 +189,7 @@ func _rejoin_talk(c: Dictionary) -> bool:
 		elif fx.begins_with("pay:"):
 			Game.pay(int(fx.substr(4)))
 			refresh())
-	box.play(LehanData.rejoin_talk(key, c, host, Game.party_copper()))
+	box.play(LehanData.rejoin_talk(key, c, host, Game.party_silver()))
 	await box.finished
 	var label := "%s joins the party" % c.name.split(" ")[0] if result.join else "Maybe later"
 	box.show_buttons([[label, func(): box.finished.emit()]])

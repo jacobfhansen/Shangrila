@@ -257,7 +257,7 @@ was given or taken (`story.consent`), for later scenes to use.
 
 **Joss** (Brave, Greedy, Proud): *"Afraid? I've been afraid of sergeants and moneylenders. Not of
 voices. Get out of my head."*
-- ✓ "Follow my lead, and you will never count coppers again. Your debt will be the first thing
+- ✓ "Follow my lead, and you will never scrape for silver again. Your debt will be the first thing
   to go." → *Go on, he thinks. I'm listening.*
 - ✓ "Let me guide you, and people will bow to you, as they once bowed to me." → *They'd bow? To
   me?*
@@ -323,20 +323,20 @@ time the company enters Lehan after the road. The in-game text is in
 > *Something cold stirs behind the host's eyes. Whoever this man is, he would see you destroyed.*
 
 **The proof**
-- *Ommuk saved the head at the shrine:* hand it over (15 gold, and Ommuk aches to see it go) or
-  claim it was all smashed (8 gold; the head stays in Ommuk's pack as the Crowned Head).
+- *Ommuk saved the head at the shrine:* hand it over (100 silver, and Ommuk aches to see it go) or
+  claim it was all smashed (60 silver; the head stays in Ommuk's pack as the Crowned Head).
 - *Otherwise:* a chip of the crown, and sharp questions about the night. "Nothing happened"
-  (10 gold) · "The stone was warm" (10 gold; he goes very still, and the spirit knows he is lying,
-  and afraid) · *(say nothing)* (9 gold).
+  (70 silver) · "The stone was warm" (70 silver; he goes very still, and the spirit knows he is lying,
+  and afraid) · *(say nothing)* (60 silver).
 
 **Ithrae as host** can ask what the shrine was ("A nobody's. An old eyesore on a road my family
-wants widened."), then give up a gold piece of her share for a look at his sketch, and copy the
+wants widened."), then give up five silver of her share for a look at his sketch, and copy the
 mark in its corner: a ring, cut through by a single line.
 
 **The pay split**: Joss, unless he is the host, takes a double share and gives Tikkat half.
 - **Joss:** the player shares it: even · *[Greedy]* double for Joss (Maera soured) · *[Proud]*
   double, and Tikkat's share against his debt (Tikkat and Maera soured).
-- **Tikkat:** can palm 2 gold from the purse first. The sharpest pair of eyes may notice: Joss
+- **Tikkat:** can palm 15 silver from the purse first. The sharpest pair of eyes may notice: Joss
   wants half of it before rejoining, Ithrae is soured, the others keep quiet.
 - **Ommuk:** *[Generous]* gives his share to Tikkat (Tikkat won over) · *[Pious]* gives it to
   Lehan's temple (the old priest remembers him) · *[Calm]* talks Joss down to three quarters

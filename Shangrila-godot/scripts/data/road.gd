@@ -81,7 +81,7 @@ const CONSENT := {
 		"intro": "Joss walks on, scowling at nothing. Then, for the first time, the thing inside him finds words.",
 		"answer": "Afraid? I've been afraid of sergeants and moneylenders. Not of voices. Get out of my head.",
 		"pitches": [
-			{"ok": true, "t": "Follow my lead, and you will never count coppers again. Your debt will be the first thing to go.",
+			{"ok": true, "t": "Follow my lead, and you will never scrape for silver again. Your debt will be the first thing to go.",
 				"reply": "Joss goes very still. The debt. The moneylender's smile. Go on, he thinks. I'm listening."},
 			{"ok": true, "t": "Let me guide you, and people will bow to you, as they once bowed to me.",
 				"reply": "The hall again, and the bowing crowd. Joss swallows. They'd bow? To me?"},
