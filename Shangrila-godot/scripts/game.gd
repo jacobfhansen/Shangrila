@@ -113,7 +113,7 @@ const DIR_VEC := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 
 const LOCATIONS := {
 	"shrine": {"name": "The Old Shrine", "kind": "ruin", "at": Vector2(168, 292), "screen": "",
 		"desc": "A roadside shrine, long hidden under brambles. Only rubble is left."},
-	"lehan": {"name": "Lehan", "kind": "city", "at": Vector2(236, 252), "screen": "town",
+	"lehan": {"name": "Lehan", "kind": "city", "at": Vector2(236, 252), "screen": "streets",
 		"desc": "A walled town with an inn and a weapon smith."},
 	"mines": {"name": "The Mines", "kind": "dungeon", "at": Vector2(292, 200), "screen": "dungeon",
 		"desc": "Old mine workings in the hills above Lehan."},
@@ -711,7 +711,7 @@ func load_game() -> String:
 	story = data.get("story", {})
 	town_known = data.get("town_known", {})
 	var screen: String = data.get("screen", "inn")
-	return {"city": "town", "create": "inn"}.get(screen, screen)   # screens that were retired
+	return {"city": "town", "create": "inn", "market": "streets"}.get(screen, screen)   # screens that were retired
 
 
 # ---------------------------------------------------------------- world map / travel

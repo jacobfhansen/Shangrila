@@ -17,12 +17,6 @@ const POCKET := 15       # what Tikkat can palm from the purse
 const SKETCH := 5        # what Ithrae gives up for a look at the sketch
 const MEETING_XP := 1.0 / 3.0   # of a raise, for everyone at the meeting
 
-## Where things are on the Lehan town map (see Game.TOWNS), and the streets between them.
-const TO_HOUSE := [Vector2(300, 336), Vector2(300, 292), Vector2(190, 292), Vector2(160, 272)]
-const TO_INN := [Vector2(160, 272), Vector2(190, 292), Vector2(300, 292), Vector2(300, 214),
-	Vector2(345, 208), Vector2(432, 232)]
-
-
 static func _pick(prefer: Array, host: String) -> String:
 	for k in prefer:
 		if k != host:
@@ -414,6 +408,15 @@ static func no_job_line(k: String, c: Dictionary, host: String) -> String:
 	if c.get("rejoin", "talk") == "won":
 		return "You stood by me, %s, and I'll stand by you. But there's no job yet. Find one, and I'm yours." % _first(host)
 	return NO_JOB[k]
+
+
+## What happens when the host knocks at the employer's house.
+static func knock_text() -> String:
+	if Game.story.get("left_lehan", false):
+		return "You knock. No reply.\n\nThe shutters are closed, and no lamp burns behind them. The house looks empty."
+	if Game.story.has("employer"):
+		return "The door opens a crack. A grey sleeve, an eye.\n\n\"Our business is done. Go away.\"\n\nThe door shuts, and a bolt slides home."
+	return "A narrow, plain house. Nobody answers."
 
 
 static func has_job() -> bool:

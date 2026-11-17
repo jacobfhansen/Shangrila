@@ -112,7 +112,7 @@ func _road_scene() -> void:
 	if lines.size() > 1:
 		box.log_line(lines[1])
 		await Game.main.message(lines[1])
-	box.show_buttons([["Enter Lehan", func(): Game.main.goto("town")]])
+	box.show_buttons([["Enter Lehan", func(): Game.main.goto("streets")]])
 
 
 func _tip(key: String) -> String:

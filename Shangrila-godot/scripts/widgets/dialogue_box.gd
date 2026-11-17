@@ -62,7 +62,8 @@ func _ready() -> void:
 
 func _build() -> void:
 	var w := size.x
-	Ui.frame(self, Rect2(0, 0, w, LINE_H))
+	var line_frame := Ui.frame(self, Rect2(0, 0, w, LINE_H))
+	line_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE   # clicks reach the box (_gui_input)
 	line_portrait = RacePortrait.new()
 	line_portrait.visible = false
 	add_child(line_portrait)
@@ -211,6 +212,21 @@ func _text(r: Rect2, t: String, col: Color, is_italic: bool) -> void:
 
 
 # ---------------------------------------------------------------- choices
+
+## How much of the box is in use, from the top: just the line, or down to the last reply or
+## button (all of it while the history is open). Lets a screen shrink the panel behind it.
+func content_height() -> float:
+	if log_panel.visible:
+		return size.y
+	var bottom := LINE_H
+	for ch in replies.get_children():
+		if ch is Control and not ch.is_queued_for_deletion() and ch.visible:
+			bottom = maxf(bottom, replies.position.y + ch.position.y + ch.size.y)
+	for ch in speak_row.get_children():
+		if ch is Control and not ch.is_queued_for_deletion() and ch.visible:
+			bottom = maxf(bottom, speak_row.position.y + speak_row.size.y)
+	return bottom
+
 
 func _clear_choices() -> void:
 	for ch in replies.get_children():
@@ -397,20 +413,34 @@ func _on_log_input(e: InputEvent) -> void:
 			accept_event()
 
 
+## Clicks on the box itself (the box stops the mouse, so they never reach _unhandled_input).
+func _gui_input(e: InputEvent) -> void:
+	if _mouse(e):
+		accept_event()
+
+
+## Left click: continue (or resume); mouse wheel up: the history. True if it was used.
+func _mouse(e: InputEvent) -> bool:
+	if not (e is InputEventMouseButton and e.pressed) or Game.main.modal_open:
+		return false
+	if e.button_index == MOUSE_BUTTON_WHEEL_UP:
+		open_history()
+		return true
+	if e.button_index == MOUSE_BUTTON_LEFT and not log_panel.visible and running:
+		if paused:
+			set_paused(false)
+		else:
+			_next()
+		return true
+	return false
+
+
 func _unhandled_input(e: InputEvent) -> void:
 	if not is_visible_in_tree() or Game.main.modal_open:
 		return
-	if e is InputEventMouseButton and e.pressed:
-		if e.button_index == MOUSE_BUTTON_WHEEL_UP:
-			open_history()
-		elif e.button_index == MOUSE_BUTTON_LEFT and not log_panel.visible and running:
-			if paused:
-				set_paused(false)
-			else:
-				_next()
-		else:
-			return
-		get_viewport().set_input_as_handled()
+	if e is InputEventMouseButton:
+		if e.pressed and _mouse(e):
+			get_viewport().set_input_as_handled()
 	elif e is InputEventKey and e.pressed and not e.echo:
 		if log_panel.visible:
 			if e.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER, KEY_H, KEY_ESCAPE]:

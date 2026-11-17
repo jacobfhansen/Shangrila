@@ -2,6 +2,8 @@ class_name DungeonView
 extends SubViewport
 ## First-person view of the mines. The original composed each view from seven pre-drawn
 ## strips (OVDB / DrawOutView); here the same map is built as real 3D geometry.
+## With `area` set (e.g. LehanStreets) it shows that area instead: the area builds the scene and
+## keeps its own position, facing and walls.
 
 signal moved
 
@@ -12,6 +14,7 @@ const STEP_TIME := 0.16
 var cam: Camera3D
 var busy := false
 var yaw := 0.0
+var area: Object = null   # set before adding to the tree; null means the mines
 
 
 func _ready() -> void:
@@ -21,7 +24,18 @@ func _ready() -> void:
 	msaa_3d = Viewport.MSAA_2X
 	var root := Node3D.new()
 	add_child(root)
+	cam = Camera3D.new()
+	cam.fov = 72
+	cam.near = 0.05
+	root.add_child(cam)
+	if area:
+		area.build(root, cam)
+	else:
+		_build_mines(root)
+	snap()
 
+
+func _build_mines(root: Node3D) -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color.BLACK
@@ -71,10 +85,6 @@ func _ready() -> void:
 	day.position = start + Vector3(0, 1.2, 0.8)
 	root.add_child(day)
 
-	cam = Camera3D.new()
-	cam.fov = 72
-	cam.near = 0.05
-	root.add_child(cam)
 	var torch := OmniLight3D.new()
 	torch.light_color = Color(1.0, 0.78, 0.5)
 	torch.light_energy = 2.2
@@ -86,7 +96,6 @@ func _ready() -> void:
 	flicker.tween_property(torch, "light_energy", 1.95, 0.23)
 	flicker.tween_property(torch, "light_energy", 2.25, 0.31)
 	flicker.tween_property(torch, "light_energy", 2.05, 0.19)
-	snap()
 
 
 func _mat(tex: String, tint: Color) -> StandardMaterial3D:
@@ -125,20 +134,35 @@ func _add_mesh(root: Node3D, st: SurfaceTool, m: Material) -> void:
 
 
 func _cell_pos(cell: Vector2i) -> Vector3:
-	return Vector3(cell.x * CELL, EYE, cell.y * CELL)
+	return Vector3(cell.x * CELL, area.eye if area else EYE, cell.y * CELL)
 
 
-## Place the camera at Game.pos / Game.facing without animation.
+func get_pos() -> Vector2i:
+	return area.pos if area else Game.pos
+
+
+func get_facing() -> int:
+	return area.facing if area else Game.facing
+
+
+func _can_move(from: Vector2i, dir: int) -> bool:
+	return area.can_move(from, dir) if area else Game.can_move(from, dir)
+
+
+## Place the camera at the current position and facing without animation.
 func snap() -> void:
-	yaw = -Game.facing * PI / 2.0
-	cam.position = _cell_pos(Game.pos)
+	yaw = -get_facing() * PI / 2.0
+	cam.position = _cell_pos(get_pos())
 	cam.rotation = Vector3(0, yaw, 0)
 
 
 func turn(d: int) -> void:
 	if busy:
 		return
-	Game.facing = posmod(Game.facing + d, 4)
+	if area:
+		area.facing = posmod(area.facing + d, 4)
+	else:
+		Game.facing = posmod(Game.facing + d, 4)
 	yaw -= d * PI / 2.0
 	busy = true
 	var tw := create_tween()
@@ -152,7 +176,7 @@ func turn(d: int) -> void:
 func step(dir: int) -> bool:
 	if busy:
 		return true
-	if not Game.can_move(Game.pos, dir):
+	if not _can_move(get_pos(), dir):
 		var bump := create_tween()
 		var p := cam.position
 		var v := Vector3(Game.DIR_VEC[dir].x, 0, Game.DIR_VEC[dir].y) * 0.12
@@ -161,11 +185,14 @@ func step(dir: int) -> bool:
 		bump.tween_property(cam, "position", p, 0.08)
 		bump.finished.connect(func(): busy = false)
 		return false
-	Game.pos += Game.DIR_VEC[dir]
-	Game.visited[Game.pos] = true
+	if area:
+		area.pos += Game.DIR_VEC[dir]
+	else:
+		Game.pos += Game.DIR_VEC[dir]
+		Game.visited[Game.pos] = true
 	busy = true
 	var tw := create_tween()
-	tw.tween_property(cam, "position", _cell_pos(Game.pos), STEP_TIME).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(cam, "position", _cell_pos(get_pos()), STEP_TIME).set_trans(Tween.TRANS_SINE)
 	tw.finished.connect(func():
 		busy = false
 		moved.emit())

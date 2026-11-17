@@ -13,10 +13,19 @@ func _ready() -> void:
 	Game.main = self
 	theme = _make_theme()
 	clip_contents = true
-	goto("about")
+	var start := ""
+	var host := ""
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--tour="):
 			add_child(load("res://scripts/dev_tour.gd").new())
+		elif a.begins_with("--start="):
+			start = a.substr(8)
+		elif a.begins_with("--host="):
+			host = a.substr(7)
+	if start in Checkpoints.keys():
+		Checkpoints.start(start, host)
+	else:
+		goto("about")
 
 
 func goto(screen: String, args := {}) -> void:

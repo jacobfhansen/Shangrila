@@ -1,4 +1,4 @@
-Script started on 2026-11-17 07:47:25+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
+Script started on 2026-11-17 16:37:48+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
 /snap/godot-4/40/gnome-platform/command-chain/desktop-launch: line 543: /home/jacob/snap/alacritty/common/.cache/gdk-pixbuf-loaders.cache: Permission denied
 Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
 OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
@@ -15,39 +15,39 @@ shot 03_inn
 shot 05_view
 fits boots on feet: true helmet on feet: false
 feet now 7 pack15 0
-after cheese health 23 log: Brand eats the Cheese. +22 health
+after cheese health 25 log: Brand eats the Cheese. +24 health
 shot 06_town
 shot 06b_world
-travel: ["After 1 day on the road the party reaches The Mines."] endurance [23, 70, 70, 70] -> [15, 62, 62, 62] at mines
+travel: ["After 1 day on the road the party reaches The Mines."] endurance [25, 70, 70, 70] -> [17, 62, 62, 62] at mines
 shot 07_shop
 paid: 14 expected 14; brand pack: [32, 13, 13, 10, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 shot 08_dungeon
 shot 09_dungeon_corridor
 shot 10_dungeon_room
 shot 11_map
-Joss Harrow: combat 2, toughness 1, talk 1 | hits 13 mana 0 enc 1350 silver 10 power 3 raise unit 270
-Maera Vell: combat 1, missile 2, perception 1, survival 1 | hits 10 mana 0 enc 1200 silver 11 power 2 raise unit 270
-Ommuk: combat 1, toughness 2, lore 1, magic 1 | hits 19 mana 5 enc 1500 silver 10 power 3 raise unit 200
-Ithrae: perception 1, lore 1, magic 2 | hits 7 mana 8 enc 1200 silver 11 power 2 raise unit 300
-Tikkat: stealth 2, thievery 1, perception 1 | hits 9 mana 0 enc 1200 silver 12 power 0 raise unit 150
+Joss Harrow: combat 2, toughness 1, talk 1 | hits 13 mana 0 enc 1350 silver 19 power 3 raise unit 270
+Maera Vell: combat 1, missile 2, perception 1, survival 1 | hits 10 mana 0 enc 1200 silver 20 power 2 raise unit 270
+Ommuk: combat 1, toughness 2, lore 1, magic 1 | hits 19 mana 5 enc 1500 silver 13 power 3 raise unit 200
+Ithrae: perception 1, lore 1, magic 2 | hits 7 mana 8 enc 1200 silver 16 power 2 raise unit 300
+Tikkat: stealth 2, thievery 1, perception 1 | hits 9 mana 0 enc 1200 silver 16 power 0 raise unit 150
 joss raise costs: combat 270 toughness 180 stealth 135 (human -10%)
 raise toughness: true -> 2 hits 13 -> 16 xp left 120; raise again (too poor): false
 xp for joss by fight level: L0 0.00, L1 0.68, L2 1.35, L3 2.70, L4 5.40, L5 10.80, L6 21.60, L7 43.20
 hid all fight: 0.0; fell: 1.35
-50 fights at the entrance: won 50, experience in total (all five) 516
-story xp, third of a raise: 100 -> [133, 190, 103, 215, 272]
-money: 54 silver pay 30: true -> 24
-depth 0: won 100%, avg 1.9 rounds, avg hp lost 2%
-depth 7: won 95%, avg 4.7 rounds, avg hp lost 18%
-depth 14: won 75%, avg 6.7 rounds, avg hp lost 43%
-depth 20: won 67%, avg 8.3 rounds, avg hp lost 54%
+50 fights at the entrance: won 50, experience in total (all five) 471
+story xp, third of a raise: 100 -> [133, 179, 100, 202, 254]
+money: 84 silver pay 30: true -> 54
+depth 0: won 100%, avg 1.8 rounds, avg hp lost 2%
+depth 7: won 98%, avg 4.4 rounds, avg hp lost 14%
+depth 14: won 78%, avg 6.8 rounds, avg hp lost 41%
+depth 20: won 62%, avg 7.8 rounds, avg hp lost 54%
 shot 12_combat_command
 shot 13_combat_target
 shot 14_tactics
 shot 15_combat_resolve
 shot 16_combat_end
 shot 16b_log_scrolled
-combat over, phase '' log: ["Experience: Brand 11, Oldo 11, Sira 22, Tavi 22.", "Oldo comes around, badly bruised.", "Sira comes around, badly bruised.", "Brand finds a Alman Root."]
+combat over, phase '' log: ["Oldo hurls a Fire Dart at the Giant Spider for 4!", "Brand swings the Longsword and hits the Giant Spider for 4. The Giant Spider dies!", "Victory!", "Experience: Brand 10, Oldo 22, Sira 43, Tavi 22."]
 save ok: true
 load -> dungeon party 4==4 pos (17, 17) name Brand items type 2
 shot 17_prologue_end
@@ -56,22 +56,25 @@ shot 18_road_chatter
 shot 19_road_choice
 shot 20_ambush
 shot 21_ambush_fight
-ambush over after 3 rounds, hits: [6, 13, 7, 19, 7]
+ambush over after 2 rounds, hits: [9, 11, 10, 19, 7]
 shot 22a_consent
 shot 22b_consent_retry
 shot 22_road_after
 story after road: { "host": "tikkat", "prologue_reply": 1, "consent": "given", "road_done": true, "host_control": true } at lehan
 shot 23a_lehan_walk
+click on dialogue: line 0 -> 1
 shot 23b_lehan_night
 shot 23c_lehan_pocket
 shot 23d_lehan_parting
+arrival walk ended at (20, 6) facing 1
 lehan: { "answer": "warm", "pocket": "yes", "noticer": "maera", "shares": { "joss": 20, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 20 }, "xp": 100 } party ["Tikkat"] roster ["Joss Harrow:talk:0", "Maera Vell:talk:0", "Ommuk:talk:0", "Ithrae:talk:0"]
 shot 23e_inn_split
 shot 23e2_no_job
 before the job: party ["Tikkat"]
+market: at (11, 7) known ["shrine", "lehan", "mines"] town ["gate", "market", "inn", "hideout", "smith"]
 shot 23f_rejoin_talk
 shot 23g_rejoined
-after talk: party ["Tikkat", "Joss Harrow"] purse 68
+after talk: party ["Tikkat", "Joss Harrow"] purse 76
 host joss {  } -> shares { "joss": 12, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 12 } moods ["maera:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "double" } -> shares { "joss": 20, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 10 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "docked", "answer": "lie" } -> shares { "joss": 28, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 6 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
@@ -87,8 +90,32 @@ host tikkat { "pocket": "yes", "noticer": "joss" } -> shares { "joss": 17, "maer
 host tikkat { "pocket": "yes", "noticer": "ithrae" } -> shares { "joss": 17, "maera": 8, "ommuk": 8, "ithrae": 8, "tikkat": 19 } moods ["joss:talk", "maera:talk", "ommuk:talk", "ithrae:soured:theft"]
 host tikkat {  } -> shares { "joss": 25, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 5 } moods ["joss:talk", "maera:talk", "ommuk:talk", "ithrae:talk"]
 shot 23_town
-shot 24_market_notice
+shot 24a_market
+shot 24b_market_crier
+shot 24c_market_talk
+market: at (11, 7) known ["shrine", "lehan", "mines"] town ["gate", "market", "inn", "hideout", "smith"]
+shot 24d_market_west
+shot 24e_market_south
+shot 24f_market_east
+shot 24g_town_plan
+plan spots: ["gate", "market", "inn", "smith", "hideout"]
+shot 24h_at_inn
+travel inn: at (20, 6) facing 1 ahead { "kind": "exit", "to": "inn" }
+shot 24i_tanners_row
+shot 24j_tanners_row_east
+shot 24k_at_smith
+shot 24l_at_gate
 shot 25_town_smith
 known after market: ["shrine", "lehan", "mines"] town: { "lehan": ["gate", "market", "inn", "hideout", "smith"] }
+shot 30_checkpoint_road
+checkpoint road: screen world.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan"]
+shot 30_checkpoint_lehan
+checkpoint lehan: screen streets.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan"]
+shot 30_checkpoint_split
+checkpoint split: screen inn.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
+shot 30_checkpoint_market
+checkpoint market: screen streets.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
+shot 30_checkpoint_mines
+checkpoint mines: screen dungeon.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan", "mines"]
 
-Script done on 2026-11-17 07:48:35+01:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2026-11-17 16:39:43+01:00 [COMMAND_EXIT_CODE="0"]

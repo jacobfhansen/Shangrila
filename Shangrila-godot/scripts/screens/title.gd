@@ -17,6 +17,9 @@ func _ready() -> void:
 	if res.disabled:
 		res.tooltip_text = "No saved game yet"
 	Ui.btn(self, "Quit", Rect2(260, 276, 120, 34), func(): get_tree().quit())
+	var cp := Ui.btn(self, "Start at...", Rect2(270, 318, 100, 26), _on_checkpoint,
+		"For testing: start at a later point in the story")
+	cp.add_theme_font_size_override("font_size", 12)
 	Ui.label(self, "Something old stirs beneath a roadside shrine.\nFive travellers have made camp beside it for the night.",
 		Vector2(0, 360), 13, Ui.DIM, 640, HORIZONTAL_ALIGNMENT_CENTER)
 
@@ -25,6 +28,19 @@ func _on_new() -> void:
 	if Game.has_save() and not await Game.main.confirm("Start a new game?\nYour saved game stays on disk until you save again."):
 		return
 	Game.main.goto("prologue", {"new_game": true})
+
+
+func _on_checkpoint() -> void:
+	var where: int = await Game.main.choose("Start at which point in the story? (For testing.)",
+		Checkpoints.LIST.map(func(e): return e[1]))
+	if where < 0:
+		return
+	var hosts: Array = PrologueData.ORDER.map(func(k): return "%s, %s" % [PrologueData.CAST[k].name.split(" ")[0],
+		PrologueData.CAST[k].cls])
+	var h: int = await Game.main.choose("Which companion is the spirit's host?", hosts)
+	if h < 0:
+		return
+	Checkpoints.start(Checkpoints.LIST[where][0], PrologueData.ORDER[h])
 
 
 func _on_resume() -> void:

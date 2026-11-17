@@ -127,6 +127,71 @@ func _mechanics() -> void:
 	Game.pos = keep[3]
 
 
+## The walkable market square: walk up to the crier by the well and hear the notice.
+func _market_walk(shots: bool) -> void:
+	var m: Node = Game.main
+	m.current._on_place("market")
+	await get_tree().create_timer(0.8).timeout
+	var mk: Node = m.current
+	if shots:
+		await _shot("24a_market")
+	for i in 3:
+		mk._walk(0)
+		await get_tree().create_timer(0.3).timeout
+	if shots:
+		await _shot("24b_market_crier")
+	mk._walk(0)   # into the crier: a talk
+	await get_tree().create_timer(0.4).timeout
+	for ch in mk.get_children():
+		for g in ch.get_children():
+			if g is DialogueBox:
+				g.skip_to_choice()
+				if shots:
+					await _shot("24c_market_talk")
+				g.finished.emit()
+				await get_tree().process_frame
+				if is_instance_valid(g) and g.is_inside_tree():
+					g.finished.emit()   # the Goodbye button
+	await get_tree().create_timer(0.3).timeout
+	print("market: at ", mk.area.pos, " known ", Game.known, " town ", Game.town_known.get("lehan", []))
+	if shots:
+		mk._turn(-1)
+		await get_tree().create_timer(0.4).timeout
+		await _shot("24d_market_west")
+		mk._turn(-1)
+		await get_tree().create_timer(0.4).timeout
+		await _shot("24e_market_south")
+		mk._turn(-1)
+		await get_tree().create_timer(0.4).timeout
+		mk._walk(0)
+		mk._walk(0)
+		await get_tree().create_timer(0.5).timeout
+		await _shot("24f_market_east")
+		mk.map_btn.button_pressed = true
+		mk._on_map()
+		await get_tree().create_timer(0.3).timeout
+		await _shot("24g_town_plan")
+		print("plan spots: ", mk.plan.spots.keys())
+		mk._travel("inn")
+		await get_tree().create_timer(0.4).timeout
+		await _shot("24h_at_inn")
+		print("travel inn: at ", mk.area.pos, " facing ", mk.area.facing, " ahead ", mk.area.thing_at(mk.area.ahead()))
+		mk._travel("hideout")
+		await get_tree().create_timer(0.4).timeout
+		await _shot("24i_tanners_row")
+		mk._turn(-1)
+		await get_tree().create_timer(0.3).timeout
+		mk._turn(-1)
+		await get_tree().create_timer(0.4).timeout
+		await _shot("24j_tanners_row_east")
+		mk._travel("smith")
+		await get_tree().create_timer(0.4).timeout
+		await _shot("24k_at_smith")
+		mk._travel("gate")
+		await get_tree().create_timer(0.4).timeout
+		await _shot("24l_at_gate")
+
+
 func _run() -> void:
 	var m: Node = Game.main
 	await _shot("01_about")
@@ -315,42 +380,71 @@ func _new_game_route() -> void:
 	await _lehan_arrival()
 	m.goto("town")
 	await _shot("23_town")
-	m.current._on_place("market")
-	await get_tree().create_timer(0.3).timeout
-	await _shot("24_market_notice")
-	if m.modal_open:
-		m._modal_done.emit(true)
-	await get_tree().create_timer(0.2).timeout
-	if m.modal_open:
-		m._modal_done.emit(true)
+	await _market_walk(true)
+	m.goto("town")
 	await get_tree().create_timer(0.3).timeout
 	await _shot("25_town_smith")
 	print("known after market: ", Game.known, " town: ", Game.town_known)
+	# Checkpoints (title screen "Start at..." / --start=): each lands where it should.
+	for cp in Checkpoints.keys():
+		if m.modal_open:
+			m._modal_done.emit(true)
+		Checkpoints.start(cp, "maera")
+		await get_tree().create_timer(1.5).timeout
+		await _shot("30_checkpoint_" + cp)
+		print("checkpoint %s: screen %s, party %s, roster %d, known %s" % [cp, m.current.get_script().resource_path.get_file(),
+			Game.party.map(func(c): return c.name.split(" ")[0]), Game.roster.size(), Game.known])
+	if m.modal_open:
+		m._modal_done.emit(true)
 
 
 ## Arrival in Lehan with Tikkat as host: the walk, the meeting, palming coins, the split, and
 ## talking a companion round at the inn.
+## Runs the dialogue on until it waits for a choice (the company may still be walking).
+func _until_choice(box: DialogueBox) -> void:
+	for i in 300:
+		box.skip_to_choice()
+		if box.choosing != "":
+			return
+		await get_tree().create_timer(0.1).timeout
+
+
 func _lehan_arrival() -> void:
 	var m: Node = Game.main
-	m.goto("town")
-	await get_tree().create_timer(3.0).timeout
+	m.goto("streets")
+	await get_tree().create_timer(4.0).timeout
 	await _shot("23a_lehan_walk")
 	var town: Node = m.current
 	var box: DialogueBox = null
 	for ch in town.get_children():
 		if ch is DialogueBox:
 			box = ch
-	box.skip_to_choice()
+	# A left click on the conversation moves it on (as Space does).
+	var before: int = box.idx
+	for pressed in [true, false]:
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_LEFT
+		click.pressed = pressed
+		click.position = box.global_position + Vector2(300, 50)
+		click.global_position = click.position
+		get_viewport().push_input(click)
+	await get_tree().process_frame
+	print("click on dialogue: line ", before, " -> ", box.idx)
+	await _until_choice(box)
 	await _shot("23b_lehan_night")
 	box.choose(1)     # "The stone was warm."
-	box.skip_to_choice()
+	await _until_choice(box)
 	await _shot("23c_lehan_pocket")
 	box.choose(0)     # palm a few coins
-	box.skip_to_choice()
-	await get_tree().create_timer(4.0).timeout
-	box.skip_to_choice()
+	# On through the meeting and the walk to the inn, to the "Go into the inn" button.
+	for i in 400:
+		box.skip_to_choice()
+		if town.area.pos == LehanStreets.PATH_TO_INN[-1] and not box.running:
+			break
+		await get_tree().create_timer(0.1).timeout
 	await get_tree().create_timer(1.0).timeout
 	await _shot("23d_lehan_parting")
+	print("arrival walk ended at ", town.area.pos, " facing ", town.area.facing)
 	print("lehan: ", Game.story.get("lehan"), " party ", Game.party.map(func(c): return c.name),
 		" roster ", Game.roster.map(func(c): return "%s:%s:%s" % [c.name, c.get("rejoin", ""), c.get("owed", 0)]))
 	m.goto("inn", {"split": true})
@@ -372,12 +466,7 @@ func _lehan_arrival() -> void:
 	# Hear the crier in the market, then try again.
 	m.goto("town")
 	await get_tree().process_frame
-	m.current._on_place("market")
-	for i in 2:
-		await get_tree().create_timer(0.3).timeout
-		if m.modal_open:
-			m._modal_done.emit(true)
-	await get_tree().create_timer(0.2).timeout
+	await _market_walk(false)
 	m.goto("inn")
 	await get_tree().process_frame
 	inn = m.current

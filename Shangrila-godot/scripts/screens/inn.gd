@@ -180,8 +180,8 @@ func _rejoin_talk(c: Dictionary) -> bool:
 	var box := DialogueBox.new()
 	box.cast = PrologueData.company_cast()
 	box.host = host
+	Ui.place(box, Rect2(20, 120, 600, 260))   # sized before _ready builds it
 	ov.add_child(box)
-	Ui.place(box, Rect2(20, 120, 600, 260))
 	var result := {"join": false}
 	box.effect.connect(func(fx: String):
 		if fx == "join":
@@ -221,7 +221,7 @@ func _on_kill() -> void:
 
 
 func _on_leave() -> void:
-	Game.main.goto("town")
+	Game.main.goto("streets", {"at": "inn"})
 
 
 func _on_save() -> void:

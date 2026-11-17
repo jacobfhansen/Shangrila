@@ -30,7 +30,7 @@ func _ready() -> void:
 	var who := "Party: " + (", ".join(Game.party.map(func(c): return c.name)) if Game.party.size() > 0 else "nobody")
 	info = Ui.label(self, who, Vector2(140, 444), 12, Ui.TEXT, 320)
 	if _arrival_pending():
-		_arrival.call_deferred()
+		Game.main.goto.call_deferred("streets")   # the arrival is played in the streets
 
 
 func _build_places() -> void:
@@ -77,7 +77,7 @@ func _on_place(key: String) -> void:
 		"smith":
 			Game.main.goto("shop")
 		"market":
-			await _market()
+			Game.main.goto("streets", {"at": "market", "into": true})
 
 
 # ---------------------------------------------------------------- arriving in Lehan
@@ -95,91 +95,9 @@ func _set_busy(on: bool) -> void:
 
 
 ## Moves the red party dot along a list of points (town map coordinates).
-func _walk(points: Array, secs: float) -> void:
-	var lens := [0.0]
-	for i in range(1, points.size()):
-		lens.append(lens[-1] + (points[i] as Vector2).distance_to(points[i - 1]))
-	var total: float = lens[-1]
-	var tw := create_tween()
-	tw.tween_method(func(d: float):
-		var i := 1
-		while i < points.size() - 1 and lens[i] < d:
-			i += 1
-		var seg: float = maxf(0.001, lens[i] - lens[i - 1])
-		layer.party_at = (points[i - 1] as Vector2).lerp(points[i], clampf((d - lens[i - 1]) / seg, 0.0, 1.0)),
-		0.0, total, secs).set_trans(Tween.TRANS_SINE)
-	await tw.finished
-
-
-func _arrival() -> void:
-	_set_busy(true)
-	var host: String = Game.story.host
-	Game.discover_place(town, "hideout")
-	_build_places()
-	info.text = "The company makes its way to the employer's house."
-	var box := DialogueBox.new()
-	box.cast = PrologueData.company_cast()
-	box.cast["employer"] = LehanData.EMPLOYER
-	box.host = host
-	Ui.place(box, Rect2(20, 52, 600, 248))
-	add_child(box)
-	box.effect.connect(_on_scene_fx)
-	layer.party_at = LehanData.TO_HOUSE[0]
-	_walk(LehanData.TO_HOUSE, 10.0)
-	box.play(LehanData.walk(host))
-	await box.finished
-	box.play(LehanData.meeting(host))
-	await box.finished
-	LehanData.settle(host)
-	Game.story["employer"] = "met"
-	info.text = "Off to the inn."
-	_walk(LehanData.TO_INN, 9.0)
-	box.play(LehanData.parting(host))
-	await box.finished
-	box.show_buttons([["Go into the inn", func(): Game.main.goto("inn", {"split": true})]])
-
-
-func _on_scene_fx(name: String) -> void:
-	if name.contains("="):
-		LehanData.record(name)
-	elif name == "split":
-		_split_company()
-
-
-## Everyone except the host goes to the inn's roster.
-func _split_company() -> void:
-	var host_name: String = PrologueData.CAST[Game.story.host].name
-	for c in Game.party.duplicate():
-		if c.name != host_name:
-			Game.party.erase(c)
-			Game.roster.append(c)
-	info.text = "Party: " + ", ".join(Game.party.map(func(c): return c.name))
-
-
 ## Knocking at the employer's door after the meeting.
 func _knock() -> void:
-	if Game.story.get("left_lehan", false):
-		await Game.main.message("You knock. No reply.\n\nThe shutters are closed, and no lamp burns behind them. The house looks empty.")
-	elif Game.story.has("employer"):
-		await Game.main.message("The door opens a crack. A grey sleeve, an eye.\n\n\"Our business is done. Go away.\"\n\nThe door shuts, and a bolt slides home.")
-	else:
-		await Game.main.message("A narrow, plain house. Nobody answers.")
-
-
-## The market square: the crier's notice about the mines, and a first look around.
-func _market() -> void:
-	if not "mines" in Game.known:
-		Game.known.append("mines")
-		Game.discover_place(town, "smith")
-		_build_places()
-		await Game.main.message("A crier reads a notice from the council: miners have gone missing in the old workings above the town, and the council will pay well for anyone willing to look into it.\n\nThe Mines are now on your map.")
-		await Game.main.message("Across the square hangs the sign of a weapon smith.\n\nThe Weapon Smith is now on the town map.")
-		return
-	if Game.discover_place(town, "smith"):
-		_build_places()
-		await Game.main.message("Across the square hangs the sign of a weapon smith.\n\nThe Weapon Smith is now on the town map.")
-		return
-	await Game.main.message("The market is busy. The council's notice about the mines still hangs by the well.")
+	await Game.main.message(LehanData.knock_text())
 
 
 func _on_save() -> void:

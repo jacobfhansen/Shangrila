@@ -956,7 +956,10 @@ up and talking.
   the old companions, or a first meeting (they don't know the host yet)?
 
 ### A walkable market square
-**Agreed, not built yet.** Lehan's market square becomes a small first-person 3D area that you
+**Started:** the square is in the game, and Lehan's streets with it (`scripts/areas/lehan_streets.gd`):
+the gate road, Tanners' Row with the employer's house, the lane to the inn and the street to the
+smith, with a Map button for fast travel to the places found so far. The crier still gives the mines
+notice straight away, because the solo adventures are not written yet. Lehan's market square becomes a small first-person 3D area that you
 walk around, like the Mines. It has medieval house fronts, stalls and people standing about who
 can be talked to. It is the home of the solo-adventure hooks.
 

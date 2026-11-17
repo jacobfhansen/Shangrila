@@ -317,6 +317,229 @@ def town_lehan():
     img.save(OUT / "town_lehan.png")
 
 
+# ---------------------------------------------------------------- the market square (3D)
+
+def cobbles():
+    """Rounded cobblestones for the market square floor (tileable)."""
+    w = h = 256
+    rng = np.random.default_rng(301)
+    yy, xx = np.mgrid[0:h, 0:w]
+    pts = rng.random((70, 2)) * w
+    best = np.full((h, w), 1e9)
+    second = np.full((h, w), 1e9)
+    idx = np.zeros((h, w), int)
+    for i, (px_, py_) in enumerate(pts):
+        for ox in (-w, 0, w):
+            for oy in (-h, 0, h):
+                d = np.hypot(xx - px_ - ox, yy - py_ - oy)
+                closer = d < best
+                second = np.where(closer, best, np.minimum(second, d))
+                idx = np.where(closer, i, idx)
+                best = np.where(closer, d, best)
+    edge = second - best
+    tone = rng.normal(0, 1, len(pts))[idx]
+    grain = tile_noise(w, h, 8, 302, 4)
+    base = 118 + tone * 12 + (grain - 0.5) * 30
+    bevel = np.clip(edge / 7.0, 0, 1)
+    v = base * (0.35 + 0.65 * bevel)
+    rgb = np.stack([v * 1.02, v * 0.96, v * 0.86], -1)
+    to_img(rgb).save(OUT / "cobbles.png")
+
+
+def _plaster(w, h, seed, col):
+    n = tile_noise(w, h, 4, seed, 5)
+    return np.array(col, float)[None, None, :] + ((n - 0.5) * 40)[..., None]
+
+
+def _window(d, x0, y0, x1, y1, shutters, beam):
+    d.rectangle([x0, y0, x1, y1], fill=(34, 30, 34), outline=beam, width=4)
+    mx, my = (x0 + x1) // 2, (y0 + y1) // 2
+    d.line([(mx, y0), (mx, y1)], fill=beam, width=3)
+    d.line([(x0, my), (x1, my)], fill=beam, width=3)
+    # A warm glint behind the glass.
+    d.rectangle([x0 + 6, y0 + 6, mx - 4, my - 4], fill=(70, 58, 44))
+    if shutters:
+        sw = (x1 - x0) // 2
+        d.rectangle([x0 - sw - 2, y0, x0 - 2, y1], fill=shutters, outline=beam, width=2)
+        d.rectangle([x1 + 2, y0, x1 + sw + 2, y1], fill=shutters, outline=beam, width=2)
+        for k in range(1, 4):
+            yk = y0 + (y1 - y0) * k // 4
+            d.line([(x0 - sw, yk), (x0 - 4, yk)], fill=beam, width=1)
+            d.line([(x1 + 4, yk), (x1 + sw, yk)], fill=beam, width=1)
+
+
+def _door(d, x0, y0, x1, y1, wood, beam):
+    d.rectangle([x0, y0, x1, y1], fill=wood, outline=beam, width=4)
+    for k in range(1, 4):
+        xk = x0 + (x1 - x0) * k // 4
+        d.line([(xk, y0 + 4), (xk, y1)], fill=tuple(int(c * 0.75) for c in wood), width=2)
+    d.ellipse([x1 - 18, (y0 + y1) // 2, x1 - 10, (y0 + y1) // 2 + 8], fill=(40, 34, 28))
+    d.pieslice([x0, y0 - (x1 - x0) // 2, x1, y0 + (x1 - x0) // 2], 180, 360, fill=wood, outline=beam, width=4)
+
+
+def house_fronts():
+    """Ground floors (house_low_N) and upper storeys (house_up_N) for the square's houses."""
+    w = h = 256
+    plasters = [(214, 200, 168), (196, 176, 140), (222, 214, 196), (186, 160, 122)]
+    shutters = [(70, 96, 70), (120, 60, 44), (70, 80, 110), (110, 90, 50)]
+    beam = (62, 42, 26)
+    for i in range(4):
+        rng = np.random.default_rng(400 + i)
+        # Ground floor: a stone plinth, plaster, a door and a window, or a shop front.
+        rgb = _plaster(w, h, 410 + i, plasters[i])
+        img = to_img(rgb)
+        d = ImageDraw.Draw(img)
+        stone = blocks(w, 60, 2, 6, 420 + i, mortar=2, base=(108, 100, 92), jitter=14)
+        img.paste(stone, (0, h - 60))
+        d.rectangle([0, 0, w - 1, 10], fill=beam)
+        d.line([(0, 0), (0, h)], fill=beam, width=8)
+        d.line([(w - 1, 0), (w - 1, h)], fill=beam, width=8)
+        if i % 2 == 0:
+            _door(d, 30, 96, 104, h - 8, (110, 76, 44), beam)
+            _window(d, 150, 80, 220, 160, shutters[i], beam)
+        else:
+            # A shop front: a wide window under a little awning.
+            d.rectangle([24, 70, 232, 170], fill=(40, 34, 30), outline=beam, width=5)
+            for k in range(1, 4):
+                d.line([(24 + 52 * k, 70), (24 + 52 * k, 170)], fill=beam, width=3)
+            d.rectangle([20, 176, 236, 196], fill=(120, 90, 60), outline=beam, width=3)
+            for k in range(8):
+                d.polygon([(16 + k * 28, 52), (44 + k * 28, 52), (40 + k * 28, 70), (20 + k * 28, 70)],
+                          fill=shutters[i] if k % 2 == 0 else (220, 210, 180))
+        img.save(OUT / f"house_low_{i}.png")
+        # Upper storey: timber framing with windows.
+        rgb = _plaster(w, h, 430 + i, plasters[(i + 1) % 4])
+        img = to_img(rgb)
+        d = ImageDraw.Draw(img)
+        for x in (0, 84, 170, w - 1):
+            d.line([(x, 0), (x, h)], fill=beam, width=10)
+        d.line([(0, 6), (w, 6)], fill=beam, width=12)
+        d.line([(0, h - 6), (w, h - 6)], fill=beam, width=12)
+        d.line([(0, 128), (w, 128)], fill=beam, width=8)
+        if rng.random() < 0.5:
+            d.line([(4, 128), (80, 10)], fill=beam, width=8)
+            d.line([(252, 128), (176, 10)], fill=beam, width=8)
+        else:
+            d.line([(4, 250), (80, 130)], fill=beam, width=8)
+            d.line([(252, 250), (176, 130)], fill=beam, width=8)
+        _window(d, 104, 30, 152, 108, None, beam)
+        _window(d, 104, 150, 152, 228, shutters[i], beam)
+        img.save(OUT / f"house_up_{i}.png")
+
+
+def smith_front():
+    """The weapon smith's ground floor: a wide door, and a sign with a sword and an anvil."""
+    w = h = 256
+    img = to_img(_plaster(w, h, 450, (176, 160, 140)))
+    d = ImageDraw.Draw(img)
+    beam = (52, 36, 24)
+    img.paste(blocks(w, 60, 2, 6, 451, mortar=2, base=(96, 90, 84), jitter=14), (0, h - 60))
+    d.line([(0, 0), (0, h)], fill=beam, width=8)
+    d.line([(w - 1, 0), (w - 1, h)], fill=beam, width=8)
+    _door(d, 70, 104, 186, h - 6, (92, 62, 36), beam)
+    d.rectangle([20, 14, 236, 60], fill=(60, 44, 30), outline=(180, 140, 70), width=3)
+    d.line([(60, 37), (140, 37)], fill=(220, 224, 230), width=6)
+    d.polygon([(140, 31), (156, 37), (140, 43)], fill=(220, 224, 230))
+    d.line([(64, 27), (64, 47)], fill=(200, 160, 60), width=5)
+    d.polygon([(170, 30), (214, 30), (206, 40), (196, 40), (200, 52), (180, 52), (184, 40), (176, 40)], fill=(40, 40, 46))
+    img.save(OUT / "smith_front.png")
+
+
+def archway():
+    """A lane leaving the square between two houses: a dark opening under an arch."""
+    w = h = 256
+    img = blocks(w, h, 8, 4, 460, mortar=3, base=(120, 110, 98), jitter=16)
+    d = ImageDraw.Draw(img)
+    d.rectangle([48, 90, 208, h], fill=(26, 22, 20))
+    d.pieslice([48, 10, 208, 170], 180, 360, fill=(26, 22, 20))
+    # A hint of daylight at the end of the lane.
+    d.rectangle([108, 140, 148, h - 20], fill=(80, 76, 64))
+    d.pieslice([108, 116, 148, 164], 180, 360, fill=(80, 76, 64))
+    d.arc([44, 6, 212, 174], 180, 360, fill=(70, 60, 50), width=8)
+    img.save(OUT / "archway.png")
+
+
+def roof_tiles():
+    w = h = 256
+    rng = np.random.default_rng(470)
+    img = Image.new("RGB", (w, h))
+    d = ImageDraw.Draw(img)
+    rows = 10
+    for r in range(rows):
+        y0 = r * h // rows
+        off = (r % 2) * 16
+        for c in range(-1, 9):
+            x0 = c * 32 + off
+            t = int(rng.integers(-16, 16))
+            d.rectangle([x0, y0, x0 + 31, y0 + h // rows], fill=(132 + t, 66 + t // 2, 46 + t // 3))
+            d.line([(x0, y0), (x0, y0 + h // rows)], fill=(80, 40, 30), width=2)
+        d.line([(0, y0), (w, y0)], fill=(70, 34, 26), width=3)
+    img.save(OUT / "roof_tiles.png")
+
+
+def awning():
+    w, h = 128, 64
+    img = Image.new("RGB", (w, h))
+    d = ImageDraw.Draw(img)
+    for k in range(8):
+        col = (176, 52, 40) if k % 2 == 0 else (226, 214, 186)
+        d.rectangle([k * 16, 0, k * 16 + 15, h], fill=col)
+    img = Image.fromarray(np.clip(np.array(img) * (0.9 + 0.1 * tile_noise(w, h, 4, 480)[..., None]), 0, 255).astype(np.uint8))
+    img.save(OUT / "awning.png")
+
+
+def planks():
+    w = h = 128
+    n = tile_noise(w, h, 2, 490, 5)
+    rgb = np.stack([120 + n * 40, 84 + n * 30, 52 + n * 20], -1)
+    img = to_img(rgb)
+    d = ImageDraw.Draw(img)
+    for k in range(0, h, 32):
+        d.line([(0, k), (w, k)], fill=(60, 40, 24), width=3)
+    img.save(OUT / "planks.png")
+
+
+def inn_front():
+    """The inn's ground floor: a wide door, lit windows and a hanging sign with a tankard."""
+    w = h = 256
+    img = to_img(_plaster(w, h, 500, (200, 178, 136)))
+    d = ImageDraw.Draw(img)
+    beam = (58, 38, 22)
+    img.paste(blocks(w, 60, 2, 6, 501, mortar=2, base=(104, 96, 88), jitter=14), (0, h - 60))
+    d.line([(0, 0), (0, h)], fill=beam, width=8)
+    d.line([(w - 1, 0), (w - 1, h)], fill=beam, width=8)
+    _door(d, 88, 110, 168, h - 6, (120, 78, 40), beam)
+    for x0 in (16, 186):
+        d.rectangle([x0, 100, x0 + 54, 170], fill=(150, 110, 50), outline=beam, width=4)
+        d.line([(x0 + 27, 100), (x0 + 27, 170)], fill=beam, width=3)
+        d.line([(x0, 135), (x0 + 54, 135)], fill=beam, width=3)
+    # The sign on its bracket.
+    d.line([(150, 24), (236, 24)], fill=(40, 30, 20), width=5)
+    d.line([(190, 24), (190, 34)], fill=(40, 30, 20), width=2)
+    d.line([(226, 24), (226, 34)], fill=(40, 30, 20), width=2)
+    d.rectangle([180, 34, 236, 84], fill=(70, 50, 30), outline=(190, 150, 80), width=3)
+    d.rectangle([196, 46, 218, 74], fill=(210, 170, 60), outline=(60, 40, 20), width=2)
+    d.arc([212, 50, 228, 68], 270, 90, fill=(210, 170, 60), width=4)
+    d.rectangle([194, 42, 220, 48], fill=(240, 236, 220))
+    img.save(OUT / "inn_front.png")
+
+
+def town_gate():
+    """The inside of the south gate: a tall stone arch with the road beyond."""
+    w = h = 256
+    img = blocks(w, h, 8, 4, 510, mortar=3, base=(100, 94, 86), jitter=14)
+    d = ImageDraw.Draw(img)
+    d.rectangle([40, 80, 216, h], fill=(150, 170, 120))
+    d.pieslice([40, 0, 216, 170], 180, 360, fill=(150, 170, 120))
+    d.polygon([(110, h), (146, h), (136, 120), (120, 120)], fill=(170, 150, 110))
+    d.rectangle([40, 120, 216, 130], fill=(120, 140, 100))
+    d.arc([36, -4, 220, 174], 180, 360, fill=(60, 54, 46), width=10)
+    for x in range(52, 210, 22):
+        d.line([(x, 8), (x, 40)], fill=(50, 44, 40), width=4)
+    d.line([(46, 40), (210, 40)], fill=(50, 44, 40), width=4)
+    img.save(OUT / "town_gate.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -324,4 +547,13 @@ if __name__ == "__main__":
     chain()
     world_map()
     town_lehan()
+    cobbles()
+    house_fronts()
+    smith_front()
+    archway()
+    roof_tiles()
+    awning()
+    planks()
+    inn_front()
+    town_gate()
     print("wrote textures to", OUT)
