@@ -400,6 +400,7 @@ func _new_game_route() -> void:
 		m._modal_done.emit(true)
 	await _council_visits()
 	await _lisbet_quest()
+	await _boddo_quest()
 
 
 ## The council house: Joss alone, then Tikkat with the whole company. Tries every argument,
@@ -565,6 +566,46 @@ func _lisbet_quest() -> void:
 	await _until_choice(box)
 	await _shot("32h_council_purse")
 	print("lisbet: council offer after purse ", Game.story.council.offer)
+
+
+## Boddo's debt with Joss as host: the offer, the warehouse (tried until it ends), back to Boddo.
+## Then, with the job cried, Maera grumbles about errands at Lisbet's offer.
+func _boddo_quest() -> void:
+	var m: Node = Game.main
+	Checkpoints.start("market", "joss")
+	await get_tree().create_timer(1.0).timeout
+	var st: Node = m.current
+	st._talk("4")
+	await _drive(st, [0], "33a_boddo_offer")
+	print("boddo: state ", LehanQuests.state(), " places ", Game.town_places("lehan"))
+	for visit in 6:
+		var q := LehanQuests.get_q("boddo")
+		if q != "proof" and q != "found":
+			break
+		st._travel("warehouse")
+		await get_tree().create_timer(0.5).timeout
+		if visit == 0:
+			await _shot("33b_warehouse_door")
+		st._use_ahead()
+		await _drive(st, [0], "33c_warehouse_%d" % visit)
+		print("boddo: visit %d -> %s" % [visit, LehanQuests.state()])
+	st._travel("market")
+	st._talk("4")
+	await _drive(st, [0], "33d_boddo_back")
+	await get_tree().create_timer(1.0).timeout
+	st = m.current
+	print("boddo: end ", LehanQuests.state(), " roster ", Game.roster.map(func(c): return c.name),
+		" silver ", Game.party_silver(), " hits ", Game.party.map(func(c): return c.hits))
+	st._talk("1")
+	await _drive(st, [])
+	for c in Game.roster.duplicate():
+		if c.name == "Maera Vell":
+			for k in ["rejoin", "grudge", "owed"]:
+				c.erase(k)
+			Game.roster.erase(c)
+			Game.party.append(c)
+	st._talk("2")
+	await _drive(st, [3], "33e_errand_comment")
 
 
 ## Arrival in Lehan with Tikkat as host: the walk, the meeting, palming coins, the split, and

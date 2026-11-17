@@ -123,7 +123,7 @@ when one is set; the streets are `scripts/areas/lehan_streets.gd`, the screen
 cut-out figures `scripts/widgets/figure_art.gd`, and the house textures come from
 `tools/make_textures.py`.
 
-## The Lehan quests (new; one of three built)
+## The Lehan quests (new; two of three built)
 
 After the split the host is alone, and the crier has no news until the host has done one of the
 Lehan quests for Lisbet, Skee or Boddo in the square. Each quest wins its character, who then
@@ -139,7 +139,22 @@ or 40 if the host was followed, broke the seal or was caught lying. The letter t
 council really has for the miners (400 silver), which gives a strong argument at the council.
 Checks are rolled when a scene starts; passing them and finishing the quest give story
 experience. The quests are in `scripts/data/lehan_quests.gd` (shared: state, the new
-characters, effects, mustering) and `scripts/data/quest_lisbet.gd`.
+characters, effects, mustering), `scripts/data/quest_lisbet.gd` and `scripts/data/quest_boddo.gd`.
+
+**Boddo's debt.** Tam Reed, a porter who once pulled Boddo out of the river, died cheated of
+forty silver by Master Gell, and Boddo swore Tam's widow would be paid. First the proof, in
+Gell's Warehouse (a new door where the smith's street meets the square): talk your way to a look
+at the wage book and spot the lie (Talk, then Perception or Lore), lift it (Thievery), come back
+after dark (Stealth, with a scuffle with the watchman if it goes wrong), or let the spirit look.
+Each way can be tried once, one per visit. Then Master Gell: shame him in front of his porters
+(Talk) or lean on him (Combat; a scuffle if he calls his men). If both fail he burns the page.
+At any point the host can pay the forty silver themselves. Boddo joins for no fee. The checks use
+the best in the party, so a full company has more ways through than a lone host; a lost scuffle
+costs everyone a few hits.
+
+**Errands.** Once the mines job is cried, the first companion in the party grumbles when a quest
+starts (each in their own voice), and Old Wenna wonders why you're still in town. This stops
+after a trip into the mines.
 
 ## The council house (new)
 

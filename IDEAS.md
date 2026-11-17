@@ -914,9 +914,9 @@ searching it gives clues to where the jailers are.
   Ithrae's copied mark and Maera's tracks are possible threads.)
 
 ### The Lehan quests
-**Started:** Lisbet's letter is built (`scripts/data/lehan_quests.gd`, `scripts/data/quest_lisbet.gd`),
-and the crier now waits for a quest to be done. Skee's and Boddo's are not written yet, nor the
-errand comments (they only matter once a second quest exists).
+**Started:** Lisbet's letter and Boddo's debt are built (`scripts/data/lehan_quests.gd`,
+`scripts/data/quest_lisbet.gd`, `scripts/data/quest_boddo.gd`), the crier waits for a quest to be
+done, and the errand comments are in (companions and Old Wenna). Skee's tunnels are not written yet.
 
 **Agreed in outline.** Three small quests in Lehan, one for each of the tier-1
 characters in the market square: Skee, Boddo and Lisbet (see [CHARACTERS.md](CHARACTERS.md)).
@@ -960,7 +960,11 @@ seen blue lights in the old tunnels below the town and won't go back down alone.
 4. **Back to Skee:** persuade him the lights are not ghosts, or that they are worth looking
    into together. He joins.
 
-#### Boddo: a debt of honour (suggestion)
+#### Boddo: a debt of honour (built)
+As built: the porter was Tam Reed, the widow Hanna, the merchant Master Gell; his warehouse is a new
+door where the smith's street meets the square. One way to the proof per visit; if both ways with
+Gell fail, he burns the page and only silver is left. Boddo's abilities: Combat 3, Toughness 3.
+The original suggestion:
 Boddo is a Thuug porter, Calm, Vengeful and Humble, and is won over by a task. A fellow porter
 once pulled him out of the harbour. That porter later died, cheated of his wages by a warehouse
 master. Boddo swore that the widow would be paid, but nobody listens to a Thuug accusing a

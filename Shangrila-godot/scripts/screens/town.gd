@@ -80,6 +80,8 @@ func _on_place(key: String) -> void:
 			Game.main.goto("streets", {"at": "market", "into": true})
 		"council":
 			Game.main.goto("streets", {"at": "council", "into": true})
+		"warehouse":
+			Game.main.goto("streets", {"at": "warehouse", "into": true})
 
 
 # ---------------------------------------------------------------- arriving in Lehan
@@ -154,6 +156,11 @@ class TownLayer extends Control:
 					draw_colored_polygon(PackedVector2Array([p + Vector2(-6, -1), p + Vector2(0, -8), p + Vector2(6, -1)]), ink)
 					draw_rect(Rect2(p.x - 5, p.y - 1, 10, 8), ink, false, 1.5)
 					draw_rect(Rect2(p.x - 1.5, p.y + 2, 3, 5), ink)
+				"warehouse":
+					# A barrel.
+					draw_rect(Rect2(p.x - 6, p.y - 7, 12, 14), ink, false, 1.6)
+					draw_line(p + Vector2(-6, -2), p + Vector2(6, -2), ink, 1.2)
+					draw_line(p + Vector2(-6, 2), p + Vector2(6, 2), ink, 1.2)
 				"council":
 					# A hall with columns.
 					draw_colored_polygon(PackedVector2Array([p + Vector2(-8, -3), p + Vector2(0, -8), p + Vector2(8, -3)]), ink)

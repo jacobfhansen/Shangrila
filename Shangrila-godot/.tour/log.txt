@@ -1,4 +1,4 @@
-Script started on 2026-11-17 20:15:48+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
+Script started on 2026-11-17 20:22:27+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
 /snap/godot-4/40/gnome-platform/command-chain/desktop-launch: line 543: /home/jacob/snap/alacritty/common/.cache/gdk-pixbuf-loaders.cache: Permission denied
 Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
 OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
@@ -15,39 +15,39 @@ shot 03_inn
 shot 05_view
 fits boots on feet: false helmet on feet: false
 feet now 7 pack15 0
-after cheese health 26 log: Brand eats the Cheese. +25 health
+after cheese health 22 log: Brand eats the Cheese. +21 health
 shot 06_town
 shot 06b_world
-travel: ["After 1 day on the road the party reaches The Mines."] endurance [26, 70, 70, 70] -> [18, 62, 62, 62] at mines
+travel: ["After 1 day on the road the party reaches The Mines."] endurance [22, 70, 70, 70] -> [14, 62, 62, 62] at mines
 shot 07_shop
 paid: 14 expected 14; brand pack: [32, 13, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 shot 08_dungeon
 shot 09_dungeon_corridor
 shot 10_dungeon_room
 shot 11_map
-Joss Harrow: combat 2, toughness 1, talk 1 | hits 13 mana 0 enc 1350 silver 11 power 3 raise unit 270
-Maera Vell: combat 1, missile 2, perception 1, survival 1 | hits 10 mana 0 enc 1200 silver 15 power 2 raise unit 270
-Ommuk: combat 1, toughness 2, lore 1, magic 1 | hits 19 mana 5 enc 1500 silver 11 power 3 raise unit 200
-Ithrae: perception 1, lore 1, magic 2 | hits 7 mana 8 enc 1200 silver 19 power 2 raise unit 300
-Tikkat: stealth 2, thievery 1, perception 1 | hits 9 mana 0 enc 1200 silver 14 power 0 raise unit 150
+Joss Harrow: combat 2, toughness 1, talk 1 | hits 13 mana 0 enc 1350 silver 14 power 3 raise unit 270
+Maera Vell: combat 1, missile 2, perception 1, survival 1 | hits 10 mana 0 enc 1200 silver 12 power 2 raise unit 270
+Ommuk: combat 1, toughness 2, lore 1, magic 1 | hits 19 mana 5 enc 1500 silver 18 power 3 raise unit 200
+Ithrae: perception 1, lore 1, magic 2 | hits 7 mana 8 enc 1200 silver 18 power 2 raise unit 300
+Tikkat: stealth 2, thievery 1, perception 1 | hits 9 mana 0 enc 1200 silver 13 power 0 raise unit 150
 joss raise costs: combat 270 toughness 180 stealth 135 (human -10%)
 raise toughness: true -> 2 hits 13 -> 16 xp left 120; raise again (too poor): false
 xp for joss by fight level: L0 0.00, L1 0.68, L2 1.35, L3 2.70, L4 5.40, L5 10.80, L6 21.60, L7 43.20
 hid all fight: 0.0; fell: 1.35
-50 fights at the entrance: won 50, experience in total (all five) 498
-story xp, third of a raise: 100 -> [134, 185, 104, 206, 266]
-money: 70 silver pay 30: true -> 40
-depth 0: won 100%, avg 1.4 rounds, avg hp lost 1%
-depth 7: won 100%, avg 2.8 rounds, avg hp lost 6%
-depth 14: won 97%, avg 5.4 rounds, avg hp lost 19%
-depth 20: won 95%, avg 5.5 rounds, avg hp lost 22%
+50 fights at the entrance: won 50, experience in total (all five) 491
+story xp, third of a raise: 100 -> [134, 186, 105, 206, 257]
+money: 75 silver pay 30: true -> 45
+depth 0: won 100%, avg 1.4 rounds, avg hp lost 0%
+depth 7: won 100%, avg 3.0 rounds, avg hp lost 6%
+depth 14: won 97%, avg 4.9 rounds, avg hp lost 16%
+depth 20: won 97%, avg 5.8 rounds, avg hp lost 21%
 shot 12_combat_command
 shot 13_combat_target
 shot 14_tactics
 shot 15_combat_resolve
 shot 16_combat_end
 shot 16b_log_scrolled
-combat over, phase '' log: ["Tavi shoots and hits the Goblin for 1. The Goblin dies!", "Victory!", "Experience: Brand 6, Oldo 11, Sira 22, Tavi 11.", "Brand finds a Holy Water."]
+combat over, phase '' log: ["Tavi shoots and hits the Kobold for 3. The Kobold dies!", "Brand swings the Longsword and hits the Kobold for 7. The Kobold dies!", "Victory! Each survivor finds 1 silver.", "Experience: Brand 6, Oldo 11, Sira 22, Tavi 11."]
 save ok: true
 load -> dungeon party 4==4 pos (17, 17) name Brand items type 2
 shot 17_prologue_end
@@ -56,7 +56,7 @@ shot 18_road_chatter
 shot 19_road_choice
 shot 20_ambush
 shot 21_ambush_fight
-ambush over after 2 rounds, hits: [9, 13, 8, 19, 7]
+ambush over after 2 rounds, hits: [9, 13, 10, 19, 7]
 shot 22a_consent
 shot 22b_consent_retry
 shot 22_road_after
@@ -74,7 +74,7 @@ before the job: party ["Tikkat"]
 market: at (11, 7) known ["shrine", "lehan"] town ["gate", "market", "inn", "hideout", "council", "smith"]
 shot 23f_rejoin_talk
 shot 23g_rejoined
-after talk: party ["Tikkat", "Joss Harrow"] purse 73
+after talk: party ["Tikkat", "Joss Harrow"] purse 78
 host joss {  } -> shares { "joss": 12, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 12 } moods ["maera:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "double" } -> shares { "joss": 20, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 10 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "docked", "answer": "lie" } -> shares { "joss": 28, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 6 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
@@ -121,21 +121,20 @@ shot 30_checkpoint_mines
 checkpoint mines: screen dungeon.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan", "mines"]
 shot 31b_council_joss
 council joss: offer 130 patience 3 options ["accept", "danger", "hale", "trait", "leave"]
-council joss: offer 130 patience 2 options ["accept", "hale", "trait", "leave"]
-council joss: offer 130 patience 1 options ["accept", "trait", "leave"]
-council joss: offer 150 patience 1 options ["accept", "leave"]
+council joss: offer 160 patience 3 options ["accept", "hale", "trait", "leave"]
+council joss: offer 200 patience 3 options ["accept", "trait", "leave"]
+council joss: offer 200 patience 3 options ["accept", "leave"]
 shot 31c_council_done_joss
-council joss done: job { "pay": 150, "advance": 0 }, mines known true, host silver 24, xp 90
-council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 150 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
+council joss done: job { "pay": 200, "advance": 0 }, mines known true, host silver 23, xp 144
+council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 200 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
 shot 31a_council_front
 shot 31b_council_tikkat
 council tikkat: offer 170 patience 2 options ["accept", "danger", "hale", "trait", "leave"]
-council tikkat: offer 200 patience 2 options ["accept", "hale", "trait", "leave"]
-council tikkat: offer 200 patience 1 options ["accept", "trait", "leave"]
-council tikkat: offer 180 patience -1 options ["accept", "leave"]
+council tikkat: offer 170 patience 1 options ["accept", "hale", "trait", "leave"]
+council tikkat: offer 170 patience 0 options ["accept", "leave"]
 shot 31c_council_done_tikkat
-council tikkat done: job { "pay": 180, "advance": 0 }, mines known true, host silver 25, xp 65
-council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 180 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
+council tikkat done: job { "pay": 170, "advance": 0 }, mines known true, host silver 17, xp 50
+council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 170 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
   said: ["[color=#e8c46a]Odo the Crier[/color]: “No council news today, friend. The price of eggs, a lost goat, and the Widow Marl\'s opinion of the price of eggs.”", "[color=#e8c46a]Odo the Crier[/color]: “If it\'s work you\'re after, ask Lisbet there by the stalls. She hears everything a day before I cry it.”", "[color=#e0d4b4](Something has to happen before the story moves on. Lisbet, Skee and Boddo in the square each have something for you to do.)[/color]"]
 lisbet: notice before quest? false
 shot 32a_lisbet_offer
@@ -151,7 +150,7 @@ shot 32c_lisbet_seal
   said: ["[color=#e8c46a]Sergeant Rudd[/color]: “No Pip behind you? Then you shook him off. Not many do.”", "[color=#e8c46a]Sergeant Rudd[/color]: “It\'s a test, friend. Lisbet tests anyone she might work with. Go back and tell her. Mind, she\'ll know already. She always does.”", "[color=#e0d4b4](Go back to Lisbet in the market square.)[/color]"]
 lisbet: after gate { "lisbet": "delivered", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "spotted", "lisbet_seal": "broken" } purse true
   said: ["[color=#e8c46a]Lisbet Farrow[/color]: “If you ever want someone who can open a lock, or a mouth, I\'m at the inn most nights. For a fee, of course. Everything in Lehan costs something.”", "[color=#e0d4b4](Lisbet Farrow is now on the inn\'s list. Mustering her costs 40 silver.)[/color]", "[color=#e0d4b4]Across the square, the crier climbs onto the well\'s edge with a fresh notice in his hand.[/color]"]
-lisbet: done { "lisbet": "done", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "spotted", "lisbet_seal": "broken", "lisbet_fee": "40" } roster [["Joss Harrow", -1], ["Maera Vell", -1], ["Ommuk", -1], ["Ithrae", -1], ["Lisbet Farrow", 40]] silver 26 gone ["lisbet"] at (11, 10)
+lisbet: done { "lisbet": "done", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "spotted", "lisbet_seal": "broken", "lisbet_fee": "40" } roster [["Joss Harrow", -1], ["Maera Vell", -1], ["Ommuk", -1], ["Ithrae", -1], ["Lisbet Farrow", 40]] silver 30 gone ["lisbet"] at (11, 10)
 shot 32e_square_without_lisbet
 shot 32e2_party_from_streets
 party button: back at (13, 6) facing 0
@@ -161,9 +160,40 @@ shot 32f_lisbet_muster
   choice muster: Here. (40 silver)
   said: ["[color=#e8c46a]Lisbet Farrow[/color]: “40 silver. You know why it\'s not 20.”", "[color=#e8c46a]Tikkat[/color]: “Here. (40 silver)”", "[color=#e0d4b4]Tikkat counts the coins. Not enough.[/color]"]
 shot 32g_inn_with_lisbet
-lisbet: party ["Tikkat"] silver 26
+lisbet: party ["Tikkat"] silver 30
 lisbet: council options ["accept", "danger", "purse", "hale", "trait", "leave"]
 shot 32h_council_purse
 lisbet: council offer after purse 220
+shot 33a_boddo_offer
+  choice boddo: Then we'll find the book that proves it.
+  said: ["[color=#e8c46a]Boddo[/color]: “The book is in Gell\'s warehouse. Where the smith\'s street meets the square. Big doors, a barrel on the sign.”", "[color=#e8c46a]Boddo[/color]: “Boddo cannot go in. Gell\'s men know Boddo\'s shell.”", "[color=#e0d4b4](Find proof in Gell\'s Warehouse, now on the town map: where the smith\'s street meets the square.)[/color]"]
+boddo: state { "boddo": "proof" } places ["gate", "market", "inn", "hideout", "warehouse"]
+shot 33b_warehouse_door
+shot 33c_warehouse_0
+  choice proof: We're looking to store goods. Can we see what you keep, and what it costs?
+  said: ["[color=#e8c46a]Joss Harrow[/color]: “We\'re looking to store goods. Can we see what you keep, and what it costs?”", "[color=#e0d4b4]The clerk turns the ledger round. Columns of names and figures. If there\'s a lie in them, it hides well.[/color]", "[color=#e0d4b4](That didn\'t work. Go into the warehouse again to try another way.)[/color]"]
+boddo: visit 0 -> { "boddo": "proof", "boddo_tried_talk": "1" }
+shot 33c_warehouse_1
+  choice proof: Wait for the clerk to look away, and lift the wage book.
+  said: ["[i]Wait for the clerk to look away, and lift the wage book.[/i]", "[color=#e0d4b4]Joss\'s hand is on the ledger when the clerk turns round. \"Thief! Out! Out!\" Two porters see you to the street.[/color]", "[color=#e0d4b4](That didn\'t work. Go into the warehouse again to try another way.)[/color]"]
+boddo: visit 1 -> { "boddo": "proof", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1" }
+shot 33c_warehouse_2
+  choice proof: Come back after dark, and in through the loading door.
+  said: ["[color=#e0d4b4]There it is. \"Tam Reed, porter: fourteen weeks.\" A line through it, and in another ink: \"Died. No claim.\" Below, the same sum, paid to \"O. G.\"[/color]", "[color=#c8b8f0][i]Forty silver for a dead man\'s widow, into a rich man\'s pocket. The host\'s jaw tightens. So does something underneath it.[/i][/color]", "[color=#e0d4b4](You have Tam\'s page from the wage book. Go back into the warehouse to face Master Gell with it.)[/color]"]
+boddo: visit 2 -> { "boddo": "found", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1", "boddo_tried_night": "1" }
+shot 33c_warehouse_3
+  choice gell: Read it out, so every porter in here can hear what you did to Tam.
+  said: ["[color=#e8c46a]Joss Harrow[/color]: “Read it out, so every porter in here can hear what you did to Tam.”", "[color=#e0d4b4]Joss reads Tam\'s line out loud. Gell laughs. \"Porters can\'t read, friend. And they know who pays them.\" The porters look at their feet.[/color]", "[color=#e0d4b4](Gell won\'t budge this way. There is still the other way, if you come back.)[/color]"]
+boddo: visit 3 -> { "boddo": "found", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1", "boddo_tried_night": "1", "boddo_tried_shame": "1" }
+shot 33c_warehouse_4
+  choice gell: Pay her, or the next time you lean on a porter, someone leans back.
+  said: ["[color=#e0d4b4]A short, ugly scuffle among the barrels. Joss ends it, and Gell\'s men decide they are not paid enough for this.[/color]", "[color=#e0d4b4]Gell looks at his porters, groaning among the barrels, and goes pale. \"All right! Forty, to the widow. Just go.\"[/color]", "[color=#e0d4b4](Go back to Boddo in the market square.)[/color]"]
+boddo: visit 4 -> { "boddo": "paid", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1", "boddo_tried_night": "1", "boddo_tried_shame": "1", "boddo_tried_lean": "1" }
+  said: ["[color=#e8c46a]Boddo[/color]: “Boddo carries. Boxes, barrels, friends who fall. Boddo will carry for you. At the inn, when you want him.”", "[color=#e0d4b4](Boddo is now on the inn\'s list. He asks no fee.)[/color]", "[color=#e0d4b4]Across the square, the crier climbs onto the well\'s edge with a fresh notice in his hand.[/color]"]
+boddo: end { "boddo": "done", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1", "boddo_tried_night": "1", "boddo_tried_shame": "1", "boddo_tried_lean": "1" } roster ["Maera Vell", "Ommuk", "Ithrae", "Tikkat", "Boddo"] silver 28 hits [13]
+  said: ["[color=#e8c46a]Odo the Crier[/color]: “The council will pay well for anyone willing to look into it. Ask at the council house, there on the north side of the square.”", "[color=#e8c46a]Joss Harrow[/color]: “Paid work. Finally.”", "[color=#e0d4b4](The Council House is now on the town map. Your old companions at the inn may listen now that there is a job. Across the square hangs the sign of a weapon smith: the Weapon Smith is on the town map too.)[/color]"]
+shot 33e_errand_comment
+  choice lisbet: Not now.
+  said: ["[color=#e8c46a]Maera Vell[/color]: “The trail up to those mines gets colder every day we spend in town, you know.”", "[color=#e8c46a]Joss Harrow[/color]: “Not now.”", "[color=#e8c46a]Lisbet Farrow[/color]: “Suit yourself. The letter can wait. I can\'t, but the letter can.”"]
 
-Script done on 2026-11-17 20:18:06+01:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2026-11-17 20:24:59+01:00 [COMMAND_EXIT_CODE="0"]

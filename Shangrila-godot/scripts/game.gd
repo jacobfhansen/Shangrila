@@ -132,6 +132,8 @@ const TOWNS := {
 			"desc": "Blades, bows and armour, at Lehan prices."},
 		"hideout": {"name": "The Employer's House", "kind": "house", "at": Vector2(160, 272),
 			"desc": "A narrow, plain house off Tanners' Row, where the company was paid."},
+		"warehouse": {"name": "Gell's Warehouse", "kind": "warehouse", "at": Vector2(150, 190),
+			"desc": "Master Gell's warehouse, where the smith's street meets the square."},
 		"council": {"name": "Council House", "kind": "council", "at": Vector2(300, 96),
 			"desc": "A stone hall on the north side of the square, where the town's council sits."},
 	}},

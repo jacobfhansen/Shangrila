@@ -62,6 +62,7 @@ static func _offer() -> Array:
 		{"s": "lisbet", "t": "Work, then. I have a letter that wants carrying to Sergeant Rudd at the south gate. Down the gate road, you can't miss him. He's the one leaning."},
 		{"s": "lisbet", "t": "Two rules. Nobody follows you. Nobody opens it. Five silver when Rudd tells me it came clean."},
 		{"i": "Light paper. But the spirit feels its host weigh it, and it weighs more than paper should."},
+	] + LehanQuests.errand_comment() + [
 		{"choice": "lisbet", "options": opts},
 	]
 
@@ -226,6 +227,5 @@ static func _ending(pay: int, good: bool) -> Array:
 	out.append({"fx": "recruit:lisbet", "wait": 0.1})
 	out.append({"fx": "xp:%s" % LehanQuests.DONE_XP, "wait": 0.1})
 	out.append({"n": "(Lisbet Farrow is now on the inn's list. Mustering her costs %d silver.)" % fee})
-	if not LehanData.has_job():
-		out.append({"n": "Across the square, the crier climbs onto the well's edge with a fresh notice in his hand."})
+	out.append_array(LehanQuests.quest_finished_steps())
 	return out

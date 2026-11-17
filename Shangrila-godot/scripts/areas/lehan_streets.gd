@@ -9,6 +9,7 @@ extends RefCounted
 ##   G  the south gate     I  the inn's door     D  the weapon smith's door
 ##   H  the employer's house (Tanners' Row)
 ##   K  the council house's door    k  the rest of its front (north side of the square)
+##   X  Gell's warehouse (where the smith's street meets the square)
 ##   W  the well    S  a stall    C  a cart    B  barrels
 ##   1-9  people (MarketData.PEOPLE)
 ## Houses and doors block the way; walking into a door or a person uses it.
@@ -19,7 +20,7 @@ const MAP := [
 	"####.###kkkkKkkk#######",
 	"####.###S..S..SB#######",
 	"####.###.6......#######",
-	"####..........2.#######",
+	"###X..........2.#######",
 	"########...1W........I#",
 	"########........#######",
 	"########.3....4.#######",
@@ -37,8 +38,8 @@ const MAP := [
 ]
 const CELL := DungeonView.CELL
 const STOREY := 2.0           # height of one storey of a house front
-const BUILDING := "#DIGHKk"
-const EXITS := {"D": "smith", "I": "inn", "G": "gate", "H": "hideout", "K": "council"}
+const BUILDING := "#DIGHKkX"
+const EXITS := {"D": "smith", "I": "inn", "G": "gate", "H": "hideout", "K": "council", "X": "warehouse"}
 ## Where each place on the town map is entered: the street cell in front of it, and the
 ## direction of the door from there. The market is the square's south side.
 const ENTRANCES := {
@@ -48,6 +49,7 @@ const ENTRANCES := {
 	"smith": {"cell": Vector2i(4, 2), "dir": 0},
 	"hideout": {"cell": Vector2i(5, 15), "dir": 3},
 	"council": {"cell": Vector2i(12, 3), "dir": 0},
+	"warehouse": {"cell": Vector2i(4, 5), "dir": 3},
 }
 ## The company's walk on arriving (see LehanData): waypoints, turned and walked to in order.
 const PATH_TO_HOUSE := [Vector2i(11, 15), Vector2i(5, 15)]
@@ -160,6 +162,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 					"G": low = "town_gate"
 					"H": low = "house_low_0"
 					"K": low = "council_door"
+					"X": low = "warehouse_front"
 					"k": low = "council_low"
 				# How the wall ends on either side (along `side`): 1 at an outside corner (the
 				# building ends), -1 at an inside corner (another wall meets it), 0 if it runs on.

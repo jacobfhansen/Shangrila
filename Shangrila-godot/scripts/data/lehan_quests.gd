@@ -8,7 +8,9 @@ extends RefCounted
 ## per-quest details ("lisbet_tail", "lisbet_seal", ...). Dialogue effects (fx) change it:
 ##   q:key=value   set a quest value          silver:N   the host gets N silver
 ##   xp:F          story experience           recruit:key  the character joins the inn's list
-##   purse         the council's real budget is known      nudge   the spirit's one nudge is spent
+##   purse         the council's real budget is known
+##   pay:N         the party pays N silver    hurt:N     everyone in the party loses up to N hits
+##   place:key     a place in Lehan is found (on the town map)
 
 ## The new characters: a little better than the starting companions, and harder to win.
 const RECRUITS := {
@@ -97,6 +99,51 @@ static func best(ability: String) -> Dictionary:
 	return b
 
 
+## The cast key of a party member: one of the company, or a recruit ("" for anyone else).
+static func key_of(c: Dictionary) -> String:
+	if c.has("recruit"):
+		return c.recruit
+	for k in PrologueData.ORDER:
+		if PrologueData.CAST[k].name == c.name:
+			return k
+	for k in RECRUITS:
+		if RECRUITS[k].name == c.name:
+			return k
+	return ""
+
+
+## Once the mines job is cried, the company is expected in the hills: someone grumbles about
+## running errands in town (the first companion in the party who isn't the host).
+const ERRAND_LINES := {
+	"joss": "Six miners missing and a council purse waiting, and we're running errands in town?",
+	"maera": "The trail up to those mines gets colder every day we spend in town, you know.",
+	"ommuk": "Kindness is never wasted. But the miners are waiting for kindness too.",
+	"ithrae": "Interesting. But weren't we meant to be in the hills by now?",
+	"tikkat": "Errands! Lovely! Anything that isn't a dark hole full of whatever ate six miners.",
+	"lisbet": "Not that I mind, but the council won't keep that offer warm forever.",
+	"skee": "Skee likes town. Town has no tunnels. Well. Not many.",
+	"boddo": "Hm. The miners. Boddo has not forgotten the miners.",
+}
+
+
+static func errand_comment() -> Array:
+	if solo() or Game.visited.size() > 1:   # after a trip into the mines nobody minds
+		return []
+	var host := host_key()
+	for c in Game.party:
+		var k := key_of(c)
+		if k != "" and k != host and ERRAND_LINES.has(k):
+			return [{"s": k, "t": ERRAND_LINES[k]}]
+	return []
+
+
+## What follows any finished quest: the crier steps up, the first time.
+static func quest_finished_steps() -> Array:
+	if not LehanData.has_job():
+		return [{"n": "Across the square, the crier climbs onto the well's edge with a fresh notice in his hand."}]
+	return []
+
+
 ## Whether the spirit can still nudge a check on this quest (once, and only with a host).
 static func can_nudge(quest: String) -> bool:
 	return host_key() != "" and get_q(quest + "_nudge") == ""
@@ -132,6 +179,13 @@ static func apply(fx: String) -> void:
 		_recruit(fx.substr(8))
 	elif fx == "purse":
 		Game.story["council_purse"] = true
+	elif fx.begins_with("pay:"):
+		Game.pay(int(fx.substr(4)))
+	elif fx.begins_with("hurt:"):
+		for c in Game.party:
+			c.hits = maxi(1, c.hits - Game.my_random(1, int(fx.substr(5))))
+	elif fx.begins_with("place:"):
+		Game.discover_place("lehan", fx.substr(6))
 
 
 ## The character joins the inn's list, waiting to be mustered.
@@ -189,4 +243,8 @@ static func muster_talk(c: Dictionary, purse: int) -> Array:
 					{"t": "Not now.", "say": host, "after": [{"s": k, "t": "I'll be here. I usually am."}, {"fx": "notyet", "wait": 0.1}]},
 				]},
 			]
+		"boddo":
+			var line := "Boddo carries. Where are we going?" if get_q("boddo_way") != "self" \
+				else "You paid Boddo's debt. Boddo goes where you go."
+			return [{"s": k, "t": line}, {"fx": "join", "wait": 0.1}]
 	return [{"fx": "join", "wait": 0.1}]

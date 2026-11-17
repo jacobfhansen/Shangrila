@@ -1,8 +1,8 @@
 class_name MarketData
 extends RefCounted
 ## Who stands in Lehan's streets and market square (LehanStreets) and what they say. Lisbet, Skee
-## and Boddo are the hooks for the Lehan quests (LehanQuests; Lisbet's is LisbetQuest, the others
-## are not written yet).
+## and Boddo are the hooks for the Lehan quests (LehanQuests, LisbetQuest, BoddoQuest; Skee's is
+## not written yet).
 
 ## Map digit -> person. `look` drives FigureArt and the dialogue portrait (RacePortrait).
 const PEOPLE := {
@@ -78,18 +78,18 @@ static func talk(id: String, host: String) -> Array:
 				{"n": "(Skee's tunnels will be one of the Lehan quests. It is not in the game yet.)"},
 			]
 		"boddo":
-			return [
-				{"s": "boddo", "t": "Hm."},
-				{"s": host, "t": "That's a heavy load, even for a Thuug."},
-				{"s": "boddo", "t": "Not as heavy as a debt. A Thuug pays what he owes. Boddo cannot. Not alone."},
-				{"n": "(Boddo's debt of honour will be one of the Lehan quests. It is not in the game yet.)"},
-			]
+			return BoddoQuest.talk()
 		"wenna":
+			var out: Array = []
 			if Game.story.get("employer", "") != "":
-				return [
+				out = [
 					{"s": "wenna", "t": "You came from Tanners' Row, didn't you? I saw you go in at the narrow house."},
 					{"s": "wenna", "t": "That grey-coated fellow left at dawn. A packed cart and a hurry. Nobody in Lehan knows his name, and I know everybody's name."},
 				]
+			if LehanData.has_job() and Game.visited.size() <= 1:
+				out.push_front({"s": "wenna", "t": "Still here? I thought you lot were for the mines. Six men up there, and you're buying eggs."})
+			if not out.is_empty():
+				return out
 			return [
 				{"s": "wenna", "t": "Forty years I've sold eggs in this square, and I've never seen the council so frightened. Six miners gone."},
 			]

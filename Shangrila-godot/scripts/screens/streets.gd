@@ -116,6 +116,8 @@ func _after_move() -> void:
 				var nm := _place_name(t.to)
 				if t.to == "smith" and not "smith" in Game.town_places(TOWN):
 					nm = "a shop with a sword on its sign"
+				if t.to == "warehouse" and not "warehouse" in Game.town_places(TOWN):
+					nm = "a warehouse with wide loading doors and a barrel on its sign"
 				if t.to == "council" and not "council" in Game.town_places(TOWN):
 					nm = "a stone hall with the town's banner over the door"
 				hint.text = "Ahead: %s.  Walk on or press Space to go in." % nm
@@ -132,6 +134,8 @@ func _where() -> String:
 	var p := area.pos
 	if p == LehanStreets.ENTRANCES.hideout.cell:
 		return "Tanners' Row, at the door of a narrow, plain house."
+	if p == LehanStreets.ENTRANCES.warehouse.cell:
+		return "The corner where the smith's street meets the square, by a warehouse's loading doors."
 	if p == LehanStreets.ENTRANCES.council.cell:
 		return "The north side of the square, below the council house's banner."
 	if p == LehanStreets.ENTRANCES.inn.cell:
@@ -184,6 +188,9 @@ func _use(t: Dictionary) -> void:
 					Game.main.goto("shop")
 				"inn":
 					Game.main.goto("inn")
+				"warehouse":
+					Game.discover_place(TOWN, "warehouse")
+					await _dialog("Gell's Warehouse", BoddoQuest.warehouse())
 				"council":
 					if not LehanData.has_job():
 						await Game.main.message("A clerk blocks the door of the stone hall.\n\n\"The council sits on council business. Have you any?\"\n\nNot yet, it seems.")

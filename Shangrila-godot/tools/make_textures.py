@@ -591,6 +591,27 @@ def council_house():
     img.save(OUT / "council_up.png")
 
 
+def warehouse_front():
+    """Gell's warehouse: tarred planks, wide loading doors and a sign with a barrel."""
+    w = h = 256
+    img = to_img(_plaster(w, h, 700, (120, 100, 76)))
+    d = ImageDraw.Draw(img)
+    for x in range(0, w, 22):
+        d.line([(x, 0), (x, h)], fill=(70, 54, 38), width=3)
+    beam = (48, 34, 22)
+    d.line([(0, 0), (0, h)], fill=beam, width=8)
+    d.line([(w - 1, 0), (w - 1, h)], fill=beam, width=8)
+    d.rectangle([40, 70, 216, h - 4], fill=(90, 64, 40), outline=beam, width=6)
+    d.line([(128, 70), (128, h - 4)], fill=beam, width=5)
+    d.line([(40, 70), (128, h - 4)], fill=beam, width=4)
+    d.line([(216, 70), (128, h - 4)], fill=beam, width=4)
+    d.rectangle([60, 10, 196, 54], fill=(60, 44, 30), outline=(180, 140, 70), width=3)
+    d.ellipse([110, 16, 146, 48], fill=(140, 96, 50), outline=(40, 28, 18), width=3)
+    d.line([(112, 26), (144, 26)], fill=(40, 28, 18), width=2)
+    d.line([(112, 38), (144, 38)], fill=(40, 28, 18), width=2)
+    img.save(OUT / "warehouse_front.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -608,4 +629,5 @@ if __name__ == "__main__":
     inn_front()
     town_gate()
     council_house()
+    warehouse_front()
     print("wrote textures to", OUT)
