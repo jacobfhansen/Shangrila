@@ -24,7 +24,7 @@ var view_rect: TextureRect
 var automap: Automap
 var compass: Compass
 var log_lines: Array[String] = []
-var log_label: Label
+var log_view: LogView
 var map_mode := false
 var masked_in_map := []
 var map_btn: Button
@@ -103,16 +103,12 @@ func _ready() -> void:
 
 	# Encounters / messages (DungeonWin 9).
 	Ui.frame(self, Rect2(10, 292, 266, 128))
-	log_label = Ui.label(self, "", Vector2(18, 296), 11, Ui.TEXT, 252)
-	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	log_label.clip_text = false
-	log_label.size.y = 120
-	log_label.max_lines_visible = 8
-	log_label.mouse_filter = Control.MOUSE_FILTER_STOP
-	log_label.tooltip_text = "Click to hurry the round along"
-	log_label.gui_input.connect(func(e: InputEvent):
-		if e is InputEventMouseButton and e.pressed:
-			fast = true)
+	log_view = LogView.new()
+	log_view.font_size = 11
+	Ui.place(log_view, Rect2(16, 296, 256, 120))   # sized before _ready builds it
+	add_child(log_view)
+	log_view.tooltip_text = "Mouse wheel: scroll back  ·  Click: hurry the round along"
+	log_view.clicked.connect(func(): fast = true)
 
 	compass = Compass.new()
 	add_child(compass)
@@ -175,8 +171,7 @@ func say(t: String) -> void:
 	log_lines.append(t)
 	while log_lines.size() > 12:
 		log_lines.pop_front()
-	log_label.text = "\n".join(log_lines)
-	log_label.lines_skipped = maxi(0, log_label.get_line_count() - log_label.max_lines_visible)
+	log_view.add_line(t)
 
 
 func _refresh_party() -> void:

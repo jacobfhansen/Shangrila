@@ -3,7 +3,115 @@
 A working list of what to do next. Each item says what it is, why, and any open questions.
 Items marked **Open question** need a decision before work starts.
 
+## Design principles
+
+- **Combat is not the focus.** Some obstacles on the way forward are fights, but many others
+  are passed through dialogue choices, party composition, the other abilities and other factors.
+- **To finish the game, the player must at some point excel at every aspect and mechanic.** No
+  single ability, companion or approach carries the whole game. Each of the ten abilities needs
+  obstacles where it is the way through, and a party built only for fighting must get stuck
+  somewhere.
+
 ## Next steps
+
+### Simpler mechanics: abilities 1-10 and silver only
+**Agreed, not built yet.** To do before the story continues. It replaces the 1997 rules: six
+attributes rolled 3-18, 22 percentage skills, and coins in copper, silver and gold.
+
+**Ten abilities, from 0 to 10.** 0 means untrained: poor, but you may still try. Some things need
+at least 1, such as casting spells, picking locks or disarming traps. A score of 1-2 is green,
+5 is a seasoned professional and 10 is legendary. The character screen shows them as pips (●●○○○○○○○○).
+
+| Ability | Covers (old skills and attributes) |
+|---|---|
+| Combat | Melee hits and parrying (Axes, Blunt, Daggers, Hands & Feet, Pole Arms, Swords; Strength, Dexterity) |
+| Missile Weapons | Bows and thrown weapons (Bows, Thrown) |
+| Toughness | Health, carrying limit, resisting poison and fear (Constitution, Strength) |
+| Stealth | Hiding and sneaking, the Hide action, slipping past monsters (Hide) |
+| Thievery | Locks, traps and pockets (Pick Locks, Disarm Traps, Steal) |
+| Perception | Spotting things, Examine, noticing (e.g. Tikkat palming coins), acting first in a fight |
+| Survival | Foraging, tracking, climbing; less food used on the road (Foraging, Tracking, Climb) |
+| Lore | Herbs, first aid, reading, judging an item's worth (Herb Lore, First Aid, Read & Write, Evaluate) |
+| Magic | Spells and the mana pool (Magic Arts, Intelligence, Will) |
+| Talk | Haggling and persuading; dialogue options that need a smooth tongue (Haggle, Charisma) |
+
+**Checks:** roll d10 + ability against a difficulty: easy 6, normal 9, hard 12. A starter at 2 makes
+a normal check half the time, and a 5 almost always does. In combat: d10 + Combat (or Missile
+Weapons) + the weapon's bonus against 5 + the target's defence and armour.
+
+**Derived values:**
+- Health: a race base (Human 10, Thuug 13, Aeldroe 7, Nisk 9) + 3 × Toughness.
+- Mana: 3 × Magic, for spell casters only.
+- Carrying limit: grows with Toughness.
+
+**Classes stay**, as a title and a starting point. The class decides which abilities start above 0
+and which ones are *favoured* (cheaper to raise). For spell casters it also decides the spell list.
+
+| Class | Favoured abilities |
+|---|---|
+| Cleric | Magic, Lore, Combat, Toughness |
+| Enchanter | Magic, Talk, Lore |
+| Mage | Magic, Lore, Perception |
+| Monk | Combat, Toughness, Stealth |
+| Paladin | Combat, Toughness, Magic, Talk |
+| Ranger | Missile Weapons, Survival, Perception, Combat |
+| Thief | Stealth, Thievery, Perception, Talk |
+| Warrior | Combat, Toughness, Missile Weapons |
+
+New spells open up as Magic rises: the first at 1, the second at 3, the third at 5, and so on.
+
+**Races give +1 in one ability and a quirk:**
+- Human: +1 in one of the class's favoured abilities. Quick learners: raises cost 10% less.
+- Thuug: +1 Toughness. The shell gives +1 armour, but Thuugs are slow and act later in a round.
+- Aeldroe: +1 Magic. Half-transparent: +2 Stealth in the dark, but frail (the low health base).
+- Nisk: +1 Stealth. Natural climbers (+2 on climbing checks) with a keen nose (+1 Perception for traps).
+
+**The starting company** (race bonus included; nobody starts above 2):
+
+| | Combat | Missile | Tough. | Stealth | Thievery | Percep. | Survival | Lore | Magic | Talk |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Joss (Human Warrior) | 2 | | 1 | | | | | | | 1 |
+| Maera (Human Ranger) | 1 | 2 | | | | 1 | 1 | | | |
+| Ommuk (Thuug Cleric) | 1 | | 2 | | | | | 1 | 1 | |
+| Ithrae (Aeldroe Mage) | | | | | | 1 | | 1 | 2 | |
+| Tikkat (Nisk Thief) | | | | 2 | 1 | 1 | | | | |
+
+**Growth by spending experience.** Fights and story events give experience. At the inn, raising
+an ability to N costs N × 100 experience, or N × 150 if the ability is not favoured. This also
+settles the old "Experience and levels" item.
+
+**Silver only.** All prices, pay and purses are in whole silver at a believable scale. The copper
+and gold coins and the coin picture go. Suggested prices:
+- Weapons: Staff 1, Clasp Knife 2, Wood Axe 3, Mace 8, Bardiche 12, Longsword 15, Longbow 25,
+  Arrows 1 silver for 5.
+- Armour: shirts, pants and sandals 1, shoes and boots 2-3, robes 3, Wooden Shield 4,
+  Iron Helmet 6, Leather Armor 12.
+- Food and tools: Cheese 1, herbs 2, Rope 2, Quiver 2, kits 5, Spell Book 10, Holy Symbol 5.
+- The Lehan job: 100 silver with the head as proof (60 if it was kept, 70 for a lie or a warm
+  welcome, 60 for saying nothing). Tikkat palms 15, and Ithrae's sketch costs 5.
+- Starting purses: about 10-20 silver each. Monster loot is scaled to match.
+
+**Old saves:** money is converted (old copper ÷ 10, rounded up). Abilities are reset to the
+class and race starting values.
+
+**Experience from fights is scaled by how tough the enemy is, so grinding doesn't pay.**
+Most experience comes from the story; fights are a small trickle.
+- Each character has a *power*: their best fighting ability (Combat, Missile Weapons or Magic)
+  plus Toughness. Joss starts at 3 (Combat 2 + Toughness 1) and Ithrae at 2 (Magic 2).
+- Each monster has a *level*: rats and bats 1, kobolds 2, brigands and goblins 3, spiders 4,
+  skeletons 5, orcs 6, renegades 7. A fight's level is its strongest monster's level, +1 if the
+  monsters outnumber the party two to one.
+- Each character is paid separately. A fight at their own power gives 1% of the cost of their next
+  raise in their best fighting ability. Every level above their power doubles it (2%, 4%, 8%...),
+  and every level below halves it. Three or more levels below gives nothing.
+- So a strong fighter learns nothing from rats, while a green mage in the same fight still does.
+  About 100 even fights make one raise.
+- A fight you flee from gives nothing.
+- **Story experience** comes in big lumps: the Lehan meeting about a third of a raise, and
+  finishing the mines job about half.
+- A character who hid for the whole fight gets nothing. One who fell gets half.
+- **Open question:** should Talk also gate some dialogue replies (like the trait tags do now)?
+  And should the Perception check in Lehan (who notices Tikkat) use the new Perception directly?
 
 ### Own monster names
 The mines have Giant Rats, Cave Bats, Kobolds, Goblins, Giant Spiders, Skeletons, Orcs and
@@ -16,7 +124,7 @@ monsters would match the home-made races.
 
 ### Experience and levels
 Winning fights gives experience, but it does nothing yet (the 1997 original had no levels).
-- **Open question:** what does a new level give (hit points, skill points, mana, new spells)?
+Settled by "Simpler mechanics": experience is spent to raise abilities, and there are no levels.
 
 ### Shop: Talk and Haggle
 In the weapon smith, Talk and Haggle only print flavour text. Haggle could use the Haggle skill to

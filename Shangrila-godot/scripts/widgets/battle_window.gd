@@ -17,7 +17,7 @@ var enemy_panel: EnemyPanel
 var ports: Array = []
 var bars: Array = []
 var order_labels: Array = []
-var log_label: Label
+var log_view: LogView
 var log_lines: Array = []
 var spirit_btns: Array = []
 var _spirit_choice := ""
@@ -59,16 +59,11 @@ func _build() -> void:
 		var ol := Ui.label(self, "", Vector2(px + 106, y + 14), 11, Ui.DIM, w - px - 112)
 		order_labels.append(ol)
 
-	log_label = Label.new()
-	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	log_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	log_label.add_theme_font_size_override("font_size", 12)
-	log_label.add_theme_color_override("font_color", Ui.TEXT)
-	log_label.clip_text = true
-	add_child(log_label)
 	Ui.frame(self, Rect2(8, 274, w - 16, 54), Color(0, 0, 0, 0.35), Color("#5a4428"), 1)
-	Ui.place(log_label, Rect2(14, 276, w - 28, 50))
-	move_child(log_label, -1)
+	log_view = LogView.new()
+	Ui.place(log_view, Rect2(14, 276, w - 24, 50))   # sized before _ready builds it
+	add_child(log_view)
+	log_view.tooltip_text = "Mouse wheel: scroll back through the fight"
 
 	var host_name: String = Game.party[host_index].name
 	Ui.label(self, "The spirit:", Vector2(12, size.y - 30), 13, DialogueBox.SPIRIT)
@@ -84,7 +79,7 @@ func _build() -> void:
 
 func _say(t: String) -> void:
 	log_lines.append(t)
-	log_label.text = "\n".join(log_lines.slice(-3))
+	log_view.add_line(t)
 	if box:
 		box.log_line("[color=#%s]%s[/color]" % [Ui.DIM.to_html(false), t])
 

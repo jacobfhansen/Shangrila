@@ -173,6 +173,8 @@ func _run() -> void:
 		await get_tree().create_timer(0.1).timeout
 		t += 1
 	await _shot("16_combat_end")
+	dg.log_view.rtl.get_v_scroll_bar().value = 0
+	await _shot("16b_log_scrolled")
 	print("combat over, phase '", dg.phase, "' log: ", dg.log_lines.slice(-4))
 	if m.modal_open:
 		m._modal_done.emit(true)
@@ -297,12 +299,9 @@ func _lehan_arrival() -> void:
 	inn.chosen = 0
 	inn._on_muster()
 	await get_tree().create_timer(0.3).timeout
-	for ch in inn.get_children():
-		for g in ch.get_children():
-			if g is DialogueBox:
-				g.skip_to_choice()
-				await _shot("23e2_no_job")
-				g.finished.emit()
+	await _shot("23e2_no_job")
+	if m.modal_open:
+		m._modal_done.emit(true)
 	await get_tree().create_timer(0.3).timeout
 	print("before the job: party ", Game.party.map(func(c): return c.name))
 	# Hear the crier in the market, then try again.

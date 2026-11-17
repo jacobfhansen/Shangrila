@@ -167,6 +167,9 @@ func _rejoin_talk(c: Dictionary) -> bool:
 	if key == "":
 		return true
 	var host: String = Game.story.get("host", "")
+	if not LehanData.has_job():
+		await Game.main.message("%s: \"%s\"\n\n%s" % [c.name.split(" ")[0], LehanData.no_job_line(key, c, host), LehanData.NO_JOB_HINT])
+		return false
 	var ov := ColorRect.new()
 	ov.color = Color(0, 0, 0, 0.6)
 	ov.mouse_filter = Control.MOUSE_FILTER_STOP

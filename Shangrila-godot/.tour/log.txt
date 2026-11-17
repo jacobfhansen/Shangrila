@@ -1,4 +1,4 @@
-Script started on 2026-11-16 13:30:37+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
+Script started on 2026-11-16 15:45:34+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
 /snap/godot-4/40/gnome-platform/command-chain/desktop-launch: line 543: /home/jacob/snap/alacritty/common/.cache/gdk-pixbuf-loaders.cache: Permission denied
 Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
 OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
@@ -15,26 +15,27 @@ shot 03_inn
 shot 05_view
 fits boots on feet: true helmet on feet: false
 feet now 7 pack15 0
-after cheese health 23 log: Brand eats the Cheese. +22 health
+after cheese health 22 log: Brand eats the Cheese. +21 health
 shot 06_town
 shot 06b_world
-travel: ["After 1 day on the road the party reaches The Mines."] endurance [23, 55, 66, 54] -> [15, 47, 58, 46] at mines
+travel: ["After 1 day on the road the party reaches The Mines."] endurance [22, 41, 62, 75] -> [14, 33, 54, 67] at mines
 shot 07_shop
 paid: 740 expected 740; brand pack: [32, 13, 13, 10, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 shot 08_dungeon
 shot 09_dungeon_corridor
 shot 10_dungeon_room
 shot 11_map
-depth 0: won 100%, avg 1.9 rounds, avg hp lost 3%
-depth 7: won 93%, avg 4.4 rounds, avg hp lost 21%
-depth 14: won 69%, avg 7.3 rounds, avg hp lost 52%
-depth 20: won 60%, avg 7.4 rounds, avg hp lost 59%
+depth 0: won 100%, avg 2.2 rounds, avg hp lost 3%
+depth 7: won 90%, avg 5.8 rounds, avg hp lost 27%
+depth 14: won 57%, avg 7.6 rounds, avg hp lost 60%
+depth 20: won 50%, avg 8.0 rounds, avg hp lost 66%
 shot 12_combat_command
 shot 13_combat_target
 shot 14_tactics
 shot 15_combat_resolve
 shot 16_combat_end
-combat over, phase '' log: ["Sira punches at the Skeleton, but misses.", "Brand swings the Longsword and hits the Skeleton for 7. The Skeleton dies!", "Victory! Each survivor gains 23 experience and 0G, 0S, 5C.", "Brand finds a Clasp Knife."]
+shot 16b_log_scrolled
+combat over, phase '' log: ["Oldo punches at the Skeleton, but misses.", "Brand swings the Longsword and hits the Skeleton for 3. The Skeleton dies!", "Victory! Each survivor gains 30 experience and 0G, 0S, 7C.", "Sira comes around, badly bruised."]
 save ok: true
 load -> dungeon party 4==4 pos (17, 17) name Brand items type 2
 shot 17_prologue_end
@@ -43,7 +44,7 @@ shot 18_road_chatter
 shot 19_road_choice
 shot 20_ambush
 shot 21_ambush_fight
-ambush over after 3 rounds, hits: [6, 18, 15, 7, 13]
+ambush over after 4 rounds, hits: [15, 10, 12, 14, 13]
 shot 22a_consent
 shot 22b_consent_retry
 shot 22_road_after
@@ -52,13 +53,13 @@ shot 23a_lehan_walk
 shot 23b_lehan_night
 shot 23c_lehan_pocket
 shot 23d_lehan_parting
-lehan: { "answer": "warm", "pocket": "yes", "noticer": "maera", "shares": { "joss": 293, "maera": 145, "ommuk": 145, "ithrae": 145, "tikkat": 272 } } party ["Tikkat"] roster ["Joss Harrow:talk:0", "Maera Vell:talk:0", "Ommuk:talk:0", "Ithrae:talk:0"]
+lehan: { "answer": "warm", "pocket": "yes", "noticer": "ithrae", "shares": { "joss": 293, "maera": 145, "ommuk": 145, "ithrae": 145, "tikkat": 272 } } party ["Tikkat"] roster ["Joss Harrow:talk:0", "Maera Vell:talk:0", "Ommuk:talk:0", "Ithrae:soured:200"]
 shot 23e_inn_split
 shot 23e2_no_job
 before the job: party ["Tikkat"]
 shot 23f_rejoin_talk
 shot 23g_rejoined
-after talk: party ["Tikkat", "Joss Harrow"] purse 2740
+after talk: party ["Tikkat", "Joss Harrow"] purse 1967
 host joss {  } -> shares { "joss": 180, "maera": 180, "ommuk": 180, "ithrae": 180, "tikkat": 180 } moods ["maera:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "double" } -> shares { "joss": 300, "maera": 150, "ommuk": 150, "ithrae": 150, "tikkat": 150 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
 host joss { "split": "docked", "answer": "lie" } -> shares { "joss": 367, "maera": 181, "ommuk": 181, "ithrae": 181, "tikkat": 90 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
@@ -78,4 +79,4 @@ shot 24_market_notice
 shot 25_town_smith
 known after market: ["shrine", "lehan", "mines"] town: { "lehan": ["gate", "market", "inn", "hideout", "smith"] }
 
-Script done on 2026-11-16 13:31:44+01:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2026-11-16 15:46:53+01:00 [COMMAND_EXIT_CODE="0"]

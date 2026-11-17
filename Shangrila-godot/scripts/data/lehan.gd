@@ -402,6 +402,16 @@ const NO_JOB := {
 }
 
 
+const NO_JOB_HINT := "(There is no work to offer yet. News of jobs is cried in the market square.)"
+
+
+## What a companion says when asked to rejoin before there is a job.
+static func no_job_line(k: String, c: Dictionary, host: String) -> String:
+	if c.get("rejoin", "talk") == "won":
+		return "You stood by me, %s, and I'll stand by you. But there's no job yet. Find one, and I'm yours." % _first(host)
+	return NO_JOB[k]
+
+
 static func has_job() -> bool:
 	return "mines" in Game.known
 
@@ -413,12 +423,8 @@ static func rejoin_talk(k: String, c: Dictionary, host: String, purse: int) -> A
 	var mood: String = c.get("rejoin", "talk")
 	var owed: int = c.get("owed", 0)
 	if not has_job():
-		var line: String = NO_JOB[k]
-		if mood == "won":
-			line = "You stood by me, %s, and I'll stand by you. But there's no job yet. Find one, and I'm yours." % h
-		return [{"s": k, "t": line},
-			{"n": "(There is no work to offer yet. News of jobs is cried in the market square.)"},
-			{"fx": "notyet", "wait": 0.1}]
+		return [{"s": k, "t": no_job_line(k, c, host)},
+			{"n": NO_JOB_HINT}, {"fx": "notyet", "wait": 0.1}]
 	if mood == "won":
 		return [{"s": k, "t": "%s! Of course I'm coming. You stood by me." % h}, {"fx": "join", "wait": 0.1}]
 	var no := func(line: String) -> Array:
