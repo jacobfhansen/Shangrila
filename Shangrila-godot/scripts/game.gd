@@ -392,6 +392,33 @@ func set_class(c: Dictionary, k: int) -> void:
 	var list: Array = CLASS_ITEMS[k]
 	for i in 6:
 		c.items[PACK_FIRST + i] = list[i]
+	equip_from_pack(c)
+
+
+## Puts on what is in the pack: clothes and armour where they are worn, the first weapon in
+## the right hand, a shield in the left, arrows in the quiver. Taken slots are left alone.
+func equip_from_pack(c: Dictionary) -> void:
+	for s in range(PACK_FIRST, PACK_LAST + 1):
+		var id: int = c.items[s]
+		if id == 0:
+			continue
+		var it := item(id)
+		var dst := -1
+		for slot in [SLOT_HEAD, SLOT_NECK, SLOT_CHEST, SLOT_ARMS, SLOT_BELT, SLOT_LEGS, SLOT_FEET]:
+			if fits(id, slot) and c.items[slot] == 0:
+				dst = slot
+				break
+		if dst < 0:
+			if (it.weapon or it.gun) and c.items[SLOT_RHAND] == 0:
+				dst = SLOT_RHAND
+			elif it.armor and it.defense > 0 and c.items[SLOT_LHAND] == 0 and not (it.head or it.neck
+					or it.chest or it.arms or it.belt or it.legs or it.feet):
+				dst = SLOT_LHAND
+			elif it.misil and c.items[SLOT_QUIVER] == 0:
+				dst = SLOT_QUIVER
+		if dst >= 0:
+			c.items[dst] = id
+			c.items[s] = 0
 
 
 func finish_character(c: Dictionary, nm: String) -> void:
@@ -628,7 +655,7 @@ func save_game(screen: String) -> bool:
 	for k in visited:
 		v.append([k.x, k.y])
 	var data := {
-		"version": 3, "screen": screen, "roster": roster, "party": party,
+		"version": 4, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
 		"location": location, "known": known, "story": story, "town_known": town_known,
 	}
@@ -694,6 +721,10 @@ func load_game() -> String:
 	if data.get("version", 1) < 3:
 		for c in roster + party:
 			_convert_v3(c)
+	if data.get("version", 1) < 4:
+		# Older games kept the starting gear in the pack.
+		for c in roster + party:
+			equip_from_pack(c)
 	for c in roster + party:
 		update_derived(c)
 	visited = {}

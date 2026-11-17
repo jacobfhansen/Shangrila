@@ -913,55 +913,108 @@ searching it gives clues to where the jailers are.
 - What makes the spirit realise the employer's connection to the jailers? (Decide later.
   Ithrae's copied mark and Maera's tracks are possible threads.)
 
-### A solo adventure before the mines job
-**Agreed, not built yet.** After the company splits at the inn, the host is on their own. Before
-the mines job is announced, the host takes on one small solo adventure. The reward is a new
-character who joins the inn's list and can be mustered (see [CHARACTERS.md](CHARACTERS.md)).
+### The Lehan quests
+**Agreed in outline, not built yet.** Three small quests in Lehan, one for each of the tier-1
+characters in the market square: Skee, Boddo and Lisbet (see [CHARACTERS.md](CHARACTERS.md)).
+Finishing a quest wins that character, who then joins the inn's list and can be mustered.
 
-**The player picks a path.** After the split, the market and the inn offer two or three small
-hooks. The one the host takes on decides who joins. The others are not lost: they stay as
-characters to win over later. Suggested paths, from the tier-1 Lehan characters:
-- **Skee (Nisk Ranger):** the rat-catcher has seen strange lights in the old tunnels under the
-  town. A short cellar crawl with a hint of something old below Lehan (the streets "laid over
-  older ones" that the spirit felt on the walk in).
-- **Boddo (Thuug Warrior):** a dock porter with a debt of honour he can't pay himself. A town
-  errand solved by talk, wits or a scuffle.
-- **Lisbet Farrow (Human Thief):** the inn's errand runner, who sells rumours. A small job that
-  shows how Lehan works. She knows who is hiring, which leads to the crier.
+**The first one is done alone.** After the company splits at the inn, the host is on their own.
+All three hooks are open, and the player picks one. The quest the host finishes first, alone,
+makes the crier announce the mines job. The other two stay open and can be done later with the
+company's help.
 
-**Mostly abilities and talk.** Each adventure has a few obstacles, and each obstacle has more
-than one way through:
-- a check on one of the host's abilities (Stealth, Perception, Talk, Thievery, Lore...);
+**Errands cost nothing, but people notice.** Putting off the mines job has no real cost. The
+player can finish the other two quests calmly. But people remark on it:
+- **companions:** *"Six miners are missing and we're chasing a rat-catcher's ghosts?"*, with
+  each one's voice and traits (Joss impatient, Ithrae curious, Tikkat happy for any excuse);
+- **the crier:** *"The council's notice still stands, friend. Or have you found easier silver?"*;
+- **the council's clerk** if the company visits without having gone to the mines;
+- **Old Wenna:** *"Still here? I thought you lot were for the mines."*
+
+**Mostly abilities and talk** (as agreed before). Each obstacle has more than one way through:
+- a check on one of the host's (or the party's) abilities;
 - a dialogue choice that suits the host's traits;
 - a small fight as a last resort.
-Every host can finish every path, in their own way. A host who passes an obstacle with an
-ability gets story experience (see "Simpler mechanics").
+Every host can finish every quest, in their own way. Passing an obstacle with an ability gives
+story experience. On the solo quest, the spirit can nudge one check (like *Guide the blow*),
+and the host's inner voice reacts to it.
 
-**The crier waits.** After the split, the market has no mines news yet, only the hooks. The
-crier announces the mines job once the solo adventure is done. So the companions' "no job yet"
-still makes sense, and the new character can join the company for the mines.
+**Mixed format.** Skee's quest goes into a small 3D tunnel area under Lehan, built with the same
+engine as the streets. Boddo's and Lisbet's are mostly dialogue and ability checks in the
+streets, with a scuffle as a last resort.
 
-**The spirit takes part, quietly.** For the first time it is alone with its host. It can help a
-little, for example a nudge on one check (like *Guide the blow* in the first fight), and the
-host's inner voice reacts to it. This is a good place to show the bond between spirit and host,
-and how it differs between hosts.
+#### Skee: the lights under Lehan (suggestion)
+Skee is a Nisk rat-catcher, Superstitious and Cautious, and is won over by persuasion. He has
+seen blue lights in the old tunnels below the town and won't go back down alone.
+1. **The way down:** a cellar under Tanners' Row. The way in is a locked grate (Thievery), a
+   word with the tanner (Talk), or a loose drain found by looking around (Perception).
+2. **The tunnels** (3D, a few rooms): rats (an easy fight, or Stealth past them), and a
+   collapsed passage where Survival or Perception finds the safe way around.
+3. **The lights:** old carved stones, older than the streets above. Lore reads the marks and
+   Magic feels a ward. The spirit stirs: the carvings look like the crown on the stone head
+   from the shrine. This is a small hook into the main story.
+4. **Back to Skee:** persuade him the lights are not ghosts, or that they are worth looking
+   into together. He joins.
 
-**Where the hooks are found:** in the walkable market square (see "A walkable market square").
-Skee, Boddo and Lisbet stand in the square or at its edges, and the host finds them by walking
-up and talking.
+#### Boddo: a debt of honour (suggestion)
+Boddo is a Thuug porter, Calm, Vengeful and Humble, and is won over by a task. A fellow porter
+once pulled him out of the harbour. That porter later died, cheated of his wages by a warehouse
+master. Boddo swore that the widow would be paid, but nobody listens to a Thuug accusing a
+human merchant.
+1. **Find the proof:** the warehouse ledger. Thievery lifts it, Stealth gets in at night, and
+   Perception or Lore spots the cooked books when the host is shown the accounts.
+2. **Face the merchant:** shame him in front of the dockhands (Talk), threaten him (a Proud
+   or Vengeful host), or a scuffle with his men.
+3. **Another way:** pay the widow from your own silver (about 40). This is honest but costly,
+   and Boddo respects it, but less.
+4. Boddo's debt is paid, and he joins the one who paid it.
 
-- **Open question:** what does each adventure look like, scene by scene, and which abilities
-  does each obstacle test?
-- **Open question:** should the new character's mustering talk use the same "short talk" as
-  the old companions, or a first meeting (they don't know the host yet)?
+#### Lisbet: a letter across town (suggestion)
+Lisbet is a Human thief, Deceitful, Cheerful and Curious, and is won over by silver. She sells
+rumours and gives the host an errand: carry a sealed letter across town without being followed,
+and without opening it.
+1. **The tail:** someone follows. Perception spots them, Stealth loses them, and Talk gets a
+   guard to stop them.
+2. **The seal:** open it (Thievery to reseal it unseen) or not. The letter is about the
+   council's purse: what they really have set aside for the missing miners.
+3. **The twist:** it was a test of whether the host can be trusted, or is useful. An honest
+   host and a clever host each pass, in different ways.
+4. **Reward:** Lisbet joins for a fee, cheaper if she likes the host. Whether the letter was
+   read or Lisbet tells them, the host knows the council's real budget. This gives a better
+   start when haggling at the council.
+
+### The town council
+**Agreed, not built yet.** A new place in Lehan: the council house, with a door on or near the
+market square. The crier's notice puts it on the map, instead of the Mines.
+- **Accepting the job:** the company takes the mines job formally at the council. Only then do
+  the Mines appear on the world map.
+- **Haggling the pay:** a dialogue with Talk checks and choices that suit the host's traits.
+  Good arguments and rolls raise the offer, and pushing too hard lowers it. Lisbet's knowledge
+  of the council's purse helps.
+- **Who goes matters:** who is in the party changes the talk. A Thuug or a Nisk is treated with
+  less respect by some councillors. Joss is known as a company leader, and Lisbet knows the
+  councillors and their secrets.
+- **Reporting back:** after the mines, the company returns here to report and get paid. This
+  is where what they found, and who they lost, is told.
+- **Suggestion:** two or three councillors with their own interests. For example, one who
+  guards the purse, one whose family owns the old workings (and knows more than they say),
+  and one who distrusts outsiders.
+
+- **Mustering before the council:** the old companions can be mustered as soon as the crier
+  announces the job. So the player chooses who to bring to the haggling.
+
+**The new characters** (Skee, Boddo, Lisbet) are mustered with the same short talk as the old
+companions, not a first meeting. They are harder to win than the old companions, because each
+needs a quest. In return they are slightly better: for example one ability at 3, or one point
+more than the starting companions.
 
 ### A walkable market square
 **Started:** the square is in the game, and Lehan's streets with it (`scripts/areas/lehan_streets.gd`):
 the gate road, Tanners' Row with the employer's house, the lane to the inn and the street to the
 smith, with a Map button for fast travel to the places found so far. The crier still gives the mines
-notice straight away, because the solo adventures are not written yet. Lehan's market square becomes a small first-person 3D area that you
+notice straight away, because the Lehan quests are not written yet. Lehan's market square becomes a small first-person 3D area that you
 walk around, like the Mines. It has medieval house fronts, stalls and people standing about who
-can be talked to. It is the home of the solo-adventure hooks.
+can be talked to. It is the home of the hooks for the Lehan quests.
 
 - **Market first.** Only the market square, about 8 × 8 squares. The town map stays for getting
   around, and other places can become walkable later.
@@ -977,8 +1030,8 @@ can be talked to. It is the home of the solo-adventure hooks.
   portraits (all four races, clothes and colours). Real art can replace them later. Walking up
   to someone and facing them opens a talk in the dialogue window.
 - **Who stands there:**
-  - the crier by the well, who only has the mines notice once the solo adventure is done;
-  - Skee, Boddo and Lisbet (the solo-adventure hooks);
+  - the crier by the well, who only has the mines notice once the first Lehan quest is done;
+  - Skee, Boddo and Lisbet (the hooks for the Lehan quests);
   - a few townsfolk with a line or two of gossip.
 - **Doors:** some doors lead on, such as the smith's shop or back to the town map. Others are
   just walls for now.

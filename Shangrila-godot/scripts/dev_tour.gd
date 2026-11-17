@@ -232,6 +232,8 @@ func _run() -> void:
 	var vw: Node = m.current
 	var c0: Dictionary = Game.party[0]
 	c0.items[12] = 30
+	c0.items[Game.SLOT_FEET] = 0   # the boots start worn; take them off to test the drop
+	c0.items[15] = 7
 	var src := Slot.new(); src.slot_id = Game.SLOT_FEET; src.kind = "equip"
 	print("fits boots on feet: ", vw.can_drop(vw.slots[Game.SLOT_FEET], {"from": "pack", "src": 15, "item": 7}), " helmet on feet: ", vw.can_drop(vw.slots[Game.SLOT_FEET], {"from": "pack", "src": 15, "item": 4}))
 	vw.drop(vw.slots[Game.SLOT_FEET], {"from": "pack", "src": 15, "item": c0.items[15]})
