@@ -243,6 +243,8 @@ static func muster_talk(c: Dictionary, purse: int) -> Array:
 					{"t": "Not now.", "say": host, "after": [{"s": k, "t": "I'll be here. I usually am."}, {"fx": "notyet", "wait": 0.1}]},
 				]},
 			]
+		"skee":
+			return [{"s": k, "t": "Skee is ready. Skee has packed. Twice."}, {"fx": "join", "wait": 0.1}]
 		"boddo":
 			var line := "Boddo carries. Where are we going?" if get_q("boddo_way") != "self" \
 				else "You paid Boddo's debt. Boddo goes where you go."

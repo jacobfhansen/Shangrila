@@ -1,8 +1,7 @@
 class_name MarketData
 extends RefCounted
 ## Who stands in Lehan's streets and market square (LehanStreets) and what they say. Lisbet, Skee
-## and Boddo are the hooks for the Lehan quests (LehanQuests, LisbetQuest, BoddoQuest; Skee's is
-## not written yet).
+## and Boddo are the hooks for the Lehan quests (LehanQuests, LisbetQuest, BoddoQuest, SkeeQuest).
 
 ## Map digit -> person. `look` drives FigureArt and the dialogue portrait (RacePortrait).
 const PEOPLE := {
@@ -71,12 +70,7 @@ static func talk(id: String, host: String) -> Array:
 		"lisbet":
 			return LisbetQuest.talk()
 		"skee":
-			return [
-				{"s": "skee", "t": "Rats, rats, rats. One silver for a dozen tails, and the council pays late."},
-				{"s": "skee", "t": "Not the rats that worry Skee. Lights, down in the old tunnels under the town. Blue ones. Where no lamp should be."},
-				{"i": "Old tunnels under the town. The spirit remembers the streets that felt laid over older ones."},
-				{"n": "(Skee's tunnels will be one of the Lehan quests. It is not in the game yet.)"},
-			]
+			return SkeeQuest.talk()
 		"boddo":
 			return BoddoQuest.talk()
 		"wenna":

@@ -10,6 +10,7 @@ const LIST := [
 	["lehan", "Arriving in Lehan", "At the gate: the walk to the employer, the meeting and the split."],
 	["split", "The inn after the split", "The company has split up; nobody will come without a job."],
 	["market", "The market square", "After the split, before the crier: the walkable square."],
+	["tunnels", "Under Lehan", "Skee's quest taken and the way down found: at the foot of the ladder in the old tunnels."],
 	["council", "The council house", "The crier has cried the mines job; the company is still at the inn. At the council's door."],
 	["mines", "The Mines", "The mines job is taken and the whole company is back together."],
 ]
@@ -48,6 +49,11 @@ static func start(key: String, host: String) -> void:
 			Game.main.goto("inn", {"split": true})
 		"market":
 			Game.main.goto("streets", {"at": "market", "into": true})
+		"tunnels":
+			for f in ["skee=going", "skee_way=1"]:
+				LehanQuests.apply("q:" + f)
+			Game.discover_place("lehan", "tannery")
+			Game.main.goto("tunnels")
 		"council":
 			Game.story["job_notice"] = true
 			Game.discover_place("lehan", "council")

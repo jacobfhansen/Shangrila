@@ -1,14 +1,30 @@
 extends Node
 ## Developer aid: `godot --path . -- --tour=<dir>` visits every screen and saves screenshots.
+## Add `--part=quests` to run only the Lehan quests and the council (the whole tour is long).
 
 var out := ""
+var part := ""
 
 
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--tour="):
 			out = a.substr(7)
-	_run.call_deferred()
+		if a.begins_with("--part="):
+			part = a.substr(7)
+	if part == "quests":
+		_quests_only.call_deferred()
+	else:
+		_run.call_deferred()
+
+
+func _quests_only() -> void:
+	await _shot("01_about")
+	await _council_visits()
+	await _lisbet_quest()
+	await _boddo_quest()
+	await _skee_quest()
+	print("quests part done")
 
 
 func _shot(name: String) -> void:
@@ -401,6 +417,8 @@ func _new_game_route() -> void:
 	await _council_visits()
 	await _lisbet_quest()
 	await _boddo_quest()
+	await _skee_quest()
+	print("tour done")
 
 
 ## The council house: Joss alone, then Tikkat with the whole company. Tries every argument,
@@ -606,6 +624,81 @@ func _boddo_quest() -> void:
 			Game.party.append(c)
 	st._talk("2")
 	await _drive(st, [3], "33e_errand_comment")
+
+
+## Skee's lights with Ithrae as host (Lore and Magic): the offer, the tannery, the tunnels (the
+## bag, the rats, the collapse, the lights), climbing out, and persuading Skee.
+func _skee_quest() -> void:
+	var m: Node = Game.main
+	Checkpoints.start("market", "ithrae")
+	await get_tree().create_timer(1.0).timeout
+	var st: Node = m.current
+	st._talk("3")
+	await _drive(st, [0], "34a_skee_offer")
+	for visit in 6:
+		if SkeeQuest.way_open():
+			break
+		st = m.current
+		st._travel("tannery")
+		await get_tree().create_timer(0.4).timeout
+		if visit == 0:
+			await _shot("34b_tannery_door")
+		st._use_ahead()
+		await _drive(st, [0], "34c_tannery" if visit == 0 else "")
+		await get_tree().create_timer(0.8).timeout
+		print("skee: tannery visit %d -> %s" % [visit, LehanQuests.state()])
+	await get_tree().create_timer(1.0).timeout
+	print("skee: screen ", m.current.get_script().resource_path.get_file())
+	await _shot("34d_tunnels_start")
+	# Skee's bag.
+	await _tunnel_step(Vector2i(9, 7), 2)
+	await _drive(m.current, [])
+	await get_tree().create_timer(1.0).timeout
+	# The rats, until they're dealt with.
+	for i in 6:
+		if SkeeQuest.rats_done():
+			break
+		await _tunnel_step(Vector2i(7, 3), 1)
+		await _drive(m.current, [i % 3], "34e_rats" if i == 0 else "")
+		await get_tree().create_timer(1.0).timeout
+		print("skee: rats try %d -> done %s at %s" % [i, SkeeQuest.rats_done(), m.current.area.pos])
+	# The collapse.
+	for i in 6:
+		if SkeeQuest.collapse_passed():
+			break
+		await _tunnel_step(Vector2i(11, 5), 2)
+		await _drive(m.current, [i % 2], "34f_collapse" if i == 0 else "")
+		await get_tree().create_timer(1.0).timeout
+		print("skee: collapse try %d -> passed %s" % [i, SkeeQuest.collapse_passed()])
+	await _tunnel_step(Vector2i(11, 9), 2)
+	await get_tree().create_timer(0.6).timeout
+	await _drive(m.current, [0], "34g_lights")
+	await get_tree().create_timer(1.0).timeout
+	print("skee: after lights ", LehanQuests.state(), " hits ", Game.party.map(func(c): return c.hits))
+	await _tunnel_step(Vector2i(2, 1), 3)   # climb the ladder
+	await get_tree().create_timer(1.0).timeout
+	st = m.current
+	print("skee: climbed out to ", st.get_script().resource_path.get_file(), " at ", st.area.pos)
+	for i in 6:
+		if LehanQuests.done("skee"):
+			break
+		st = m.current
+		st._travel("market")
+		st._talk("3")
+		await _drive(st, [0], "34h_skee_persuade" if i == 0 else "")
+		await get_tree().create_timer(1.0).timeout
+	print("skee: end ", LehanQuests.state(), " roster ", Game.roster.map(func(c): return c.name))
+
+
+## In the tunnels: stand at `from` facing `dir`, and walk forward (into whatever is there).
+func _tunnel_step(from: Vector2i, dir: int) -> void:
+	var t: Node = Game.main.current
+	t.area.pos = from
+	t.area.facing = dir
+	t.view.snap()
+	await get_tree().create_timer(0.3).timeout
+	t._walk(0)
+	await get_tree().create_timer(0.8).timeout
 
 
 ## Arrival in Lehan with Tikkat as host: the walk, the meeting, palming coins, the split, and

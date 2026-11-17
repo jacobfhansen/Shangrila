@@ -134,6 +134,8 @@ const TOWNS := {
 			"desc": "A narrow, plain house off Tanners' Row, where the company was paid."},
 		"warehouse": {"name": "Gell's Warehouse", "kind": "warehouse", "at": Vector2(150, 190),
 			"desc": "Master Gell's warehouse, where the smith's street meets the square."},
+		"tannery": {"name": "The Tannery", "kind": "tannery", "at": Vector2(200, 300),
+			"desc": "A stinking tannery on Tanners' Row, with old cellar steps under an iron grate."},
 		"council": {"name": "Council House", "kind": "council", "at": Vector2(300, 96),
 			"desc": "A stone hall on the north side of the square, where the town's council sits."},
 	}},

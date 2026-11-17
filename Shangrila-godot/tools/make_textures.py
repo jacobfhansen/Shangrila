@@ -612,6 +612,49 @@ def warehouse_front():
     img.save(OUT / "warehouse_front.png")
 
 
+def tannery_front():
+    """The tannery on Tanners' Row: stained plaster, hides on a rack, a low yard gate."""
+    w = h = 256
+    img = to_img(_plaster(w, h, 710, (168, 150, 112)))
+    d = ImageDraw.Draw(img)
+    beam = (56, 40, 26)
+    img.paste(blocks(w, 50, 2, 6, 711, mortar=2, base=(96, 88, 78), jitter=14), (0, h - 50))
+    d.line([(0, 0), (0, h)], fill=beam, width=8)
+    d.line([(w - 1, 0), (w - 1, h)], fill=beam, width=8)
+    rng = np.random.default_rng(712)
+    for i in range(5):
+        x, y = 40 + i * 40 + int(rng.integers(-6, 6)), 30 + int(rng.integers(-8, 8))
+        for _ in range(60):
+            d.point((x + int(rng.integers(-14, 14)), y + int(rng.integers(0, 40))), fill=(100, 80, 50))
+    d.line([(20, 24), (236, 24)], fill=beam, width=5)
+    for i in range(4):
+        x = 34 + i * 54
+        d.polygon([(x, 26), (x + 40, 26), (x + 44, 60), (x + 34, 84), (x + 6, 84), (x - 4, 60)], fill=(150 - i * 12, 100, 60), outline=beam)
+    _door(d, 84, 118, 172, h - 6, (96, 70, 44), beam)
+    img.save(OUT / "tannery_front.png")
+
+
+def carved_stone():
+    """The ward-stones under Lehan: old blocks carved with lines, circles and a crown."""
+    w = h = 256
+    img = blocks(w, h, 4, 2, 720, mortar=3, base=(92, 96, 104), jitter=10)
+    d = ImageDraw.Draw(img)
+    groove = (52, 60, 80)
+    glow = (120, 160, 230)
+    d.ellipse([58, 58, 198, 198], outline=groove, width=6)
+    d.ellipse([70, 70, 186, 186], outline=glow, width=2)
+    # The crown.
+    crown = [(88, 150), (88, 104), (108, 126), (128, 92), (148, 126), (168, 104), (168, 150)]
+    d.polygon(crown, outline=glow, fill=None)
+    d.line(crown + [crown[0]], fill=glow, width=4)
+    d.line([(88, 160), (168, 160)], fill=glow, width=4)
+    for k in range(6):
+        y = 20 + k * 6
+        d.line([(16, y), (240, y)], fill=groove, width=2)
+        d.line([(16, h - y), (240, h - y)], fill=groove, width=2)
+    img.save(OUT / "carved_stone.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -630,4 +673,6 @@ if __name__ == "__main__":
     town_gate()
     council_house()
     warehouse_front()
+    tannery_front()
+    carved_stone()
     print("wrote textures to", OUT)

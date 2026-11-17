@@ -123,7 +123,7 @@ when one is set; the streets are `scripts/areas/lehan_streets.gd`, the screen
 cut-out figures `scripts/widgets/figure_art.gd`, and the house textures come from
 `tools/make_textures.py`.
 
-## The Lehan quests (new; two of three built)
+## The Lehan quests (new)
 
 After the split the host is alone, and the crier has no news until the host has done one of the
 Lehan quests for Lisbet, Skee or Boddo in the square. Each quest wins its character, who then
@@ -151,6 +151,20 @@ Each way can be tried once, one per visit. Then Master Gell: shame him in front 
 At any point the host can pay the forty silver themselves. Boddo joins for no fee. The checks use
 the best in the party, so a full company has more ways through than a lone host; a lost scuffle
 costs everyone a few hits.
+
+**Skee's lights.** Skee saw blue lights in the old tunnels under the town and ran, dropping his
+bag. The way down is under the tannery on Tanners' Row (a new door): pick the grate (Thievery),
+talk the tanner round (Talk), find the loose drain (Perception), let the spirit feel for cold air,
+or pay her 5 silver. Below is a small 3D maze lit by your torch (`scripts/areas/lehan_tunnels.gd`,
+screen `scripts/screens/tunnels.gd`): a rat nest blocking the way east (Stealth, Survival or
+Combat; failing drives you back, bitten), a collapse (Perception or Survival, or Toughness; failing
+costs hits), Skee's bag in a side passage, and the chamber of the lights: an old ward-stone carved
+with the crown from the shrine's stone head. Reading it (Lore) or feeling it (Magic) tells more,
+and the spirit can reach for it and remember something. Each failed try at the rats or the
+collapse gives +1 on the next. Walk into the ladder to climb out. Then Skee must be persuaded it
+wasn't ghosts, one argument per talk (the glowing chip, what the carvings said, his bag, the host's
+calm, or simply company); if every argument fails, he comes anyway. He joins for no fee. The text
+is in `scripts/data/quest_skee.gd`.
 
 **Errands.** Once the mines job is cried, the first companion in the party grumbles when a quest
 starts (each in their own voice), and Old Wenna wonders why you're still in town. This stops
@@ -223,7 +237,8 @@ D Defaults, Esc back, Space hurry.
 **Checkpoints** for testing by hand: *Start at...* on the title screen, or
 `godot-4 --path . -- --start=market --host=tikkat`. The checkpoints are `road` (just after the
 prologue), `lehan` (at the gate, before the employer), `split` (the inn after the split),
-`market` (the market square, before the crier), `council` (after the crier, at the council
+`market` (the market square, before the crier), `tunnels` (Skee's quest, in the old tunnels),
+`council` (after the crier, at the council
 house's door, the company still at the inn) and `mines` (job taken, company back together). The
 host is any of joss, maera, ommuk, ithrae, tikkat. The story before the checkpoint is filled in
 with simple choices (see `scripts/checkpoints.gd`).

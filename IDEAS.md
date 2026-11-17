@@ -914,9 +914,9 @@ searching it gives clues to where the jailers are.
   Ithrae's copied mark and Maera's tracks are possible threads.)
 
 ### The Lehan quests
-**Started:** Lisbet's letter and Boddo's debt are built (`scripts/data/lehan_quests.gd`,
-`scripts/data/quest_lisbet.gd`, `scripts/data/quest_boddo.gd`), the crier waits for a quest to be
-done, and the errand comments are in (companions and Old Wenna). Skee's tunnels are not written yet.
+**Built:** all three (`scripts/data/lehan_quests.gd`, `quest_lisbet.gd`, `quest_boddo.gd`,
+`quest_skee.gd`, and the tunnels in `scripts/areas/lehan_tunnels.gd`), the crier waits for a quest
+to be done, and the errand comments are in (companions and Old Wenna).
 
 **Agreed in outline.** Three small quests in Lehan, one for each of the tier-1
 characters in the market square: Skee, Boddo and Lisbet (see [CHARACTERS.md](CHARACTERS.md)).
@@ -947,7 +947,13 @@ and the host's inner voice reacts to it.
 engine as the streets. Boddo's and Lisbet's are mostly dialogue and ability checks in the
 streets, with a scuffle as a last resort.
 
-#### Skee: the lights under Lehan (suggestion)
+#### Skee: the lights under Lehan (built)
+As built: the way down is under the tannery, a new door on Tanners' Row (paying the tanner 5 silver
+always works). The tunnels are a small maze with the rats blocking the way east, a collapse, Skee's
+dropped bag (helps persuade him) and the lights chamber. The carvings read "Sealed below by the
+crowned one. Let it sleep." Failed tries at the rats and the collapse give +1 next time. If every
+argument fails, Skee comes anyway. His abilities: Missile 2, Stealth 2, Perception 2, Survival 1.
+The original suggestion:
 Skee is a Nisk rat-catcher, Superstitious and Cautious, and is won over by persuasion. He has
 seen blue lights in the old tunnels below the town and won't go back down alone.
 1. **The way down:** a cellar under Tanners' Row. The way in is a locked grate (Thievery), a

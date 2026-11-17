@@ -118,6 +118,8 @@ func _after_move() -> void:
 					nm = "a shop with a sword on its sign"
 				if t.to == "warehouse" and not "warehouse" in Game.town_places(TOWN):
 					nm = "a warehouse with wide loading doors and a barrel on its sign"
+				if t.to == "tannery" and not "tannery" in Game.town_places(TOWN):
+					nm = "a tannery, stinking of lime, with hides hung out to dry"
 				if t.to == "council" and not "council" in Game.town_places(TOWN):
 					nm = "a stone hall with the town's banner over the door"
 				hint.text = "Ahead: %s.  Walk on or press Space to go in." % nm
@@ -134,6 +136,8 @@ func _where() -> String:
 	var p := area.pos
 	if p == LehanStreets.ENTRANCES.hideout.cell:
 		return "Tanners' Row, at the door of a narrow, plain house."
+	if p == LehanStreets.ENTRANCES.tannery.cell:
+		return "Tanners' Row, at the gate of a tannery. The stink makes your eyes water."
 	if p == LehanStreets.ENTRANCES.warehouse.cell:
 		return "The corner where the smith's street meets the square, by a warehouse's loading doors."
 	if p == LehanStreets.ENTRANCES.council.cell:
@@ -188,6 +192,11 @@ func _use(t: Dictionary) -> void:
 					Game.main.goto("shop")
 				"inn":
 					Game.main.goto("inn")
+				"tannery":
+					Game.discover_place(TOWN, "tannery")
+					await _dialog("The Tannery", SkeeQuest.tannery())
+					if SkeeQuest.way_open() and LehanQuests.get_q("skee") != "":
+						Game.main.goto("tunnels")
 				"warehouse":
 					Game.discover_place(TOWN, "warehouse")
 					await _dialog("Gell's Warehouse", BoddoQuest.warehouse())
