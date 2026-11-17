@@ -1,8 +1,8 @@
 class_name MarketData
 extends RefCounted
-## Who stands in Lehan's streets and market square (LehanStreets) and what they say. The characters marked as
-## solo-adventure hooks are from CHARACTERS.md; their adventures are not written yet (see "A solo
-## adventure before the mines job" in IDEAS.md).
+## Who stands in Lehan's streets and market square (LehanStreets) and what they say. Lisbet, Skee
+## and Boddo are the hooks for the Lehan quests (LehanQuests; Lisbet's is LisbetQuest, the others
+## are not written yet).
 
 ## Map digit -> person. `look` drives FigureArt and the dialogue portrait (RacePortrait).
 const PEOPLE := {
@@ -18,7 +18,7 @@ const PEOPLE := {
 		"look": {"skin": "#d8b090", "hair": "#d8d8d0", "cloth": "#6a5a4a", "legs": "#4a3a2a", "apron": true, "hood": true}},
 	"6": {"key": "siv", "name": "Siv the Herb Seller", "race": "Aeldroe", "height": 1.8,
 		"look": {"skin": "#e0eaf0", "hair": "#c8e0d0", "cloth": "#3a6a5a", "legs": "#2a4a40"}},
-	"7": {"key": "guard", "name": "A Gate Guard", "race": "Human", "height": 1.8,
+	"7": {"key": "guard", "name": "Sergeant Rudd", "race": "Human", "height": 1.8,
 		"look": {"skin": "#c89870", "hair": "#2a2018", "cloth": "#7a2a20", "legs": "#3a3a40", "hat": true, "beard": true}},
 }
 
@@ -44,6 +44,12 @@ static func talk(id: String, host: String) -> Array:
 	var h := _host_first(host)
 	match who:
 		"crier":
+			if not LehanData.has_job() and not LehanQuests.any_done():
+				return [
+					{"s": "crier", "t": "No council news today, friend. The price of eggs, a lost goat, and the Widow Marl's opinion of the price of eggs."},
+					{"s": "crier", "t": "If it's work you're after, ask Lisbet there by the stalls. She hears everything a day before I cry it."},
+					{"n": "(Something has to happen before the story moves on. Lisbet, Skee and Boddo in the square each have something for you to do.)"},
+				]
 			if not LehanData.has_job():
 				return [
 					{"s": "crier", "t": "Hear ye! A notice from the council of Lehan!"},
@@ -63,25 +69,20 @@ static func talk(id: String, host: String) -> Array:
 				{"s": "crier", "t": "If you go up there, buy a good blade first. The smith across the square won't mind me saying so."},
 			]
 		"lisbet":
-			return [
-				{"s": "lisbet", "t": "New face. Or an old face that's been on the road. Looking for work, or for gossip?"},
-				{"s": host, "t": "Depends what it costs."},
-				{"s": "lisbet", "t": "Everything in Lehan costs something, %s. Even the name I just guessed." % h},
-				{"n": "(Lisbet's errand will be one of the solo adventures. It is not in the game yet.)"},
-			]
+			return LisbetQuest.talk()
 		"skee":
 			return [
 				{"s": "skee", "t": "Rats, rats, rats. One silver for a dozen tails, and the council pays late."},
 				{"s": "skee", "t": "Not the rats that worry Skee. Lights, down in the old tunnels under the town. Blue ones. Where no lamp should be."},
 				{"i": "Old tunnels under the town. The spirit remembers the streets that felt laid over older ones."},
-				{"n": "(Skee's tunnels will be one of the solo adventures. It is not in the game yet.)"},
+				{"n": "(Skee's tunnels will be one of the Lehan quests. It is not in the game yet.)"},
 			]
 		"boddo":
 			return [
 				{"s": "boddo", "t": "Hm."},
 				{"s": host, "t": "That's a heavy load, even for a Thuug."},
 				{"s": "boddo", "t": "Not as heavy as a debt. A Thuug pays what he owes. Boddo cannot. Not alone."},
-				{"n": "(Boddo's debt of honour will be one of the solo adventures. It is not in the game yet.)"},
+				{"n": "(Boddo's debt of honour will be one of the Lehan quests. It is not in the game yet.)"},
 			]
 		"wenna":
 			if Game.story.get("employer", "") != "":
@@ -93,6 +94,8 @@ static func talk(id: String, host: String) -> Array:
 				{"s": "wenna", "t": "Forty years I've sold eggs in this square, and I've never seen the council so frightened. Six miners gone."},
 			]
 		"guard":
+			if LehanQuests.get_q("lisbet") == "carrying":
+				return LisbetQuest.deliver()
 			if Game.story.get("employer", "") == "":
 				return [{"s": "guard", "t": "Keep your blades sheathed inside the walls, and we'll get along fine."}]
 			return [

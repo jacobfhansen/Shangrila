@@ -32,6 +32,8 @@ var name_label: Label
 var cls_label: Label
 var race_label: Label
 var log_label: Label
+var back := "inn"         # the screen Leave returns to (args "back", "back_args")
+var back_args := {}
 
 
 func _ready() -> void:
@@ -42,7 +44,9 @@ func _ready() -> void:
 	strip_first = index
 	Ui.stone_background(self)
 
-	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, "Back to the inn")
+	back = args.get("back", "inn")
+	back_args = args.get("back_args", {})
+	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, "Back to the inn" if back == "inn" else "Back to the streets")
 	# Character strip (ViewCha 110-118).
 	for j in 3:
 		var x := 104 + j * 158
@@ -76,9 +80,10 @@ func _ready() -> void:
 		plus.add_theme_font_size_override("font_size", 12)
 		ability_rows[k] = {"name": nl, "pips": pips, "plus": plus, "hover": hover}
 	var rows := [["Hits", "hits"], ["Health", "health"], ["Mana", "mana"], ["Encumbrance", "enc"],
-		["Armour", "ac"], ["To Hit  R / L", "hit"], ["Damage  R / L", "dam"], ["Experience", "xp"]]
+		["Armour", "ac"], ["To Hit  R / L", "hit"], ["Damage  R / L", "dam"], ["Experience", "xp"],
+		["Silver", "silver"]]
 	for i in rows.size():
-		var y := 306 + i * 20
+		var y := 304 + i * 18
 		Ui.label(self, rows[i][0], Vector2(18, y), 12, Ui.DIM)
 		stat_labels[rows[i][1]] = Ui.label(self, "", Vector2(124, y), 13, Ui.GOLD, 104, HORIZONTAL_ALIGNMENT_RIGHT)
 
@@ -154,6 +159,7 @@ func refresh() -> void:
 	stat_labels["hit"].text = "%d / %d" % [Game.to_hit(c, Game.SLOT_RHAND), Game.to_hit(c, Game.SLOT_LHAND)]
 	stat_labels["dam"].text = "%s / %s" % [Game.damage_string(c, Game.SLOT_RHAND), Game.damage_string(c, Game.SLOT_LHAND)]
 	stat_labels["xp"].text = str(c.xp)
+	stat_labels["silver"].text = str(c.silver)
 	for k in slots:
 		slots[k].item_id = c.items[k]
 	# Strip of three characters, starting at strip_first, wrapping around.
@@ -196,7 +202,7 @@ func _on_raise(key: String) -> void:
 
 
 func _on_leave() -> void:
-	Game.main.goto("inn")
+	Game.main.goto(back, back_args)
 
 
 # ---------------------------------------------------------------- drag & drop

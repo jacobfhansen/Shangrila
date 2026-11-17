@@ -914,7 +914,11 @@ searching it gives clues to where the jailers are.
   Ithrae's copied mark and Maera's tracks are possible threads.)
 
 ### The Lehan quests
-**Agreed in outline, not built yet.** Three small quests in Lehan, one for each of the tier-1
+**Started:** Lisbet's letter is built (`scripts/data/lehan_quests.gd`, `scripts/data/quest_lisbet.gd`),
+and the crier now waits for a quest to be done. Skee's and Boddo's are not written yet, nor the
+errand comments (they only matter once a second quest exists).
+
+**Agreed in outline.** Three small quests in Lehan, one for each of the tier-1
 characters in the market square: Skee, Boddo and Lisbet (see [CHARACTERS.md](CHARACTERS.md)).
 Finishing a quest wins that character, who then joins the inn's list and can be mustered.
 
@@ -969,7 +973,11 @@ human merchant.
    and Boddo respects it, but less.
 4. Boddo's debt is paid, and he joins the one who paid it.
 
-#### Lisbet: a letter across town (suggestion)
+#### Lisbet: a letter across town (built)
+As built: the letter goes to Sergeant Rudd at the south gate; the tail is her little brother Pip;
+the letter is from a council clerk and says the purse is 400 silver. Mustering costs 20 silver,
+or 40 if she was followed, the seal broke or she caught the host lying. Her abilities: Thievery 3,
+Talk 2, Stealth 1, Perception 1. The original suggestion:
 Lisbet is a Human thief, Deceitful, Cheerful and Curious, and is won over by silver. She sells
 rumours and gives the host an errand: carry a sealed letter across town without being followed,
 and without opening it.

@@ -27,7 +27,10 @@ func _init() -> void:
 ## Icons from Game.PORTRAIT_CAST on are the pre-made characters, drawn by RacePortrait.
 func _cast_portrait() -> void:
 	var k := index - Game.PORTRAIT_CAST
-	if k < 0 or k >= PrologueData.ORDER.size():
+	var who: Dictionary = LehanQuests.look_for_icon(index)   # Lisbet, Skee, Boddo
+	if who.is_empty() and k >= 0 and k < PrologueData.ORDER.size():
+		who = PrologueData.CAST[PrologueData.ORDER[k]]
+	if who.is_empty():
 		if _race_pic:
 			_race_pic.queue_free()
 			_race_pic = null
@@ -36,7 +39,6 @@ func _cast_portrait() -> void:
 		_race_pic = RacePortrait.new()
 		_race_pic.set_anchors_preset(Control.PRESET_FULL_RECT)
 		add_child(_race_pic)
-	var who: Dictionary = PrologueData.CAST[PrologueData.ORDER[k]]
 	_race_pic.race = who.race
 	_race_pic.look = who.look
 

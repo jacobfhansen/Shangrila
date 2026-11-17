@@ -399,6 +399,7 @@ func _new_game_route() -> void:
 	if m.modal_open:
 		m._modal_done.emit(true)
 	await _council_visits()
+	await _lisbet_quest()
 
 
 ## The council house: Joss alone, then Tikkat with the whole company. Tries every argument,
@@ -449,6 +450,121 @@ func _council_visits() -> void:
 		await get_tree().create_timer(1.0).timeout
 		m.current.box.skip_to_choice()
 		print("council revisit: ", m.current.box.history.slice(-2))
+
+
+## Drives the newest dialogue box under `node`: skips to each choice and picks from `picks`
+## (0 when they run out), until the conversation ends; then presses its closing button.
+func _drive(node: Node, picks: Array, shot := "") -> void:
+	var box: DialogueBox = null
+	for i in 40:
+		box = _find_box(node)
+		if box:
+			break
+		await get_tree().create_timer(0.1).timeout
+	if box == null:
+		print("drive: no dialogue box")
+		return
+	for i in 400:
+		box.skip_to_choice()
+		if box.choosing != "":
+			if shot != "":
+				await _shot(shot)
+				shot = ""
+			var p: int = picks.pop_front() if picks.size() > 0 else 0
+			print("  choice %s: %s" % [box.choosing, box.choice_step.options[p].t])
+			box.choose(p)
+		elif not box.running:
+			break
+		await get_tree().create_timer(0.05).timeout
+	print("  said: ", box.history.slice(-3))
+	if is_instance_valid(box):
+		box.finished.emit()   # the Goodbye / closing button
+	await get_tree().create_timer(0.4).timeout
+
+
+func _find_box(node: Node) -> DialogueBox:
+	var found: DialogueBox = null
+	for ch in node.get_children():
+		if ch is DialogueBox and ch.running:
+			found = ch
+		var deeper := _find_box(ch)
+		if deeper:
+			found = deeper
+	return found
+
+
+## Lisbet's letter with Tikkat as host: the crier has no news, the offer, the tail on the gate
+## road, opening the letter at the gate, back to Lisbet, the crier's notice, mustering Lisbet.
+func _lisbet_quest() -> void:
+	var m: Node = Game.main
+	Checkpoints.start("market", "tikkat")
+	await get_tree().create_timer(1.0).timeout
+	var st: Node = m.current
+	st._talk("1")
+	await _drive(st, [])
+	print("lisbet: notice before quest? ", Game.story.get("job_notice", false))
+	st._talk("2")
+	await _drive(st, [0], "32a_lisbet_offer")
+	print("lisbet: state ", LehanQuests.state())
+	st.area.pos = Vector2i(11, 11)
+	st.area.facing = 2
+	st.view.snap()
+	st._walk(0)
+	await get_tree().create_timer(0.8).timeout
+	await _drive(st, [3], "32b_lisbet_tail")   # the spirit's help
+	print("lisbet: after tail ", LehanQuests.state())
+	st.area.pos = Vector2i(11, 17)
+	st.area.facing = 1
+	st.view.snap()
+	st._talk("7")
+	await _drive(st, [1], "32c_lisbet_seal")   # open it
+	print("lisbet: after gate ", LehanQuests.state(), " purse ", Game.story.get("council_purse", false))
+	st._travel("market")
+	st._talk("2")
+	await _drive(st, [0], "32d_lisbet_back")
+	await get_tree().create_timer(1.0).timeout
+	st = m.current
+	print("lisbet: done ", LehanQuests.state(), " roster ", Game.roster.map(func(c): return [c.name, c.get("fee", -1)]),
+		" silver ", Game.party_silver(), " gone ", st.gone_at_start, " at ", st.area.pos)
+	st.area.pos = Vector2i(13, 6)
+	st.area.facing = 0
+	st.view.snap()
+	await get_tree().create_timer(0.6).timeout
+	await _shot("32e_square_without_lisbet")
+	st._on_party()
+	await get_tree().create_timer(0.6).timeout
+	await _shot("32e2_party_from_streets")
+	m.current._on_leave()
+	await get_tree().create_timer(1.0).timeout
+	st = m.current
+	print("party button: back at ", st.area.pos, " facing ", st.area.facing)
+	st._talk("1")
+	await _drive(st, [])
+	print("lisbet: notice after quest? ", Game.story.get("job_notice", false), " town ", Game.town_places("lehan"))
+	m.goto("inn")
+	await get_tree().create_timer(0.6).timeout
+	var inn: Node = m.current
+	for i in Game.roster.size():
+		if Game.roster[i].name == "Lisbet Farrow":
+			inn.chosen = i
+	inn._on_muster()
+	await _drive(inn, [0], "32f_lisbet_muster")
+	await get_tree().create_timer(0.4).timeout
+	await _shot("32g_inn_with_lisbet")
+	print("lisbet: party ", Game.party.map(func(c): return c.name), " silver ", Game.party_silver())
+	m.goto("council")
+	await get_tree().create_timer(1.0).timeout
+	var box: DialogueBox = m.current.box
+	await _until_choice(box)
+	print("lisbet: council options ", box.choice_step.options.map(func(o): return o.key))
+	var pi := 0
+	for i in box.choice_step.options.size():
+		if box.choice_step.options[i].key == "purse":
+			pi = i
+	box.choose(pi)
+	await _until_choice(box)
+	await _shot("32h_council_purse")
+	print("lisbet: council offer after purse ", Game.story.council.offer)
 
 
 ## Arrival in Lehan with Tikkat as host: the walk, the meeting, palming coins, the split, and
@@ -516,7 +632,8 @@ func _lehan_arrival() -> void:
 		m._modal_done.emit(true)
 	await get_tree().create_timer(0.3).timeout
 	print("before the job: party ", Game.party.map(func(c): return c.name))
-	# Hear the crier in the market, then try again.
+	# Hear the crier in the market (after a Lehan quest, here just marked done), then try again.
+	LehanQuests.state()["lisbet"] = "done"
 	m.goto("town")
 	await get_tree().process_frame
 	await _market_walk(false)

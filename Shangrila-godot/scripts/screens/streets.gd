@@ -1,11 +1,13 @@
 extends Control
 ## The streets of Lehan, walked in first person like the mines (see LehanStreets and MarketData).
 ## Keys: W/Up forward, S/Down back, A/Left and D/Right turn, Q/E step sideways,
-## Space/Enter talk to (or use) what is straight ahead, M the town plan, Esc closes it.
+## Space/Enter talk to (or use) what is straight ahead, M the town plan, Esc closes it, C the
+## party's character screen.
 ## Walking into a person talks to them; walking into a door goes through it. The plan shows the
 ## places found so far; clicking one walks the party straight to its entrance.
 ## Args: {"at": place key, "into": bool}: start at that entrance (default: the south gate),
-## facing the door if `into`, otherwise with the back to it (just came out).
+## facing the door if `into`, otherwise with the back to it (just came out). Or {"at_cell":
+## [x, y], "facing": dir} to stand at a cell.
 
 const TOWN := "lehan"
 
@@ -19,11 +21,18 @@ var talking := false
 var buttons: Array = []
 var scene_box: DialogueBox      # the arrival scene's conversation, while it runs
 var scene_back: Control         # the panel behind it
+var gone_at_start: Array = []   # recruits already gone from the square when the view was built
 
 
 func _ready() -> void:
 	var args: Dictionary = get_meta("args", {})
 	area.place_at(args.get("at", "gate"), args.get("into", false))
+	if args.has("at_cell"):   # back exactly where the party stood (after the square changed)
+		area.pos = Vector2i(args.at_cell[0], args.at_cell[1])
+		area.facing = args.get("facing", 0)
+	for k in MarketData.PEOPLE:
+		if LehanQuests.gone_from_square(MarketData.PEOPLE[k].key):
+			gone_at_start.append(MarketData.PEOPLE[k].key)
 	Ui.stone_background(self)
 	view = DungeonView.new()
 	view.area = area
@@ -65,6 +74,7 @@ func _ready() -> void:
 	map_btn = Ui.btn(self, "Map", Rect2(446, 290, 88, 30), _on_map, "The town plan: click a place to go to its entrance (M)")
 	map_btn.toggle_mode = true
 	buttons.append(Ui.btn(self, "Save", Rect2(538, 290, 88, 30), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Party", Rect2(446, 326, 88, 30), _on_party, "Your characters: abilities, gear and silver (C)"))
 	buttons.append(Ui.btn(self, "Quit", Rect2(538, 326, 88, 30), _on_quit, "Back to the main menu"))
 	Ui.frame(self, Rect2(436, 364, 196, 62))
 	var help := Ui.label(self, "Walk up to people to talk, and into doors to go in. Map shows the town.",
@@ -93,6 +103,8 @@ func _after_move() -> void:
 	if scene_box and is_instance_valid(scene_box):
 		hint.text = _where()   # the arrival scene walks on its own
 		return
+	if not talking and LisbetQuest.tail_due(area.pos):
+		_dialog.call_deferred("On the gate road", LisbetQuest.tail_scene())
 	var t := area.thing_at(area.ahead())
 	match t.get("kind", ""):
 		"person":
@@ -298,21 +310,27 @@ func _lock(on: bool) -> void:
 # ---------------------------------------------------------------- talking
 
 func _talk(id: String) -> void:
+	await _dialog("Talking to " + MarketData.PEOPLE[id].name, MarketData.talk(id, Game.story.get("host", "")))
+
+
+## A conversation or a scene in the street, in a window over the lower part of the view.
+func _dialog(title: String, lines: Array) -> void:
+	if lines.is_empty():
+		return
 	_lock(true)
 	var host: String = Game.story.get("host", "")
-	var lines := MarketData.talk(id, host)
 	if host == "":
 		# No host (an old save): leave out what the host would say and think.
 		lines = lines.filter(func(st): return not (st.has("s") and st.s == "") and not st.has("i"))
 	var ov := Control.new()
 	add_child(ov)
 	Ui.place(ov, Rect2(0, 0, 640, 480))
-	Ui.frame(ov, Rect2(10, 190, 620, 282), Color("#1a120a"), Color("#a07a40"), 2)
-	Ui.label(ov, "Talking to " + MarketData.PEOPLE[id].name, Vector2(22, 196), 15, Ui.GOLD)
+	Ui.frame(ov, Rect2(10, 150, 620, 322), Color("#1a120a"), Color("#a07a40"), 2)
+	Ui.label(ov, title, Vector2(22, 156), 15, Ui.GOLD)
 	var box := DialogueBox.new()
 	box.cast = MarketData.cast()
 	box.host = host
-	Ui.place(box, Rect2(20, 220, 600, 246))   # sized before _ready builds it
+	Ui.place(box, Rect2(20, 180, 600, 286))   # sized before _ready builds it
 	ov.add_child(box)
 	box.effect.connect(_on_effect)
 	box.play(lines)
@@ -322,13 +340,32 @@ func _talk(id: String) -> void:
 	ov.queue_free()
 	_lock(false)
 	_after_move()
+	if LehanQuests.any_done() and _square_needs_rebuild():
+		Game.main.goto("streets", {"at_cell": [area.pos.x, area.pos.y], "facing": area.facing})
+
+
+## Someone left the square for the inn during the talk, and the 3D view still shows them.
+func _square_needs_rebuild() -> bool:
+	for k in MarketData.PEOPLE:
+		var key: String = MarketData.PEOPLE[k].key
+		if LehanQuests.gone_from_square(key) and not key in gone_at_start:
+			return true
+	return false
 
 
 func _on_effect(fx: String) -> void:
+	LehanQuests.apply(fx)
 	if fx == "notice":
 		Game.story["job_notice"] = true
 		Game.discover_place(TOWN, "council")
 		Game.discover_place(TOWN, "smith")
+
+
+func _on_party() -> void:
+	if _locked() or Game.party.is_empty():
+		return
+	Game.main.goto("view", {"party": true, "index": 0, "back": "streets",
+		"back_args": {"at_cell": [area.pos.x, area.pos.y], "facing": area.facing}})
 
 
 func _on_save() -> void:
@@ -363,6 +400,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		KEY_M:
 			map_btn.button_pressed = true
 			_on_map()
+		KEY_C: _on_party()
 		_: return
 	get_viewport().set_input_as_handled()
 

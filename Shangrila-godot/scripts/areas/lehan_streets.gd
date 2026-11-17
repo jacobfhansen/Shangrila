@@ -80,14 +80,20 @@ func is_open(cell: Vector2i) -> bool:
 
 
 func can_move(from: Vector2i, dir: int) -> bool:
-	return _char(from + Game.DIR_VEC[dir]) == "."
+	var ch := _char(from + Game.DIR_VEC[dir])
+	return ch == "." or _gone(ch)
+
+
+## A person who has left the street (a recruit now on the inn's list).
+func _gone(ch: String) -> bool:
+	return MarketData.PEOPLE.has(ch) and LehanQuests.gone_from_square(MarketData.PEOPLE[ch].key)
 
 
 ## What is in a cell: {"kind": "person", "id"} / {"kind": "exit", "to"} / {"kind": "prop", "what"}
 ## / {"kind": "wall"} / {} for open cobbles.
 func thing_at(cell: Vector2i) -> Dictionary:
 	var ch := _char(cell)
-	if ch == ".":
+	if ch == "." or _gone(ch):
 		return {}
 	if EXITS.has(ch):
 		return {"kind": "exit", "to": EXITS[ch]}
@@ -200,7 +206,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 				"C": _cart(root, at)
 				"B": _barrels(root, at)
 				var ch:
-					if MarketData.PEOPLE.has(ch):
+					if MarketData.PEOPLE.has(ch) and not _gone(ch):
 						_person(root, at, MarketData.PEOPLE[ch])
 
 

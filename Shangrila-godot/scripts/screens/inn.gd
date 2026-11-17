@@ -148,9 +148,8 @@ func _on_muster() -> void:
 		if not await _rejoin_talk(c):
 			refresh()
 			return
-		c.erase("rejoin")
-		c.erase("grudge")
-		c.erase("owed")
+		for k in ["rejoin", "grudge", "owed", "fee"]:
+			c.erase(k)
 	Game.party.append(c)
 	Game.roster.erase(c)
 	chosen = -1
@@ -164,10 +163,11 @@ func _rejoin_talk(c: Dictionary) -> bool:
 	for k in PrologueData.ORDER:
 		if PrologueData.CAST[k].name == c.name:
 			key = k
-	if key == "":
-		return true
 	var host: String = Game.story.get("host", "")
-	if not LehanData.has_job():
+	var recruit: bool = c.has("recruit")
+	if key == "" and not recruit:
+		return true
+	if not recruit and not LehanData.has_job():
 		await Game.main.message("%s: \"%s\"\n\n%s" % [c.name.split(" ")[0], LehanData.no_job_line(key, c, host), LehanData.NO_JOB_HINT])
 		return false
 	var ov := ColorRect.new()
@@ -179,6 +179,7 @@ func _rejoin_talk(c: Dictionary) -> bool:
 	Ui.label(ov, "Talking to " + c.name, Vector2(20, 86), 15, Ui.GOLD)
 	var box := DialogueBox.new()
 	box.cast = PrologueData.company_cast()
+	box.cast.merge(LehanQuests.cast())
 	box.host = host
 	Ui.place(box, Rect2(20, 120, 600, 260))   # sized before _ready builds it
 	ov.add_child(box)
@@ -189,7 +190,8 @@ func _rejoin_talk(c: Dictionary) -> bool:
 		elif fx.begins_with("pay:"):
 			Game.pay(int(fx.substr(4)))
 			refresh())
-	box.play(LehanData.rejoin_talk(key, c, host, Game.party_silver()))
+	box.play(LehanQuests.muster_talk(c, Game.party_silver()) if recruit
+		else LehanData.rejoin_talk(key, c, host, Game.party_silver()))
 	await box.finished
 	var label := "%s joins the party" % c.name.split(" ")[0] if result.join else "Maybe later"
 	box.show_buttons([[label, func(): box.finished.emit()]])

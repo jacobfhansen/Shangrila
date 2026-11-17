@@ -123,6 +123,24 @@ when one is set; the streets are `scripts/areas/lehan_streets.gd`, the screen
 cut-out figures `scripts/widgets/figure_art.gd`, and the house textures come from
 `tools/make_textures.py`.
 
+## The Lehan quests (new; one of three built)
+
+After the split the host is alone, and the crier has no news until the host has done one of the
+Lehan quests for Lisbet, Skee or Boddo in the square. Each quest wins its character, who then
+waits on the inn's list (a little better than the old companions, and harder to get). Only
+Lisbet's is written so far:
+
+**Lisbet's letter.** Carry a sealed letter down the gate road to Sergeant Rudd. Nobody may
+follow, nobody may open it. On the gate road someone does follow: look (Perception), hide
+(Stealth), call the sergeant (Talk), let the spirit listen (its one nudge on the quest), or walk
+on. At the gate the letter can be opened (Thievery, or with the spirit's help) or handed over.
+It is a test, and every host passes it their own way; Lisbet's fee for mustering is 20 silver,
+or 40 if the host was followed, broke the seal or was caught lying. The letter tells what the
+council really has for the miners (400 silver), which gives a strong argument at the council.
+Checks are rolled when a scene starts; passing them and finishing the quest give story
+experience. The quests are in `scripts/data/lehan_quests.gd` (shared: state, the new
+characters, effects, mustering) and `scripts/data/quest_lisbet.gd`.
+
 ## The council house (new)
 
 The crier's notice opens the council house on the north side of the square, and the old

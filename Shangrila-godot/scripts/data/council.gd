@@ -36,6 +36,7 @@ const SEATS := [
 static func cast() -> Dictionary:
 	var c := PrologueData.company_cast()
 	c.merge(CAST, true)
+	c.merge(LehanQuests.cast(), true)
 	return c
 
 
@@ -63,6 +64,13 @@ static func key_of(c: Dictionary) -> String:
 static func _in_party(key: String) -> bool:
 	for c in Game.party:
 		if key_of(c) == key:
+			return true
+	return false
+
+
+static func _lisbet_in_party() -> bool:
+	for c in Game.party:
+		if c.name == LehanQuests.RECRUITS.lisbet.name:
 			return true
 	return false
 
@@ -155,6 +163,9 @@ static func haggle_round() -> Dictionary:
 		if not "danger" in st.tried:
 			opts.append({"key": "danger", "say": talker[1], "tip": "Talk (the best in the party speaks)",
 				"t": "Six men gone, and whatever took them is still up there. That's worth more than %s." % _coins(st.offer)})
+		if Game.story.get("council_purse", false) and not "purse" in st.tried:
+			opts.append({"key": "purse", "tip": "What Lisbet's letter said: no check needed",
+				"t": "We know the council has four hundred set aside for the miners. Don't insult us."})
 		if not "hale" in st.tried:
 			opts.append({"key": "hale", "say": noticer[1], "tip": "Perception (the best in the party speaks)",
 				"t": "Master Hale hasn't said a word. It's your family's mine, isn't it? What's really up there?"})
@@ -234,6 +245,13 @@ static func resolve(o: Dictionary) -> Array:
 				out.append({"n": "(The argument falls flat. The council's patience wears thin.)"})
 		"hale":
 			out.append_array(_press_hale(_best("perception"), "perception", 0))
+		"purse":
+			st.offer = maxi(st.offer + 60, 220)
+			out.append({"n": "Brask goes very still. Brannoc turns to look at her."})
+			out.append({"s": "brask", "t": "...Lisbet Farrow. That girl will hang one day, and I'll buy a good seat."})
+			out.append({"s": "brask", "t": "%s. And if you repeat that number outside this room, the offer is gone." % _coins(st.offer)})
+			if _lisbet_in_party():
+				out.append({"s": "lisbet", "t": "Lovely to see you too, Mistress Brask."})
 		"trait":
 			out.append_array(_trait_result(o))
 	if st.patience <= 0:

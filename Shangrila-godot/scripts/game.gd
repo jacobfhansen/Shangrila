@@ -384,7 +384,7 @@ const CLASS_ITEMS := {
 	MONK: [8, 5, 17, 27, 28, 29],
 	PALADIN: [3, 4, 15, 10, 9, 7],
 	RANGER: [11, 12, 13, 10, 9, 7],
-	THIEF: [2, 5, 16, 24, 25, 27],
+	THIEF: [2, 31, 16, 24, 25, 27],
 	WARRIOR: [3, 4, 15, 10, 9, 7],
 }
 
@@ -657,7 +657,7 @@ func save_game(screen: String) -> bool:
 	for k in visited:
 		v.append([k.x, k.y])
 	var data := {
-		"version": 4, "screen": screen, "roster": roster, "party": party,
+		"version": 5, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
 		"location": location, "known": known, "story": story, "town_known": town_known,
 	}
@@ -727,6 +727,14 @@ func load_game() -> String:
 		# Older games kept the starting gear in the pack.
 		for c in roster + party:
 			equip_from_pack(c)
+	if data.get("version", 1) < 5:
+		# Thieves used to start without a weapon: give them their clasp knife.
+		for c in roster + party:
+			if c.cls == THIEF and not 31 in c.items:
+				var s := free_pack_slot(c)
+				if s >= 0:
+					c.items[s] = 31
+					equip_from_pack(c)
 	for c in roster + party:
 		update_derived(c)
 	visited = {}
