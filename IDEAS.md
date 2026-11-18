@@ -1101,6 +1101,55 @@ failing over and over costs almost nothing, and the quest pays out the same in t
 - **Shown at the end:** when the quest finishes, a line like "(Story experience: 80%, after two
   failed tries.)", which is also kept in the quest log.
 
+### The mines as a place to grind (idea, story later)
+The mines are the first place where a player who likes that approach can grind: several map
+levels with progressively harder monsters, some puzzles, and so on. The mines' story (the missing
+miners, the sealed galleries) waits until later.
+
+### Death, wounds and saves (agreed, not built)
+How the classic party RPGs mostly did it (Wizardry, The Bard's Tale, Might and Magic, Ultima, the
+Gold Box games), with a middle step before death.
+- **Severely wounded at 0 hits:** a character who drops to 0 hits is out of the fight and has to
+  be carried. More damage while down, past a limit (for example down to -5, or a reserve based on
+  Toughness), kills them.
+  ```
+  Hits  8 .. 1   fighting
+  Hits  0 .. -5  severely wounded (out)
+  Hits  below -5 dead (†)
+  ```
+- **Recovering from wounds:** the simplest way, and the first to build, is the inn. The wounded
+  are carried back to town and left at the inn to rest for some days, costing silver per day.
+  They leave the party, and can be mustered again once healed ("Not yet. Two more days."). Later,
+  possibly also: a healer (the temple, Siv the herb seller) or a Cleric's spell to speed it up,
+  and slower healing while resting at a checkpoint camp.
+- **A companion dies:** they stay in the party as a body (†): they can't act and still take a
+  slot. The temple in Lehan raises them for silver, with a lasting cost (for example some lost
+  experience).
+- **The host is severely wounded:** the same as anyone else. They're out of the fight and must be
+  carried, and the spirit is muffled until they recover.
+- **The host dies:** game over. Back to a checkpoint save, or to one of the player's own saves.
+- **The whole party falls:** if the host is only wounded, everyone wakes at the last checkpoint,
+  with a cost (for example lost silver, as now when the party wakes at the inn). If the host died,
+  it is game over as above.
+- **Checkpoints, one per mine level:** a miners' camp or a lift station, found by reaching it. It
+  saves the game automatically, the next dive can start there (from town), and it is where the
+  party wakes after a wipe. In town the inn plays the same part.
+- **Saves:** a few save slots the player writes, plus the automatic checkpoint saves. The load
+  list shows each save's place and party, with who is fine, wounded or dead, before loading:
+  ```
+  Load game
+   1. Lehan, market   Day 4
+      Ithrae ♥  Joss ♥  Ommuk ✚
+   2. Mines level 2 camp (auto)
+      Ithrae ♥  Joss †  Tikkat ♥
+  ```
+
+**Open questions**
+- How deep below 0 can a character go before dying: a fixed -5, or based on Toughness?
+- How many days of rest at the inn, and what it costs per day.
+- Which temple: does Ommuk's standing with the temple (from the split) make raising cheaper?
+- Does the game keep a day count (for the save list and resting)?
+
 ### A walkable market square
 **Started:** the square is in the game, and Lehan's streets with it (`scripts/areas/lehan_streets.gd`):
 the gate road, Tanners' Row with the employer's house, the lane to the inn and the street to the
