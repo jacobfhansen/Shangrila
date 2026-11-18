@@ -161,13 +161,15 @@ static func haggle_round() -> Dictionary:
 		var talker: Array = _best("talk")
 		var noticer: Array = _best("perception")
 		if not "danger" in st.tried:
-			opts.append({"key": "danger", "say": talker[1], "tip": "Talk (the best in the party speaks)",
+			opts.append({"key": "danger", "say": talker[1], "checks": [LehanQuests.chk(talker[0], "talk", Game.NORMAL)],
+				"tip": "Wins +30; if it fails, the council loses patience.",
 				"t": "Six men gone, and whatever took them is still up there. That's worth more than %s." % _coins(st.offer)})
 		if Game.story.get("council_purse", false) and not "purse" in st.tried:
 			opts.append({"key": "purse", "tip": "What Lisbet's letter said: no check needed",
 				"t": "We know the council has four hundred set aside for the miners. Don't insult us."})
 		if not "hale" in st.tried:
-			opts.append({"key": "hale", "say": noticer[1], "tip": "Perception (the best in the party speaks)",
+			opts.append({"key": "hale", "say": noticer[1], "checks": [LehanQuests.chk(noticer[0], "perception", Game.NORMAL)],
+				"tip": "Wins +40; if it fails, the council loses patience.",
 				"t": "Master Hale hasn't said a word. It's your family's mine, isn't it? What's really up there?"})
 		var traits := _host_traits()
 		if not "trait" in st.tried and host != "":
@@ -194,25 +196,31 @@ static func _trait_option(traits: Array) -> Dictionary:
 	for t in traits:
 		match t:
 			"Greedy", "Proud":
-				return {"key": "trait", "kind": "double", "tags": [t], "tip": "Talk, hard",
+				return {"key": "trait", "kind": "double", "tags": [t], "checks": [LehanQuests.chk(Game.party[0], "talk", BOLD)],
+					"tip": "Wins +60; if it fails, the offer drops and patience runs out fast.",
 					"t": "Double it, or find another fool to send up your hill."}
 			"Hot-tempered":
-				return {"key": "trait", "kind": "double", "tags": [t], "tip": "Talk, hard",
+				return {"key": "trait", "kind": "double", "tags": [t], "checks": [LehanQuests.chk(Game.party[0], "talk", BOLD)],
+					"tip": "Wins +60; if it fails, the offer drops and patience runs out fast.",
 					"t": "Six men dead and you count coppers? Double it, or go up there yourselves!"}
 			"Honest", "Pious", "Generous":
 				return {"key": "trait", "kind": "fair", "tags": [t],
 					"t": "We'd go for the miners' sake. Pay what's fair, and put something by for their families."}
 			"Cowardly":
-				return {"key": "trait", "kind": "advance", "tags": [t], "tip": "Talk, easy",
+				return {"key": "trait", "kind": "advance", "tags": [t], "checks": [LehanQuests.chk(Game.party[0], "talk", Game.EASY)],
+					"tip": "Half the pay when you take the job.",
 					"t": "Half now. In case we, er, don't come back to collect."}
 			"Melancholy":
-				return {"key": "trait", "kind": "advance", "tags": [t], "tip": "Talk, easy",
+				return {"key": "trait", "kind": "advance", "tags": [t], "checks": [LehanQuests.chk(Game.party[0], "talk", Game.EASY)],
+					"tip": "Half the pay when you take the job.",
 					"t": "Half now. The dead don't spend much, but the living have to buy rope."}
 			"Curious":
-				return {"key": "trait", "kind": "curious", "tags": [t], "tip": "Lore",
+				return {"key": "trait", "kind": "curious", "tags": [t], "checks": [LehanQuests.chk(_best("lore")[0], "lore", Game.NORMAL, 2, "your curiosity +2")],
+					"tip": "Wins +40; if it fails, the council loses patience.",
 					"t": "What did the miners find up there? Something made them dig where they shouldn't."}
 			"Brave":
-				return {"key": "trait", "kind": "brave", "tags": [t], "tip": "Talk, easy",
+				return {"key": "trait", "kind": "brave", "tags": [t], "checks": [LehanQuests.chk(Game.party[0], "talk", Game.EASY)],
+					"tip": "Wins +20 for gear.",
 					"t": "We'll go whatever you pay. But we'd go better armed, and that costs."}
 	return {}
 

@@ -10,7 +10,10 @@ extends Control
 ##   {"sp": text}                        the spirit's own thought, with no host (centred italics)
 ##   {"fx": name, "wait": seconds}       emits `effect(name)`, then waits
 ##   {"choice": id, "options": [...], "prompt": text, "speakers": true}
-##       options: {"t", "tags": [], "silent": bool, "portrait": who, "tip": text, "after": [steps]}
+##       options: {"t", "tags": [], "silent": bool, "portrait": who, "tip": text, "after": [steps],
+##                 "checks": [LehanQuests.chk(...)]}   the abilities show on the option (coloured
+##                 by the chance: red, orange, yellow, green, grey for a sure thing), the details
+##                 (who rolls, skill, bonus, chance) in its tooltip, above the tip
 ##   {"end": true}                        stop and emit `finished`
 ## The scene moves on by itself; click, Space or Enter hurries it. Mouse wheel up (or H) opens the
 ## history and pauses; scroll down past the end, click or Space resumes. P pauses.
@@ -22,6 +25,11 @@ signal finished
 const INNER := Color("#c8b8f0")
 const SPIRIT := Color("#e8d8a0")
 const TAG := Color("#e8c46a")
+## Skill tags are coloured by the chance of success, on the usual RPG difficulty scale:
+## [below this %, colour]; a sure thing is grey.
+const ODDS := [[20, Color("#e0503c")], [40, Color("#e8903a")], [70, Color("#f0e050")], [100, Color("#6cc86a")]]
+const SURE := Color("#9a9a9a")
+const DIFF_NAMES := {6: "easy", 9: "normal", 10: "tricky", 12: "hard"}
 const NARR := Color("#e0d4b4")
 const LINE_H := 106.0
 
@@ -252,6 +260,8 @@ func _show_choice(st: Dictionary) -> void:
 	for i in opts.size():
 		var o: Dictionary = opts[i]
 		var bb := "%d. " % (i + 1)
+		if o.has("checks"):
+			bb += "[color=#%s][%s][/color] " % [_odds_color(_check_chance(o.checks)).to_html(false), _check_label(o.checks)]
 		for tag in o.get("tags", []):
 			bb += "[color=#%s][%s][/color] " % [TAG.to_html(false), tag]
 		if o.has("bb"):
@@ -268,10 +278,95 @@ func _show_choice(st: Dictionary) -> void:
 			pic.look = who.look
 			b.add_child(pic)
 			Ui.place(pic, Rect2(4, 2, b.size.y - 4, b.size.y - 4))
-		b.tooltip_text = o.get("tip", "")
+		b.tooltip_text = _check_tip(o.checks, o.get("tip", "")) if o.has("checks") else o.get("tip", "")
 		b.pressed.connect(choose.bind(i))
 		b.position = Vector2(0, y)
 		y += b.size.y + 3
+
+
+## The chance of passing one check, in percent.
+static func _one_chance(c: Dictionary) -> int:
+	if c.get("needs_skill", false) and Game.ability(c.who, c.ability) <= 0:
+		return 0
+	return Game.chance(c.who, c.ability, c.diff, c.bonus)
+
+
+## The chance of passing all of an option's checks (any one of the alternatives will do).
+static func _check_chance(checks: Array) -> int:
+	var total := 1.0
+	for g in _check_groups(checks):
+		var miss := 1.0
+		for c in g:
+			miss *= 1.0 - _one_chance(c) / 100.0
+		total *= 1.0 - miss
+	return roundi(total * 100)
+
+
+static func _odds_color(pct: int) -> Color:
+	for band in ODDS:
+		if pct < band[0]:
+			return band[1]
+	return SURE
+
+
+## The checks grouped: each group is a list of alternatives, and every group must be passed.
+static func _check_groups(checks: Array) -> Array:
+	var groups: Array = []
+	for c in checks:
+		if c.get("or", false) and not groups.is_empty():
+			groups[-1].append(c)
+		else:
+			groups.append([c])
+	return groups
+
+
+## The abilities an option needs, for its tag: "Talk", "Talk, then Perception or Lore".
+static func _check_label(checks: Array) -> String:
+	var parts: Array = []
+	for g in _check_groups(checks):
+		parts.append(" or ".join(g.map(func(c): return Game.ABILITY_NAMES[c.ability])))
+	return ", then ".join(parts)
+
+
+## The tooltip for an option with checks: for each, who rolls, their skill, any bonus and the
+## chance; the overall chance when there are several; then the option's own tip.
+static func _check_tip(checks: Array, tip: String) -> String:
+	var lines: Array = []
+	for g in _check_groups(checks):
+		for c in g:
+			if not lines.is_empty():
+				lines.append("")
+			var who: Dictionary = c.who
+			var ab: String = c.ability
+			var nm: String = Game.ABILITY_NAMES[ab]
+			var level := Game.ability(who, ab)
+			var diff: int = c.diff
+			lines.append("%s check (%s: d10 + skill + bonus must reach %d)" % [nm, DIFF_NAMES.get(diff, "normal"), diff])
+			var best := level
+			for m in Game.party:
+				best = maxi(best, Game.ability(m, ab))
+			var role := "Rolls"
+			if Game.party.size() > 1:
+				role = "Best in the party" if level >= best else ("The host" if who == LehanQuests.host_char() else "Rolls")
+			lines.append("%s: %s, %s %d" % [role, who.name, nm, level])
+			var bonus: int = c.bonus
+			var why: String = c.get("why", "")
+			if not ", " in why:   # one source: its number is the bonus itself
+				var rx := RegEx.create_from_string(" [+-]\\d+$")
+				why = rx.sub(why, "")
+			if bonus != 0 or why != "":
+				lines.append("Bonus %+d%s" % [bonus, ": " + why if why != "" else ""])
+			var pct := _one_chance(c)
+			if c.get("needs_skill", false) and level <= 0:
+				lines.append("Needs at least 1 in %s" % nm)
+			lines.append("Chance: %d%%" % pct)
+	if checks.size() > 1:
+		lines.append("")
+		lines.append("Chance overall: %d%%" % _check_chance(checks))
+	if tip != "":
+		lines.append("")
+		lines.append(tip)
+	return "\n".join(lines)
 
 
 ## Only what the spirit knows about its host (when the spirit itself is the one speaking).

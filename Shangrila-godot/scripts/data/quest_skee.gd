@@ -30,6 +30,19 @@ static func _q(k: String) -> String:
 	return LehanQuests.get_q(k)
 
 
+## Where a check's bonus comes from, for its tooltip.
+static func _why(parts: Array) -> String:
+	return ", ".join(parts.filter(func(p): return p != ""))
+
+
+static func _learned_why(bonus: int) -> String:
+	return "learned from failed tries +%d" % bonus if bonus > 0 else ""
+
+
+static func _helped_why(helpers: int, bonus: int) -> String:
+	return _why(["helped by the rest of the party +%d" % helpers if helpers > 0 else "", _learned_why(bonus)])
+
+
 static func _first(c: Dictionary) -> String:
 	return c.name.split(" ")[0]
 
@@ -99,14 +112,14 @@ static func tannery() -> Array:
 	if _q("skee_tried_pick") == "":
 		var thief := LehanQuests.best("thievery")
 		var ok := Game.check(thief, "thievery", Game.NORMAL)
-		opts.append({"t": "Pick the grate's lock while she's busy with the vats.", "silent": true, "tip": "Thievery (the best in the party)",
+		opts.append({"t": "Pick the grate's lock while she's busy with the vats.", "silent": true, "checks": [LehanQuests.chk(thief, "thievery", Game.NORMAL)],
 			"after": [_fx("q:skee_tried_pick=1")] + ([{"n": "A twist, a click. %s eases the grate up without a sound." % _first(thief)}, _fx("xp:%s" % LehanQuests.CHECK_XP)] + down if ok
 				else [{"n": "The lock is rusted solid. The tanner turns round and folds her arms."}, _try_again()])})
 	if _q("skee_tried_talk") == "":
 		var talker := LehanQuests.best("talk")
 		var ok := Game.check(talker, "talk", Game.NORMAL)
 		var o := {"t": "A rat-catcher saw something in your cellar. Let us look, and we'll clear your rats on the way.",
-			"tip": "Talk (the best in the party)",
+			"checks": [LehanQuests.chk(talker, "talk", Game.NORMAL)],
 			"after": [_fx("q:skee_tried_talk=1")] + ([{"n": "\"Rats,\" says the tanner, and spits. \"Take all you like.\" She unlocks the grate."}, _fx("xp:%s" % LehanQuests.CHECK_XP)] + down if ok
 				else [{"n": "\"Rat-catchers see things after a jug of ale,\" says the tanner. \"Out.\""}, _try_again()])}
 		var k := LehanQuests.key_of(talker)
@@ -116,13 +129,14 @@ static func tannery() -> Array:
 	if _q("skee_tried_look") == "":
 		var eye := LehanQuests.best("perception")
 		var ok := Game.check(eye, "perception", Game.NORMAL)
-		opts.append({"t": "Look around the yard for another way down.", "silent": true, "tip": "Perception (the best in the party)",
+		opts.append({"t": "Look around the yard for another way down.", "silent": true, "checks": [LehanQuests.chk(eye, "perception", Game.NORMAL)],
 			"after": [_fx("q:skee_tried_look=1")] + ([{"n": "Behind the lime pit, %s finds a drain cover that rocks under a boot. Below it, a crawl, and then the old steps." % _first(eye)}, _fx("xp:%s" % LehanQuests.CHECK_XP)] + down if ok
 				else [{"n": "Vats, hides, a dog asleep on a pile of scraps. No other way down that you can see."}, _try_again()])})
 	if LehanQuests.can_nudge("skee") and _q("skee_tried_spirit") == "":
 		var ok := Game.check(LehanQuests.host_char(), "perception", Game.NORMAL, 4)
 		opts.append({"t": "Let the spirit feel for where the cold air comes up.", "tags": ["Spirit"], "silent": true,
-			"tip": "Perception, with the spirit's help (once on this quest)",
+			"checks": [LehanQuests.chk(LehanQuests.host_char(), "perception", Game.NORMAL, 4, "the spirit's help")],
+			"tip": "The spirit can help once on this quest.",
 			"after": [_fx("q:skee_tried_spirit=1"), _fx("q:skee_nudge=used"), LehanQuests.nudge_line()]
 				+ ([{"n": "A thread of cold, from under a drain cover behind the lime pit. It lifts away. Below: a crawl, and then the old steps."}] + down if ok
 					else [{"n": "Cold everywhere, and nowhere in particular. Whatever the spirit feels, it can't point to it."}, _try_again()])})
@@ -160,22 +174,26 @@ static func rats() -> Array:
 		out.append({"n": "(You've seen how this nest moves now: +%d on your next try.)" % bonus})
 	var sneak := LehanQuests.best("stealth")
 	var ok := Game.check(sneak, "stealth", Game.NORMAL, bonus)
-	opts.append({"t": "Edge along the wall, slow and quiet.", "silent": true, "tip": "Stealth (the best in the party leads)",
+	opts.append({"t": "Edge along the wall, slow and quiet.", "silent": true, "checks": [LehanQuests.chk(sneak, "stealth", Game.NORMAL, bonus, _learned_why(bonus))], "tip": "The best at it leads the way.",
 		"after": [{"n": "Step by careful step along the wall. The rats squeal and shift, and let you by."}, _fx("q:skee_rats=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 			else [{"n": "A boot scrapes. The carpet of rats boils up your legs, biting. You stumble back the way you came."}, _fx("hurt:2"), _failed("rats")]})
 	var woods := LehanQuests.best("survival")
 	ok = Game.check(woods, "survival", Game.NORMAL, bonus)
-	opts.append({"t": "Smoke them out with the torch and a handful of damp straw, the way rat-catchers do.", "silent": true, "tip": "Survival (the best in the party)",
+	opts.append({"t": "Smoke them out with the torch and a handful of damp straw, the way rat-catchers do.", "silent": true, "checks": [LehanQuests.chk(woods, "survival", Game.NORMAL, bonus, _learned_why(bonus))],
 		"after": [{"n": "Thick, stinking smoke rolls along the passage. The rats pour away into cracks in the walls."}, _fx("q:skee_rats=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 			else [{"n": "The straw won't catch, the smoke goes the wrong way, and you retreat coughing."}, _fx("hurt:1"), _failed("rats")]})
 	var fighter := LehanQuests.best("combat")
-	ok = Game.check(fighter, "combat", Game.NORMAL, mini(Game.party.size() - 1, 2) + bonus)
-	opts.append({"t": "Wade in, stamping and swinging.", "silent": true, "tip": "Combat (the best in the party, helped by the rest)",
+	var helpers := mini(Game.party.size() - 1, 2)
+	ok = Game.check(fighter, "combat", Game.NORMAL, helpers + bonus)
+	opts.append({"t": "Wade in, stamping and swinging.", "silent": true,
+		"checks": [LehanQuests.chk(fighter, "combat", Game.NORMAL, helpers + bonus, _helped_why(helpers, bonus))], "tip": "Even if it works, the bites hurt.",
 		"after": [{"n": "A short, disgusting fight. When it's over the rats have fled, and the passage is yours."}, _fx("q:skee_rats=1"), _fx("hurt:1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 			else [{"n": "There are too many. You back off, kicking, bleeding from a dozen small bites."}, _fx("hurt:3"), _failed("rats")]})
 	if LehanQuests.can_nudge("skee"):
 		ok = Game.check(sneak, "stealth", Game.NORMAL, 4 + bonus)
-		opts.append({"t": "Let the spirit guide your feet.", "tags": ["Spirit"], "silent": true, "tip": "Stealth, with the spirit's help (once on this quest)",
+		opts.append({"t": "Let the spirit guide your feet.", "tags": ["Spirit"], "silent": true,
+			"checks": [LehanQuests.chk(sneak, "stealth", Game.NORMAL, 4 + bonus, _why(["the spirit's help +4", _learned_why(bonus)]))],
+			"tip": "The spirit can help once on this quest.",
 			"after": [_fx("q:skee_nudge=used"), LehanQuests.nudge_line()] + ([{"n": "Your feet find the quiet places. The rats never even turn their heads."}, _fx("q:skee_rats=1")] if ok
 				else [{"n": "Even so, a rat squeals underfoot, and the whole nest wakes. You retreat."}, _fx("hurt:2")])})
 	opts.append({"t": "Back away.", "silent": true, "after": [{"n": "You back away from the rats."}]})
@@ -196,17 +214,21 @@ static func collapse() -> Array:
 	var skill := "perception" if reader == eye else "survival"
 	var ok := Game.check(reader, skill, Game.NORMAL, bonus)
 	opts.append({"t": "Follow the cold air, and find where the stones are only leaning.", "silent": true,
-		"tip": "Perception or Survival (the best in the party)",
+		"checks": [LehanQuests.chk(reader, skill, Game.NORMAL, bonus, _learned_why(bonus))], "tip": "Whoever is best at Perception or Survival looks.",
 		"after": [{"n": "%s finds it: a gap behind a tilted beam, just wide enough to squeeze through." % _first(reader)}, _fx("q:skee_collapse=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 			else [{"n": "A stone shifts under a hand, and rubble rattles down on your heads."}, _fx("hurt:2"), _failed("collapse")]})
 	var strong := LehanQuests.best("toughness")
-	ok = Game.check(strong, "toughness", Game.NORMAL, mini(Game.party.size() - 1, 2) + bonus)
-	opts.append({"t": "Dig through, stone by stone.", "silent": true, "tip": "Toughness (the best in the party, helped by the rest)",
+	var diggers := mini(Game.party.size() - 1, 2)
+	ok = Game.check(strong, "toughness", Game.NORMAL, diggers + bonus)
+	opts.append({"t": "Dig through, stone by stone.", "silent": true,
+		"checks": [LehanQuests.chk(strong, "toughness", Game.NORMAL, diggers + bonus, _helped_why(diggers, bonus))],
 		"after": [{"n": "An hour of sweat and scraped knuckles, and there's a way through."}, _fx("q:skee_collapse=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 			else [{"n": "The pile slides and settles again, worse than before. Bruised and filthy, you give up for now."}, _fx("hurt:3"), _failed("collapse")]})
 	if LehanQuests.can_nudge("skee"):
 		ok = Game.check(LehanQuests.host_char(), "perception", Game.NORMAL, 4 + bonus)
-		opts.append({"t": "Let the spirit feel for the way through.", "tags": ["Spirit"], "silent": true, "tip": "Perception, with the spirit's help (once on this quest)",
+		opts.append({"t": "Let the spirit feel for the way through.", "tags": ["Spirit"], "silent": true,
+			"checks": [LehanQuests.chk(LehanQuests.host_char(), "perception", Game.NORMAL, 4 + bonus, _why(["the spirit's help +4", _learned_why(bonus)]))],
+			"tip": "The spirit can help once on this quest.",
 			"after": [_fx("q:skee_nudge=used"), LehanQuests.nudge_line()] + ([{"n": "There. Behind the tilted beam. A gap, just wide enough."}, _fx("q:skee_collapse=1")] if ok
 				else [{"n": "Nothing. Stone and more stone."}])})
 	opts.append({"t": "Leave it.", "silent": true, "after": []})
@@ -239,14 +261,14 @@ static func lights() -> Array:
 	if _q("skee_lore") == "":
 		var scholar := LehanQuests.best("lore")
 		var ok := Game.check(scholar, "lore", Game.NORMAL)
-		opts.append({"t": "Read the carvings.", "silent": true, "tip": "Lore (the best in the party)",
+		opts.append({"t": "Read the carvings.", "silent": true, "checks": [LehanQuests.chk(scholar, "lore", Game.NORMAL)],
 			"after": ([{"n": "%s traces the lines. Warding script, older than Lehan: \"Sealed below by the crowned one. Let it sleep.\"" % _first(scholar)},
 				_fx("q:skee_lore=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 				else [{"n": "Old letters, older words. Whatever they say, nobody here can read it."}]) + done})
 	if _q("skee_ward") == "":
 		var caster := LehanQuests.best("magic")
 		var ok := Game.ability(caster, "magic") > 0 and Game.check(caster, "magic", Game.NORMAL)
-		opts.append({"t": "Lay a hand on the stone and feel what it does.", "silent": true, "tip": "Magic (the best in the party)",
+		opts.append({"t": "Lay a hand on the stone and feel what it does.", "silent": true, "checks": [LehanQuests.chk(caster, "magic", Game.NORMAL).merged({"needs_skill": true})],
 			"after": ([{"n": "%s's hand tingles, then aches. It isn't a light at all. It's a lock. And something on the other side is leaning on it." % _first(caster)},
 				_fx("q:skee_ward=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 				else [{"n": "Cold stone. A hum, maybe, too low to be sure of."}]) + done})
@@ -274,7 +296,7 @@ static func _persuade() -> Array:
 		tried_all = false
 		var ok := Game.check(talker, "talk", Game.NORMAL, 2)
 		opts.append(_spoken(talker, {"t": "No ghost. An old stone with a glow in it. Here, hold it. It's only stone.",
-			"tip": "Talk (the best in the party); the glowing chip helps",
+			"checks": [LehanQuests.chk(talker, "talk", Game.NORMAL, 2, "the glowing chip helps")],
 			"after": [_fx("q:skee_ask_stone=1"), {"n": "Skee turns the chip over and over in his small hands."}] + (join if ok else _not_sure())}))
 	if _q("skee_lore") != "" and _q("skee_ask_lore") == "":
 		tried_all = false
@@ -285,20 +307,20 @@ static func _persuade() -> Array:
 		tried_all = false
 		var ok := Game.check(talker, "talk", Game.EASY)
 		opts.append(_spoken(talker, {"t": "You dropped this when you ran. Your traps are all still in it.",
-			"tip": "Talk, easy: he wants his bag back",
+			"checks": [LehanQuests.chk(talker, "talk", Game.EASY)], "tip": "He wants his bag back.",
 			"after": [_fx("q:skee_ask_bag=1"), {"n": "Skee hugs the bag to his chest."}] + (join if ok else _not_sure())}))
 	var calm := LehanQuests.host_trait(["Pious", "Calm", "Brave"])
 	if calm != "" and _q("skee_ask_trait") == "":
 		tried_all = false
 		var ok := Game.check(LehanQuests.host_char(), "talk", Game.EASY)
 		opts.append({"t": "Whatever it is, it has been down there longer than anyone's grandmother, and it hasn't hurt anyone yet.",
-			"say": _host(), "tags": [calm], "tip": "Talk, easy",
+			"say": _host(), "tags": [calm], "checks": [LehanQuests.chk(LehanQuests.host_char(), "talk", Game.EASY)],
 			"after": [_fx("q:skee_ask_trait=1")] + (join if ok else _not_sure())})
 	if _q("skee_ask_come") == "":
 		tried_all = false
 		var ok := Game.check(talker, "talk", Game.NORMAL)
 		opts.append(_spoken(talker, {"t": "Come with us. Not down there. Just with us. You'll be safer in company than alone in your cellars.",
-			"tip": "Talk (the best in the party)",
+			"checks": [LehanQuests.chk(talker, "talk", Game.NORMAL)],
 			"after": [_fx("q:skee_ask_come=1")] + (join if ok else _not_sure())}))
 	if tried_all:
 		return [{"s": "skee", "t": "Skee has thought and thought. Skee is still afraid. But Skee is more afraid of not knowing."}] + join

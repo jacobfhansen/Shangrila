@@ -1,141 +1,24 @@
-Script started on 2026-11-17 21:34:15+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour" <not executed on terminal>]
+Script started on 2026-11-18 14:27:05+01:00 [COMMAND="/snap/bin/godot-4 --path . -- --tour=/home/jacob/Documents/Privat/Shangrila/Shangrila-godot/.tour --part=quests" <not executed on terminal>]
 /snap/godot-4/40/gnome-platform/command-chain/desktop-launch: line 543: /home/jacob/snap/alacritty/common/.cache/gdk-pixbuf-loaders.cache: Permission denied
 Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
 OpenGL API 4.6 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2 - Compatibility - Using Device: Intel - Mesa Intel(R) Iris(R) Xe Graphics (RPL-U)
 
 shot 01_about
-shot 02_title
-shot 02a_prologue_waking
-shot 02b_prologue_chatter
-shot 02c_prologue_host_choice
-shot 02d_prologue_choice
-shot 02e_prologue_after
-shot 02f_prologue_history
-shot 03_inn
-shot 05_view
-fits boots on feet: false helmet on feet: false
-feet now 7 pack15 0
-after cheese health 26 log: Brand eats the Cheese. +25 health
-shot 06_town
-shot 06b_world
-travel: ["After 1 day on the road the party reaches The Mines."] endurance [26, 70, 70, 70] -> [18, 62, 62, 62] at mines
-shot 07_shop
-paid: 14 expected 14; brand pack: [32, 13, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-shot 08_dungeon
-shot 09_dungeon_corridor
-shot 10_dungeon_room
-shot 11_map
-Joss Harrow: combat 2, toughness 1, talk 1 | hits 13 mana 0 enc 1350 silver 14 power 3 raise unit 270
-Maera Vell: combat 1, missile 2, perception 1, survival 1 | hits 10 mana 0 enc 1200 silver 18 power 2 raise unit 270
-Ommuk: combat 1, toughness 2, lore 1, magic 1 | hits 19 mana 5 enc 1500 silver 16 power 3 raise unit 200
-Ithrae: perception 1, lore 1, magic 2 | hits 7 mana 8 enc 1200 silver 20 power 2 raise unit 300
-Tikkat: stealth 2, thievery 1, perception 1 | hits 9 mana 0 enc 1200 silver 19 power 0 raise unit 150
-joss raise costs: combat 270 toughness 180 stealth 135 (human -10%)
-raise toughness: true -> 2 hits 13 -> 16 xp left 120; raise again (too poor): false
-xp for joss by fight level: L0 0.00, L1 0.68, L2 1.35, L3 2.70, L4 5.40, L5 10.80, L6 21.60, L7 43.20
-hid all fight: 0.0; fell: 1.35
-50 fights at the entrance: won 50, experience in total (all five) 483
-story xp, third of a raise: 100 -> [134, 188, 103, 198, 257]
-money: 87 silver pay 30: true -> 57
-depth 0: won 100%, avg 1.5 rounds, avg hp lost 1%
-depth 7: won 100%, avg 2.9 rounds, avg hp lost 6%
-depth 14: won 98%, avg 5.0 rounds, avg hp lost 16%
-depth 20: won 96%, avg 5.7 rounds, avg hp lost 22%
-shot 12_combat_command
-shot 13_combat_target
-shot 14_tactics
-shot 15_combat_resolve
-shot 16_combat_end
-shot 16b_log_scrolled
-combat over, phase '' log: ["Tavi shoots and hits the Giant Spider for 1.", "Brand swings the Longsword and hits the Giant Spider for 6. The Giant Spider dies!", "Victory!", "Experience: Brand 11, Oldo 22, Sira 43, Tavi 22."]
-save ok: true
-load -> dungeon party 4==4 pos (17, 17) name Brand items type 2
-shot 17_prologue_end
-company: ["Tikkat Nisk Thief", "Joss Harrow Human Warrior", "Maera Vell Human Ranger", "Ommuk Thuug Cleric", "Ithrae Aeldroe Mage"] at shrine known ["shrine", "lehan"] story { "host": "tikkat", "prologue_reply": 1 }
-shot 18_road_chatter
-shot 19_road_choice
-shot 20_ambush
-shot 21_ambush_fight
-ambush over after 2 rounds, hits: [9, 13, 10, 19, 5]
-shot 22a_consent
-shot 22b_consent_retry
-shot 22_road_after
-story after road: { "host": "tikkat", "prologue_reply": 1, "consent": "given", "road_done": true, "host_control": true } at lehan
-shot 23a_lehan_walk
-click on dialogue: line 0 -> 1
-shot 23b_lehan_night
-shot 23c_lehan_pocket
-shot 23d_lehan_parting
-arrival walk ended at (20, 6) facing 1
-lehan: { "answer": "warm", "pocket": "yes", "noticer": "maera", "shares": { "joss": 20, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 20 }, "xp": 100 } party ["Tikkat"] roster ["Joss Harrow:talk:0", "Maera Vell:talk:0", "Ommuk:talk:0", "Ithrae:talk:0"]
-shot 23e_inn_split
-shot 23e2_no_job
-before the job: party ["Tikkat"]
-market: at (11, 7) known ["shrine", "lehan"] town ["gate", "market", "inn", "hideout", "council", "smith"]
-shot 23f_rejoin_talk
-shot 23g_rejoined
-after talk: party ["Tikkat", "Joss Harrow"] purse 70
-host joss {  } -> shares { "joss": 12, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 12 } moods ["maera:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
-host joss { "split": "double" } -> shares { "joss": 20, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 10 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
-host joss { "split": "docked", "answer": "lie" } -> shares { "joss": 28, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 6 } moods ["maera:soured:double", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
-host maera { "stood_up": "calm", "split": "even" } -> shares { "joss": 12, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 12 } moods ["joss:talk", "ommuk:talk", "ithrae:talk", "tikkat:talk"]
-host maera { "stood_up": "angry", "split": "even" } -> shares { "joss": 12, "maera": 12, "ommuk": 12, "ithrae": 12, "tikkat": 12 } moods ["joss:soured:angry", "ommuk:talk", "ithrae:talk", "tikkat:won"]
-host maera { "saw_cart": "yes" } -> shares { "joss": 25, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 5 } moods ["joss:talk", "ommuk:talk", "ithrae:talk", "tikkat:soured:docked"]
-host ommuk { "proof": "head", "gift": "tikkat" } -> shares { "joss": 37, "maera": 18, "ommuk": 0, "ithrae": 18, "tikkat": 27 } moods ["joss:talk", "maera:talk", "ithrae:talk", "tikkat:won"]
-host ommuk { "proof": "kept", "gift": "temple" } -> shares { "joss": 25, "maera": 10, "ommuk": 0, "ithrae": 10, "tikkat": 5 } moods ["joss:talk", "maera:talk", "ithrae:talk", "tikkat:soured:docked"]
-host ommuk { "calmed": "yes" } -> shares { "joss": 23, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 7 } moods ["joss:talk", "maera:talk", "ithrae:talk", "tikkat:talk"]
-host ithrae { "mark": "yes", "called_out": "yes", "split": "even" } -> shares { "joss": 12, "maera": 12, "ommuk": 12, "ithrae": 7, "tikkat": 12 } moods ["joss:soured:humbled", "maera:talk", "ommuk:talk", "tikkat:won"]
-host ithrae {  } -> shares { "joss": 25, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 5 } moods ["joss:talk", "maera:talk", "ommuk:talk", "tikkat:soured:docked"]
-host tikkat { "pocket": "yes", "noticer": "joss" } -> shares { "joss": 17, "maera": 8, "ommuk": 8, "ithrae": 8, "tikkat": 19 } moods ["joss:cut", "maera:talk", "ommuk:talk", "ithrae:talk"]
-host tikkat { "pocket": "yes", "noticer": "ithrae" } -> shares { "joss": 17, "maera": 8, "ommuk": 8, "ithrae": 8, "tikkat": 19 } moods ["joss:talk", "maera:talk", "ommuk:talk", "ithrae:soured:theft"]
-host tikkat {  } -> shares { "joss": 25, "maera": 10, "ommuk": 10, "ithrae": 10, "tikkat": 5 } moods ["joss:talk", "maera:talk", "ommuk:talk", "ithrae:talk"]
-shot 23_town
-shot 24a_market
-shot 24b_market_crier
-shot 24c_market_talk
-market: at (11, 7) known ["shrine", "lehan"] town ["gate", "market", "inn", "hideout", "council", "smith"]
-shot 24d_market_west
-shot 24e_market_south
-shot 24f_market_east
-shot 24g_town_plan
-plan spots: ["gate", "market", "inn", "smith", "hideout", "council"]
-shot 24h_at_inn
-travel inn: at (20, 6) facing 1 ahead { "kind": "exit", "to": "inn" }
-shot 24i_tanners_row
-shot 24j_tanners_row_east
-shot 24k_at_smith
-shot 24l_at_gate
-shot 25_town_smith
-known after market: ["shrine", "lehan"] town: { "lehan": ["gate", "market", "inn", "hideout", "council", "smith"] }
-shot 30_checkpoint_road
-checkpoint road: screen world.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan"]
-shot 30_checkpoint_lehan
-checkpoint lehan: screen streets.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan"]
-shot 30_checkpoint_split
-checkpoint split: screen inn.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
-shot 30_checkpoint_market
-checkpoint market: screen streets.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
-shot 30_checkpoint_tunnels
-checkpoint tunnels: screen tunnels.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
-shot 30_checkpoint_council
-checkpoint council: screen streets.gd, party ["Maera"], roster 4, known ["shrine", "lehan"]
-shot 30_checkpoint_mines
-checkpoint mines: screen dungeon.gd, party ["Maera", "Joss", "Ommuk", "Ithrae", "Tikkat"], roster 0, known ["shrine", "lehan", "mines"]
 shot 31b_council_joss
 council joss: offer 130 patience 3 options ["accept", "danger", "hale", "trait", "leave"]
 council joss: offer 130 patience 2 options ["accept", "hale", "trait", "leave"]
 council joss: offer 130 patience 1 options ["accept", "trait", "leave"]
-council joss: offer 150 patience 1 options ["accept", "leave"]
+council joss: offer 130 patience 1 options ["accept", "leave"]
 shot 31c_council_done_joss
-council joss done: job { "pay": 150, "advance": 0 }, mines known true, host silver 30, xp 90
-council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 150 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
+council joss done: job { "pay": 130, "advance": 0 }, mines known true, host silver 25, xp 90
+council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 130 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
 shot 31a_council_front
 shot 31b_council_tikkat
 council tikkat: offer 170 patience 2 options ["accept", "danger", "hale", "trait", "leave"]
 council tikkat: offer 170 patience 1 options ["accept", "hale", "trait", "leave"]
 council tikkat: offer 170 patience 0 options ["accept", "leave"]
 shot 31c_council_done_tikkat
-council tikkat done: job { "pay": 170, "advance": 0 }, mines known true, host silver 22, xp 50
+council tikkat done: job { "pay": 170, "advance": 0 }, mines known true, host silver 21, xp 50
 council revisit: ["[color=#e8c46a]Mistress Odile Brask[/color]: “You have the council\'s word: 170 silver when you return with news of the miners.”", "[color=#e8c46a]Alderman Brannoc[/color]: “Well? The hills are that way. Out the south gate.”"]
   said: ["[color=#e8c46a]Odo the Crier[/color]: “No council news today, friend. The price of eggs, a lost goat, and the Widow Marl\'s opinion of the price of eggs.”", "[color=#e8c46a]Odo the Crier[/color]: “If it\'s work you\'re after, ask Lisbet there by the stalls. She hears everything a day before I cry it.”", "[color=#e0d4b4](Something has to happen before the story moves on. Lisbet, Skee and Boddo in the square each have something for you to do.)[/color]"]
 lisbet: notice before quest? false
@@ -145,16 +28,16 @@ shot 32a_lisbet_offer
 lisbet: state { "lisbet": "carrying", "lisbet_pay": "5" }
 shot 32b_lisbet_tail
   choice tail: Let the spirit listen for the footsteps.
-  said: ["[i]Let the spirit listen for the footsteps.[/i]", "[color=#c8b8f0][i]My hands stop shaking. Something is holding them still. That should frighten me more than it does.[/i][/color]", "[color=#e0d4b4]Carts, a woman with a basket, a dog asleep in a doorway. Nobody, it seems. The footsteps start again as soon as you walk on.[/color]"]
-lisbet: after tail { "lisbet": "carrying", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "followed" }
+  said: ["[color=#e0d4b4]A boy in a cap too big for him, pretending to study a doorway. When he sees he\'s been spotted, he goes red to the ears.[/color]", "[color=#e8c46a]Tikkat[/color]: “Run along. And tell whoever sent you that I saw you.”", "[color=#e0d4b4]The boy runs, back towards the square.[/color]"]
+lisbet: after tail { "lisbet": "carrying", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "spotted" }
 shot 32c_lisbet_seal
   choice seal: Open it first. Carefully.
-  said: ["[color=#e0d4b4]The boy in the big cap steps out from behind a water butt, grinning from ear to ear.[/color]", "[color=#e8c46a]Sergeant Rudd[/color]: “It\'s a test, friend. Lisbet tests anyone she might work with. Go back and tell her. Mind, she\'ll know already. She always does.”", "[color=#e0d4b4](Go back to Lisbet in the market square.)[/color]"]
-lisbet: after gate { "lisbet": "delivered", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "followed", "lisbet_seal": "read" } purse true
+  said: ["[color=#e8c46a]Sergeant Rudd[/color]: “No Pip behind you? Then you shook him off. Not many do.”", "[color=#e8c46a]Sergeant Rudd[/color]: “It\'s a test, friend. Lisbet tests anyone she might work with. Go back and tell her. Mind, she\'ll know already. She always does.”", "[color=#e0d4b4](Go back to Lisbet in the market square.)[/color]"]
+lisbet: after gate { "lisbet": "delivered", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "spotted", "lisbet_seal": "read" } purse true
 shot 32d_lisbet_back
   choice lisbet_read: I did. Four hundred.
   said: ["[color=#e8c46a]Lisbet Farrow[/color]: “If you ever want someone who can open a lock, or a mouth, I\'m at the inn most nights. For a fee, of course. Everything in Lehan costs something.”", "[color=#e0d4b4](Lisbet Farrow is now on the inn\'s list. Mustering her costs 20 silver.)[/color]", "[color=#e0d4b4]Across the square, the crier climbs onto the well\'s edge with a fresh notice in his hand.[/color]"]
-lisbet: done { "lisbet": "done", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "followed", "lisbet_seal": "read", "lisbet_fee": "20" } roster [["Joss Harrow", -1], ["Maera Vell", -1], ["Ommuk", -1], ["Ithrae", -1], ["Lisbet Farrow", 20]] silver 22 gone ["lisbet"] at (11, 10)
+lisbet: done { "lisbet": "done", "lisbet_pay": "5", "lisbet_nudge": "used", "lisbet_tail": "spotted", "lisbet_seal": "read", "lisbet_fee": "20" } roster [["Joss Harrow", -1], ["Maera Vell", -1], ["Ommuk", -1], ["Ithrae", -1], ["Lisbet Farrow", 20]] silver 24 gone ["lisbet"] at (11, 10)
 shot 32e_square_without_lisbet
 shot 32e2_party_from_streets
 party button: back at (13, 6) facing 0
@@ -164,7 +47,7 @@ shot 32f_lisbet_muster
   choice muster: Here. (20 silver)
   said: ["[color=#e8c46a]Lisbet Farrow[/color]: “20 silver, and my picks are yours. Fair price, for someone who carried a letter so nicely.”", "[color=#e8c46a]Tikkat[/color]: “Here. (20 silver)”", "[color=#e8c46a]Lisbet Farrow[/color]: “Lovely. Where are we going, and what does it pay?”"]
 shot 32g_inn_with_lisbet
-lisbet: party ["Tikkat", "Lisbet Farrow"] silver 19
+lisbet: party ["Tikkat", "Lisbet Farrow"] silver 14
 lisbet: council options ["accept", "danger", "purse", "hale", "trait", "leave"]
 shot 32h_council_purse
 lisbet: council offer after purse 220
@@ -175,27 +58,21 @@ boddo: state { "boddo": "proof" } places ["gate", "market", "inn", "hideout", "w
 shot 33b_warehouse_door
 shot 33c_warehouse_0
   choice proof: We're looking to store goods. Can we see what you keep, and what it costs?
-  said: ["[color=#e8c46a]Joss Harrow[/color]: “We\'re looking to store goods. Can we see what you keep, and what it costs?”", "[color=#e0d4b4]The clerk turns the ledger round. Columns of names and figures. If there\'s a lie in them, it hides well.[/color]", "[color=#e0d4b4](That didn\'t work. Go into the warehouse again to try another way.)[/color]"]
-boddo: visit 0 -> { "boddo": "proof", "boddo_tried_talk": "1" }
-shot 33c_warehouse_1
-  choice proof: Wait for the clerk to look away, and lift the wage book.
-  said: ["[i]Wait for the clerk to look away, and lift the wage book.[/i]", "[color=#e0d4b4]Joss\'s hand is on the ledger when the clerk turns round. \"Thief! Out! Out!\" Two porters see you to the street.[/color]", "[color=#e0d4b4](That didn\'t work. Go into the warehouse again to try another way.)[/color]"]
-boddo: visit 1 -> { "boddo": "proof", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1" }
-shot 33c_warehouse_2
-  choice proof: Come back after dark, and in through the loading door.
-  said: ["[color=#e0d4b4]After dark, the loading door creaks. The watchman isn\'t asleep. He\'s big, and he has a cudgel.[/color]", "[color=#e0d4b4]A short, ugly scuffle among the barrels, and you lose it. You end up in the gutter, bruised, with your ears ringing.[/color]", "[color=#e0d4b4](That didn\'t work. Go into the warehouse again to try another way.)[/color]"]
-boddo: visit 2 -> { "boddo": "proof", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1", "boddo_tried_night": "1" }
-shot 33c_warehouse_3
-  choice proof: Let the spirit look at the ledger with you.
   choice gell: Read it out, so every porter in here can hear what you did to Tam.
-  said: ["[color=#e0d4b4]Joss reads Tam\'s line out loud. The porters stop working. One by one, they turn to look at Gell.[/color]", "[color=#e0d4b4]\"A mistake,\" says Gell, too loudly. \"A clerk\'s mistake. The widow will be paid. Today.\"[/color]", "[color=#e0d4b4](Go back to Boddo in the market square.)[/color]"]
-boddo: visit 3 -> { "boddo": "paid", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1", "boddo_tried_night": "1", "boddo_tried_spirit": "1", "boddo_nudge": "used", "boddo_tried_shame": "1" }
-  said: ["[color=#e8c46a]Boddo[/color]: “Boddo carries. Boxes, barrels, friends who fall. Boddo will carry for you. At the inn, when you want him.”", "[color=#e0d4b4](Boddo is now on the inn\'s list. He asks no fee.)[/color]", "[color=#e0d4b4]Across the square, the crier climbs onto the well\'s edge with a fresh notice in his hand.[/color]"]
-boddo: end { "boddo": "done", "boddo_tried_talk": "1", "boddo_tried_lift": "1", "boddo_wary": "1", "boddo_tried_night": "1", "boddo_tried_spirit": "1", "boddo_nudge": "used", "boddo_tried_shame": "1" } roster ["Maera Vell", "Ommuk", "Ithrae", "Tikkat", "Boddo"] silver 26 hits [12]
-  said: ["[color=#e8c46a]Odo the Crier[/color]: “The council will pay well for anyone willing to look into it. Ask at the council house, there on the north side of the square.”", "[color=#e8c46a]Joss Harrow[/color]: “Paid work. Finally.”", "[color=#e0d4b4](The Council House is now on the town map. Your old companions at the inn may listen now that there is a job. Across the square hangs the sign of a weapon smith: the Weapon Smith is on the town map too.)[/color]"]
+  said: ["[color=#e8c46a]Joss Harrow[/color]: “Read it out, so every porter in here can hear what you did to Tam.”", "[color=#e0d4b4]Joss reads Tam\'s line out loud. Gell laughs. \"Porters can\'t read, friend. And they know who pays them.\" The porters look at their feet.[/color]", "[color=#e0d4b4](Gell won\'t budge this way. There is still the other way, if you come back.)[/color]"]
+boddo: visit 0 -> { "boddo": "found", "boddo_tried_talk": "1", "boddo_tried_shame": "1", "boddo_wary": "1" }
+shot 33c_warehouse_1
+  choice gell: Pay her, or the next time you lean on a porter, someone leans back.
+  said: ["[color=#e0d4b4]A short, ugly scuffle among the barrels, and you lose it. You end up in the gutter, bruised, with your ears ringing.[/color]", "[color=#e0d4b4]Gell takes the page and holds it to a candle. \"What proof?\" The ash drifts to the floor.[/color]", "[color=#e0d4b4](The proof is gone. Boddo\'s debt can still be paid in silver: talk to Boddo.)[/color]"]
+boddo: visit 1 -> { "boddo": "failed", "boddo_tried_talk": "1", "boddo_tried_shame": "1", "boddo_wary": "1", "boddo_tried_lean": "1" }
+shot 33d_boddo_back
+  choice boddo_wait: Forty silver? I'll pay it myself. (40 silver)
+  said: ["[color=#e8c46a]Joss Harrow[/color]: “Forty silver? I\'ll pay it myself. (40 silver)”", "[color=#e0d4b4]You count your silver. It does not come to 40.[/color]", "[color=#e8c46a]Boddo[/color]: “Kind. But a purse cannot pay what it does not have.”"]
+boddo: end { "boddo": "failed", "boddo_tried_talk": "1", "boddo_tried_shame": "1", "boddo_wary": "1", "boddo_tried_lean": "1" } roster ["Maera Vell", "Ommuk", "Ithrae", "Tikkat"] silver 25 hits [11]
+  said: ["[color=#e8c46a]Odo the Crier[/color]: “No council news today, friend. The price of eggs, a lost goat, and the Widow Marl\'s opinion of the price of eggs.”", "[color=#e8c46a]Odo the Crier[/color]: “If it\'s work you\'re after, ask Lisbet there by the stalls. She hears everything a day before I cry it.”", "[color=#e0d4b4](Something has to happen before the story moves on. Lisbet, Skee and Boddo in the square each have something for you to do.)[/color]"]
 shot 33e_errand_comment
   choice lisbet: Not now.
-  said: ["[color=#e8c46a]Maera Vell[/color]: “The trail up to those mines gets colder every day we spend in town, you know.”", "[color=#e8c46a]Joss Harrow[/color]: “Not now.”", "[color=#e8c46a]Lisbet Farrow[/color]: “Suit yourself. The letter can wait. I can\'t, but the letter can.”"]
+  said: ["[color=#c8b8f0][i]Light paper. But the spirit feels its host weigh it, and it weighs more than paper should.[/i][/color]", "[color=#e8c46a]Joss Harrow[/color]: “Not now.”", "[color=#e8c46a]Lisbet Farrow[/color]: “Suit yourself. The letter can wait. I can\'t, but the letter can.”"]
 shot 34a_skee_offer
   choice skee: I'll go and look.
   said: ["[color=#e8c46a]Ithrae[/color]: “I\'ll go and look.”", "[color=#e8c46a]Skee[/color]: “The tanner keeps a grate over the old cellar steps. She does not like visitors. Skee does not like her.”", "[color=#e0d4b4](Find a way down under the tannery on Tanners\' Row, now on the town map.)[/color]"]
@@ -205,21 +82,21 @@ shot 34c_tannery
   said: ["[i]Pick the grate\'s lock while she\'s busy with the vats.[/i]", "[color=#e0d4b4]The lock is rusted solid. The tanner turns round and folds her arms.[/color]", "[color=#e0d4b4](That didn\'t work. Come back to the tannery to try another way.)[/color]"]
 skee: tannery visit 0 -> { "skee": "going", "skee_tried_pick": "1" }
   choice tannery: A rat-catcher saw something in your cellar. Let us look, and we'll clear your rats on the way.
-  said: ["[color=#e8c46a]Ithrae[/color]: “A rat-catcher saw something in your cellar. Let us look, and we\'ll clear your rats on the way.”", "[color=#e0d4b4]\"Rat-catchers see things after a jug of ale,\" says the tanner. \"Out.\"[/color]", "[color=#e0d4b4](That didn\'t work. Come back to the tannery to try another way.)[/color]"]
-skee: tannery visit 1 -> { "skee": "going", "skee_tried_pick": "1", "skee_tried_talk": "1" }
-  choice tannery: Look around the yard for another way down.
-  said: ["[i]Look around the yard for another way down.[/i]", "[color=#e0d4b4]Vats, hides, a dog asleep on a pile of scraps. No other way down that you can see.[/color]", "[color=#e0d4b4](That didn\'t work. Come back to the tannery to try another way.)[/color]"]
-skee: tannery visit 2 -> { "skee": "going", "skee_tried_pick": "1", "skee_tried_talk": "1", "skee_tried_look": "1" }
-  choice tannery: Let the spirit feel for where the cold air comes up.
-  said: ["[color=#c8b8f0][i]So that\'s what it feels like, when it helps. Like a second pair of eyes behind mine.[/i][/color]", "[color=#e0d4b4]A thread of cold, from under a drain cover behind the lime pit. It lifts away. Below: a crawl, and then the old steps.[/color]", "[color=#e0d4b4]Stone steps, worn hollow, lead down into the dark.[/color]"]
-skee: tannery visit 3 -> { "skee": "going", "skee_tried_pick": "1", "skee_tried_talk": "1", "skee_tried_look": "1", "skee_tried_spirit": "1", "skee_nudge": "used", "skee_way": "1" }
+  said: ["[color=#e8c46a]Ithrae[/color]: “A rat-catcher saw something in your cellar. Let us look, and we\'ll clear your rats on the way.”", "[color=#e0d4b4]\"Rats,\" says the tanner, and spits. \"Take all you like.\" She unlocks the grate.[/color]", "[color=#e0d4b4]Stone steps, worn hollow, lead down into the dark.[/color]"]
+skee: tannery visit 1 -> { "skee": "going", "skee_tried_pick": "1", "skee_tried_talk": "1", "skee_way": "1" }
 skee: screen tunnels.gd
 shot 34d_tunnels_start
   said: ["[color=#e0d4b4]A leather bag, dropped and half chewed. Inside: rat traps, a sling, a little carved charm against ghosts. A rat\'s head is burned into the flap.[/color]", "[color=#c8b8f0][i]Skee\'s. He really did run.[/i][/color]", "[color=#e0d4b4](You take Skee\'s bag.)[/color]"]
 shot 34e_rats
   choice rats: Edge along the wall, slow and quiet.
-  said: ["[color=#e0d4b4]The floor ahead is moving. Rats: dozens of them, a heaving carpet around something long dead. Eyes catch the torchlight.[/color]", "[i]Edge along the wall, slow and quiet.[/i]", "[color=#e0d4b4]Step by careful step along the wall. The rats squeal and shift, and let you by.[/color]"]
-skee: rats try 0 -> done true at (8, 3)
+  said: ["[color=#e0d4b4]The floor ahead is moving. Rats: dozens of them, a heaving carpet around something long dead. Eyes catch the torchlight.[/color]", "[i]Edge along the wall, slow and quiet.[/i]", "[color=#e0d4b4]A boot scrapes. The carpet of rats boils up your legs, biting. You stumble back the way you came.[/color]"]
+skee: rats try 0 -> done false at (7, 3)
+  choice rats: Smoke them out with the torch and a handful of damp straw, the way rat-catchers do.
+  said: ["[color=#e0d4b4](You\'ve seen how this nest moves now: +1 on your next try.)[/color]", "[i]Smoke them out with the torch and a handful of damp straw, the way rat-catchers do.[/i]", "[color=#e0d4b4]The straw won\'t catch, the smoke goes the wrong way, and you retreat coughing.[/color]"]
+skee: rats try 1 -> done false at (7, 3)
+  choice rats: Wade in, stamping and swinging.
+  said: ["[color=#e0d4b4](You\'ve seen how this nest moves now: +2 on your next try.)[/color]", "[i]Wade in, stamping and swinging.[/i]", "[color=#e0d4b4]A short, disgusting fight. When it\'s over the rats have fled, and the passage is yours.[/color]"]
+skee: rats try 2 -> done true at (8, 3)
 shot 34f_collapse
   choice collapse: Follow the cold air, and find where the stones are only leaning.
   said: ["[color=#e0d4b4]The passage ends in a slope of fallen stone and rotten timbers. But cold air seeps through from somewhere beyond.[/color]", "[i]Follow the cold air, and find where the stones are only leaning.[/i]", "[color=#e0d4b4]A stone shifts under a hand, and rubble rattles down on your heads.[/color]"]
@@ -231,22 +108,19 @@ skee: collapse try 1 -> passed false
   said: ["[color=#e0d4b4](You know this pile better each time: +2 on your next try.)[/color]", "[i]Follow the cold air, and find where the stones are only leaning.[/i]", "[color=#e0d4b4]A stone shifts under a hand, and rubble rattles down on your heads.[/color]"]
 skee: collapse try 2 -> passed false
   choice collapse: Dig through, stone by stone.
-  said: ["[color=#e0d4b4](You know this pile better each time: +3 on your next try.)[/color]", "[i]Dig through, stone by stone.[/i]", "[color=#e0d4b4]The pile slides and settles again, worse than before. Bruised and filthy, you give up for now.[/color]"]
-skee: collapse try 3 -> passed false
-  choice collapse: Follow the cold air, and find where the stones are only leaning.
-  said: ["[color=#e0d4b4](You know this pile better each time: +4 on your next try.)[/color]", "[i]Follow the cold air, and find where the stones are only leaning.[/i]", "[color=#e0d4b4]Ithrae finds it: a gap behind a tilted beam, just wide enough to squeeze through.[/color]"]
-skee: collapse try 4 -> passed true
+  said: ["[color=#e0d4b4](You know this pile better each time: +3 on your next try.)[/color]", "[i]Dig through, stone by stone.[/i]", "[color=#e0d4b4]An hour of sweat and scraped knuckles, and there\'s a way through.[/color]"]
+skee: collapse try 3 -> passed true
 shot 34g_lights
   choice lights: Read the carvings.
   said: ["[color=#e0d4b4]Ithrae traces the lines. Warding script, older than Lehan: \"Sealed below by the crowned one. Let it sleep.\"[/color]", "[color=#e0d4b4]You chip off a flake of the glowing stone for Skee. It stays faintly blue in your palm.[/color]", "[color=#e0d4b4](Go back to Skee in the market square.)[/color]"]
-skee: after lights { "skee": "seen", "skee_tried_pick": "1", "skee_tried_talk": "1", "skee_tried_look": "1", "skee_tried_spirit": "1", "skee_nudge": "used", "skee_way": "1", "skee_bag": "1", "skee_rats": "1", "skee_collapse_fails": "4", "skee_collapse": "1", "skee_lore": "1" } hits [1]
+skee: after lights { "skee": "seen", "skee_tried_pick": "1", "skee_tried_talk": "1", "skee_way": "1", "skee_bag": "1", "skee_rats_fails": "2", "skee_rats": "1", "skee_collapse_fails": "3", "skee_collapse": "1", "skee_lore": "1" } hits [1]
 skee: climbed out to streets.gd at (8, 15)
 shot 34h_skee_persuade
   choice skee_persuade: No ghost. An old stone with a glow in it. Here, hold it. It's only stone.
   said: ["[color=#e0d4b4]Skee turns the chip over and over in his small hands.[/color]", "[color=#e8c46a]Skee[/color]: “Skee... is not sure. Skee will think about it. Ask Skee again.”", "[color=#e0d4b4](Skee isn\'t convinced yet. Talk to him again, and try another argument.)[/color]"]
   choice skee_persuade: The carvings are wards. They keep something down there. Not up here with us.
   said: ["[color=#e8c46a]Skee[/color]: “Skee will come with you. Skee has good eyes, and a good sling, and Skee knows every crack in this town. At the inn, when you want Skee.”", "[color=#e0d4b4](Skee is now on the inn\'s list. He asks no fee.)[/color]", "[color=#e0d4b4]Across the square, the crier climbs onto the well\'s edge with a fresh notice in his hand.[/color]"]
-skee: end { "skee": "done", "skee_tried_pick": "1", "skee_tried_talk": "1", "skee_tried_look": "1", "skee_tried_spirit": "1", "skee_nudge": "used", "skee_way": "1", "skee_bag": "1", "skee_rats": "1", "skee_collapse_fails": "4", "skee_collapse": "1", "skee_lore": "1", "skee_ask_stone": "1", "skee_ask_lore": "1" } roster ["Joss Harrow", "Maera Vell", "Ommuk", "Tikkat", "Skee"]
-tour done
+skee: end { "skee": "done", "skee_tried_pick": "1", "skee_tried_talk": "1", "skee_way": "1", "skee_bag": "1", "skee_rats_fails": "2", "skee_rats": "1", "skee_collapse_fails": "3", "skee_collapse": "1", "skee_lore": "1", "skee_ask_stone": "1", "skee_ask_lore": "1" } roster ["Joss Harrow", "Maera Vell", "Ommuk", "Tikkat", "Skee"]
+quests part done
 
-Script done on 2026-11-17 21:37:28+01:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2026-11-18 14:30:43+01:00 [COMMAND_EXIT_CODE="0"]

@@ -686,6 +686,17 @@ The scripts are in [DIALOGUES.md](DIALOGUES.md).
   - **The spirit,** for example `[Miracle]` or later `[Dream]`. These need faith or a remnant
     power, and they touch whoever witnesses them.
   - **Race,** for example `[Nisk]` or `[Thuug]`, which use what a race knows or how it is seen.
+- **Skill checks (built):** a reply that rolls a check shows the ability as a blue tag in the
+  reply itself, for example `[Combat]` or `[Talk, then Perception or Lore]`. Hovering shows
+  the details: the difficulty, who rolls (the best in the party, or the host), their skill,
+  any bonus and where it comes from, and the chance of success (overall, too, for several
+  checks). Very useful while developing and testing; the detail may be trimmed for normal
+  play later.
+- **Colour by chance (agreed, not built):** the skill tag is coloured by the chance of
+  success, on the usual RPG difficulty scale: red (near impossible), orange, yellow, green,
+  grey (a sure thing). For example 10% red, 30% orange, 50% yellow, 80% green, 100% grey. The
+  colours stay in normal play even if the tooltip detail is trimmed: they are the player's
+  quick read of the odds.
 - **Reactions:** after a reply, the others react in a short line ("Maera nods.", "Ommuk
   frowns."). There are no numbers, in keeping with the hidden traits.
 

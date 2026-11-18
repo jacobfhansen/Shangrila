@@ -270,6 +270,12 @@ func check(c: Dictionary, key: String, difficulty: int, bonus := 0) -> bool:
 	return my_random(1, 10) + ability(c, key) + bonus >= difficulty
 
 
+## The chance of passing that check, in percent (10% for each face of the d10 that is enough).
+func chance(c: Dictionary, key: String, difficulty: int, bonus := 0) -> int:
+	var need := difficulty - ability(c, key) - bonus
+	return clampi(11 - need, 0, 10) * 10
+
+
 ## The starting abilities for a class and race (nobody starts above 2).
 func start_abilities(cls: int, race: int) -> Dictionary:
 	var ab := {}

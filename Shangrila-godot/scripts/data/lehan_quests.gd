@@ -99,6 +99,14 @@ static func best(ability: String) -> Dictionary:
 	return b
 
 
+## A check for an option, shown by the dialogue box: the ability as a tag on the option, and who
+## rolls, their skill, the bonus (`why` says where it comes from) and the chance as its tooltip.
+## Put a list of them in the option's "checks"; a check with "or": true is an alternative to the
+## one before it (either will do), otherwise each must be passed in turn.
+static func chk(who: Dictionary, ability: String, difficulty: int, bonus := 0, why := "") -> Dictionary:
+	return {"who": who, "ability": ability, "diff": difficulty, "bonus": bonus, "why": why}
+
+
 ## The cast key of a party member: one of the company, or a recruit ("" for anyone else).
 static func key_of(c: Dictionary) -> String:
 	if c.has("recruit"):

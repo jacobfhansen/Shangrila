@@ -25,6 +25,7 @@ func _quests_only() -> void:
 	await _boddo_quest()
 	await _skee_quest()
 	print("quests part done")
+	get_tree().quit()
 
 
 func _shot(name: String) -> void:
@@ -419,6 +420,7 @@ func _new_game_route() -> void:
 	await _boddo_quest()
 	await _skee_quest()
 	print("tour done")
+	get_tree().quit()
 
 
 ## The council house: Joss alone, then Tikkat with the whole company. Tries every argument,

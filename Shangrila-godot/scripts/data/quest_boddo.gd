@@ -54,7 +54,7 @@ static func _offer() -> Array:
 		{"s": "boddo", "t": "Tam Reed pulled Boddo out of the river, two winters back. Boddo sinks like a stone. Tam did not let go."},
 		{"s": "boddo", "t": "Tam died in the spring. Fever. Master Gell, at the warehouse, says Tam was paid to the end. He was not. Fourteen weeks. Forty silver. His widow Hanna sells her pots to eat."},
 		{"s": "boddo", "t": "Boddo went to Gell. Gell laughed. Boddo went to the watch. The watch laughed. A Thuug's word against a merchant's book."},
-		{"i": "The spirit feels it in the host: the slow, patient anger of someone who has waited a long time and will wait longer."},
+		{"i": "He doesn't raise his voice. He doesn't need to. That is the anger of someone who has waited a long time, and will wait longer."},
 	]
 	out.append_array(LehanQuests.errand_comment())
 	var opts: Array = []
@@ -140,7 +140,8 @@ static func _look_for_proof() -> Array:
 	var sneak := LehanQuests.best("stealth")
 	if not _tried("talk"):
 		var got_look := Game.check(talker, "talk", Game.EASY)
-		var spotted := Game.check(eye, "perception", CHECK) or Game.check(LehanQuests.best("lore"), "lore", CHECK)
+		var scholar := LehanQuests.best("lore")
+		var spotted := Game.check(eye, "perception", CHECK) or Game.check(scholar, "lore", CHECK)
 		var after: Array = [_fx("q:boddo_tried_talk=1")]
 		if not got_look:
 			after.append({"n": "The clerk looks %s up and down, and sniffs. \"Gell deals with merchants, not with whatever you are.\"" % _first(talker)})
@@ -153,7 +154,9 @@ static func _look_for_proof() -> Array:
 			after.append({"n": "The clerk turns the ledger round. Columns of names and figures. If there's a lie in them, it hides well."})
 			after.append(TRY_AGAIN)
 		opts.append(_spoken(talker, {"t": "We're looking to store goods. Can we see what you keep, and what it costs?",
-			"tip": "Talk, then Perception or Lore (the best in the party)", "after": after}))
+			"checks": [LehanQuests.chk(talker, "talk", Game.EASY), LehanQuests.chk(eye, "perception", CHECK),
+				LehanQuests.chk(scholar, "lore", CHECK).merged({"or": true})],
+			"tip": "Talk gets a look at the ledger; Perception or Lore spots the lie in it.", "after": after}))
 	if not _tried("lift"):
 		var ok := Game.check(thief, "thievery", CHECK)
 		var after: Array = [_fx("q:boddo_tried_lift=1")]
@@ -165,7 +168,8 @@ static func _look_for_proof() -> Array:
 			after.append({"n": "%s's hand is on the ledger when the clerk turns round. \"Thief! Out! Out!\" Two porters see you to the street." % _first(thief)})
 			after.append(_fx("q:boddo_wary=1"))
 			after.append(TRY_AGAIN)
-		opts.append({"t": "Wait for the clerk to look away, and lift the wage book.", "silent": true, "tip": "Thievery (the best in the party)", "after": after})
+		opts.append({"t": "Wait for the clerk to look away, and lift the wage book.", "silent": true,
+			"checks": [LehanQuests.chk(thief, "thievery", CHECK)], "tip": "If it fails, Gell's men are wary of you.", "after": after})
 	if not _tried("night"):
 		var ok := Game.check(sneak, "stealth", CHECK)
 		var after: Array = [_fx("q:boddo_tried_night=1")]
@@ -183,7 +187,9 @@ static func _look_for_proof() -> Array:
 				after.append_array(_found(true))
 			else:
 				after.append(TRY_AGAIN)
-		opts.append({"t": "Come back after dark, and in through the loading door.", "silent": true, "tip": "Stealth (the best in the party)", "after": after})
+		opts.append({"t": "Come back after dark, and in through the loading door.", "silent": true,
+			"checks": [LehanQuests.chk(sneak, "stealth", CHECK)],
+			"tip": "If it fails: a scuffle with the watchman (Combat, helped by the rest of the party).", "after": after})
 	if LehanQuests.can_nudge("boddo") and not _tried("spirit"):
 		var ok := Game.check(eye, "perception", CHECK, 4)
 		var after: Array = [_fx("q:boddo_tried_spirit=1"), _fx("q:boddo_nudge=used"), LehanQuests.nudge_line()]
@@ -194,7 +200,8 @@ static func _look_for_proof() -> Array:
 			after.append({"n": "The figures swim, and settle, and say nothing. Whatever the spirit is looking for, it isn't on this page."})
 			after.append(TRY_AGAIN)
 		opts.append({"t": "Let the spirit look at the ledger with you.", "tags": ["Spirit"], "silent": true,
-			"tip": "Perception, with the spirit's help (once on this quest)", "after": after})
+			"checks": [LehanQuests.chk(eye, "perception", CHECK, 4, "the spirit's help")],
+			"tip": "The spirit can help once on this quest.", "after": after})
 	opts.append({"t": "Leave for now.", "silent": true, "after": []})
 	out.append({"choice": "proof", "options": opts, "prompt": "Choose (1-%d)" % opts.size()})
 	return out
@@ -238,7 +245,8 @@ static func _confront() -> Array:
 			after.append(_fx("q:boddo_wary=1"))
 			after.append_array(_after_failed_confront("shame"))
 		opts.append(_spoken(talker, {"t": "Read it out, so every porter in here can hear what you did to Tam.",
-			"tip": "Talk (the best in the party); the porters help", "after": after}))
+			"checks": [LehanQuests.chk(talker, "talk", CHECK, bonus + 1, _why(["the porters are on Tam's side +1", "Gell is wary -1" if wary else ""]))],
+			"after": after}))
 	if not _tried("lean"):
 		var tag := LehanQuests.host_trait(["Proud", "Hot-tempered", "Brave", "Vengeful", "Greedy"])
 		var heavy := LehanQuests.best("combat")
@@ -261,7 +269,9 @@ static func _confront() -> Array:
 			else:
 				after.append_array(_after_failed_confront("lean"))
 		opts.append({"t": "Pay her, or the next time you lean on a porter, someone leans back.", "say": _host(),
-			"tags": [tag] if tag != "" else [], "tip": "Combat (the best in the party): looking dangerous", "after": after})
+			"tags": [tag] if tag != "" else [],
+			"checks": [LehanQuests.chk(heavy, "combat", CHECK, bonus + (1 if tag != "" else 0), _why([tag + " +1" if tag != "" else "", "Gell is wary -1" if wary else ""]))],
+			"tip": "Looking dangerous. If it fails: a scuffle with his porters.", "after": after})
 	opts.append({"t": "Leave, and think about it.", "silent": true, "after": []})
 	return [{"choice": "gell", "options": opts, "prompt": "Choose (1-%d)" % opts.size()}]
 
@@ -285,6 +295,11 @@ static func _scuffle() -> Dictionary:
 			_fx("xp:%s" % LehanQuests.CHECK_XP)]}
 	return {"won": false, "steps": [{"n": "A short, ugly scuffle among the barrels, and you lose it. You end up in the gutter, bruised, with your ears ringing."},
 		_fx("hurt:3"), _fx("q:boddo_wary=1")]}
+
+
+## Where a bonus comes from, for the check's tooltip.
+static func _why(parts: Array) -> String:
+	return ", ".join(parts.filter(func(p): return p != ""))
 
 
 static func _first(c: Dictionary) -> String:
