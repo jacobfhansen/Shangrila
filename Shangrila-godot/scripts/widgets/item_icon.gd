@@ -177,6 +177,36 @@ func _draw() -> void:
 			draw_line(Vector2(16, 19), Vector2(15.5, 23), c.darkened(0.35), 1.0)
 			draw_line(Vector2(13.5, 25), Vector2(18.5, 25), c.darkened(0.45), 1.0)
 			_poly([Vector2(10, 28), Vector2(22, 28), Vector2(21, 30), Vector2(11, 30)], c.darkened(0.25))
+		"letter":
+			_poly([Vector2(5, 9), Vector2(27, 9), Vector2(27, 24), Vector2(5, 24)], c)
+			draw_polyline(PackedVector2Array([Vector2(5, 9), Vector2(16, 18), Vector2(27, 9)]), c.darkened(0.4), 1.0)
+			draw_circle(Vector2(16, 18), 3, Color("#a02018"))
+		"page":
+			_poly([Vector2(8, 4), Vector2(22, 4), Vector2(25, 8), Vector2(24, 29), Vector2(9, 28)], c)
+			for i in 5:
+				draw_line(Vector2(11, 9 + i * 4), Vector2(21, 9 + i * 4), c.darkened(0.45), 1.0)
+			draw_line(Vector2(11, 17), Vector2(21, 17), Color("#8a2018"), 1.4)
+		"bag":
+			_poly([Vector2(6, 12), Vector2(26, 12), Vector2(27, 27), Vector2(5, 27)], c)
+			_poly([Vector2(6, 12), Vector2(26, 12), Vector2(24, 19), Vector2(8, 19)], c.lightened(0.12))
+			draw_arc(Vector2(16, 12), 7, PI, TAU, 12, c.darkened(0.4), 2)
+			_poly([Vector2(20, 22), Vector2(25, 21), Vector2(24, 25)], c.darkened(0.3), false)
+		"chip":
+			draw_colored_polygon(_ell(Vector2(16, 17), 11, 11), Color(c, 0.18))
+			_poly([Vector2(11, 11), Vector2(19, 8), Vector2(23, 15), Vector2(20, 24), Vector2(12, 22), Vector2(9, 16)], c)
+			draw_line(Vector2(13, 13), Vector2(19, 11), c.lightened(0.5), 1.0)
 		_:
 			draw_circle(Vector2(16, 16), 10, c)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if it.get("quest", false):
+		# Quest items carry a small gold star: they can't be dropped or sold.
+		var s := size.x / 32.0
+		var star := PackedVector2Array()
+		for i in 10:
+			var r := (4.0 if i % 2 == 0 else 1.8) * s
+			var a := -PI / 2 + PI * i / 5.0
+			star.append(Vector2(size.x - 5 * s, 5 * s) + Vector2(cos(a), sin(a)) * r)
+		draw_colored_polygon(star, GOLDC)
+		var o := star.duplicate()
+		o.append(star[0])
+		draw_polyline(o, DARK, 1.0, true)

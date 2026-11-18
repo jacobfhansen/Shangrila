@@ -53,6 +53,8 @@ func _ready() -> void:
 	box = DialogueBox.new()
 	box.cast = CouncilData.cast()
 	box.host = Game.story.get("host", "")
+	box.journal = "mines"
+	box.journal_place = "The council house"
 	Ui.place(box, Rect2(20, 194, 600, 274))   # sized before _ready builds it
 	add_child(box)
 	box.choice_made.connect(_on_choice)

@@ -107,8 +107,8 @@ static func _return(self_paid: bool) -> Array:
 	out.append({"s": "boddo", "t": "Boddo carries. Boxes, barrels, friends who fall. Boddo will carry for you. At the inn, when you want him."})
 	out.append(_fx("q:boddo=done"))
 	out.append(_fx("recruit:boddo"))
-	out.append(_fx("xp:%s" % LehanQuests.DONE_XP))
 	out.append({"n": "(Boddo is now on the inn's list. He asks no fee.)"})
+	out.append_array(LehanQuests.finish_xp_steps("boddo"))
 	out.append_array(LehanQuests.quest_finished_steps())
 	return out
 
@@ -154,7 +154,7 @@ static func _look_for_proof() -> Array:
 			after.append({"n": "The clerk turns the ledger round. Columns of names and figures. If there's a lie in them, it hides well."})
 			after.append(TRY_AGAIN)
 		opts.append(_spoken(talker, {"t": "We're looking to store goods. Can we see what you keep, and what it costs?",
-			"checks": [LehanQuests.chk(talker, "talk", Game.EASY), LehanQuests.chk(eye, "perception", CHECK),
+			"ok": got_look and spotted, "checks": [LehanQuests.chk(talker, "talk", Game.EASY), LehanQuests.chk(eye, "perception", CHECK),
 				LehanQuests.chk(scholar, "lore", CHECK).merged({"or": true})],
 			"tip": "Talk gets a look at the ledger; Perception or Lore spots the lie in it.", "after": after}))
 	if not _tried("lift"):
@@ -169,7 +169,7 @@ static func _look_for_proof() -> Array:
 			after.append(_fx("q:boddo_wary=1"))
 			after.append(TRY_AGAIN)
 		opts.append({"t": "Wait for the clerk to look away, and lift the wage book.", "silent": true,
-			"checks": [LehanQuests.chk(thief, "thievery", CHECK)], "tip": "If it fails, Gell's men are wary of you.", "after": after})
+			"ok": ok, "checks": [LehanQuests.chk(thief, "thievery", CHECK)], "tip": "If it fails, Gell's men are wary of you.", "after": after})
 	if not _tried("night"):
 		var ok := Game.check(sneak, "stealth", CHECK)
 		var after: Array = [_fx("q:boddo_tried_night=1")]
@@ -188,7 +188,7 @@ static func _look_for_proof() -> Array:
 			else:
 				after.append(TRY_AGAIN)
 		opts.append({"t": "Come back after dark, and in through the loading door.", "silent": true,
-			"checks": [LehanQuests.chk(sneak, "stealth", CHECK)],
+			"ok": ok, "checks": [LehanQuests.chk(sneak, "stealth", CHECK)],
 			"tip": "If it fails: a scuffle with the watchman (Combat, helped by the rest of the party).", "after": after})
 	if LehanQuests.can_nudge("boddo") and not _tried("spirit"):
 		var ok := Game.check(eye, "perception", CHECK, 4)
@@ -200,7 +200,7 @@ static func _look_for_proof() -> Array:
 			after.append({"n": "The figures swim, and settle, and say nothing. Whatever the spirit is looking for, it isn't on this page."})
 			after.append(TRY_AGAIN)
 		opts.append({"t": "Let the spirit look at the ledger with you.", "tags": ["Spirit"], "silent": true,
-			"checks": [LehanQuests.chk(eye, "perception", CHECK, 4, "the spirit's help")],
+			"ok": ok, "checks": [LehanQuests.chk(eye, "perception", CHECK, 4, "the spirit's help")],
 			"tip": "The spirit can help once on this quest.", "after": after})
 	opts.append({"t": "Leave for now.", "silent": true, "after": []})
 	out.append({"choice": "proof", "options": opts, "prompt": "Choose (1-%d)" % opts.size()})
@@ -215,6 +215,7 @@ static func _found(taken: bool) -> Array:
 		_fx("q:boddo=found"),
 	]
 	if taken:
+		out.append(_fx("q:boddo_page=1"))
 		out.append({"n": "(You have Tam's page from the wage book. Go back into the warehouse to face Master Gell with it.)"})
 	else:
 		out.append({"n": "Heavy footsteps on the stairs. Master Gell comes down to see who's reading his books: a heavy man with rings on every finger."})
@@ -245,7 +246,7 @@ static func _confront() -> Array:
 			after.append(_fx("q:boddo_wary=1"))
 			after.append_array(_after_failed_confront("shame"))
 		opts.append(_spoken(talker, {"t": "Read it out, so every porter in here can hear what you did to Tam.",
-			"checks": [LehanQuests.chk(talker, "talk", CHECK, bonus + 1, _why(["the porters are on Tam's side +1", "Gell is wary -1" if wary else ""]))],
+			"ok": ok, "checks": [LehanQuests.chk(talker, "talk", CHECK, bonus + 1, _why(["the porters are on Tam's side +1", "Gell is wary -1" if wary else ""]))],
 			"after": after}))
 	if not _tried("lean"):
 		var tag := LehanQuests.host_trait(["Proud", "Hot-tempered", "Brave", "Vengeful", "Greedy"])
@@ -270,7 +271,7 @@ static func _confront() -> Array:
 				after.append_array(_after_failed_confront("lean"))
 		opts.append({"t": "Pay her, or the next time you lean on a porter, someone leans back.", "say": _host(),
 			"tags": [tag] if tag != "" else [],
-			"checks": [LehanQuests.chk(heavy, "combat", CHECK, bonus + (1 if tag != "" else 0), _why([tag + " +1" if tag != "" else "", "Gell is wary -1" if wary else ""]))],
+			"ok": ok, "checks": [LehanQuests.chk(heavy, "combat", CHECK, bonus + (1 if tag != "" else 0), _why([tag + " +1" if tag != "" else "", "Gell is wary -1" if wary else ""]))],
 			"tip": "Looking dangerous. If it fails: a scuffle with his porters.", "after": after})
 	opts.append({"t": "Leave, and think about it.", "silent": true, "after": []})
 	return [{"choice": "gell", "options": opts, "prompt": "Choose (1-%d)" % opts.size()}]

@@ -15,6 +15,10 @@ extends Control
 ##                 by the chance: red, orange, yellow, green, grey for a sure thing), the details
 ##                 (who rolls, skill, bonus, chance) in its tooltip, above the tip
 ##   {"end": true}                        stop and emit `finished`
+##   {"dyn": callable}                    a step worked out only when it is reached (callable returns it)
+## Options may carry "ok": whether their check will pass, written to the quest log (not the history);
+## a failed one in a quest's scene also emits effect("fail:<quest>").
+## Set `journal` (a quest key, see Journal) and `journal_place` to keep the scene in the quest log.
 ## The scene moves on by itself; click, Space or Enter hurries it. Mouse wheel up (or H) opens the
 ## history and pauses; scroll down past the end, click or Space resumes. P pauses.
 
@@ -43,6 +47,9 @@ var paused := false
 var running := false
 var history: Array = []
 var _queued: Array = []
+var journal := ""              # the quest this scene belongs to ("" for none)
+var journal_place := ""        # where it happens, the heading in the quest log
+var _journal_lines = null      # this scene's lines in the quest log, once it has any
 
 var italic: SystemFont
 var line_portrait: RacePortrait
@@ -130,9 +137,14 @@ func queue(list: Array) -> void:
 	_queued.append_array(list)
 
 
-## Adds a line to the history without showing it (e.g. the combat log).
-func log_line(bb: String) -> void:
+## Adds a line to the history without showing it (e.g. the combat log), and to the quest log if
+## the scene belongs to a quest (`extra` goes only there, e.g. whether a check passed).
+func log_line(bb: String, extra := "") -> void:
 	history.append(bb)
+	if journal != "":
+		if _journal_lines == null:
+			_journal_lines = Journal.begin(journal, journal_place)
+		_journal_lines.append(bb + extra)
 
 
 func _who(key: String) -> Dictionary:
@@ -148,6 +160,9 @@ func _next() -> void:
 		_finish()
 		return
 	var st: Dictionary = steps[idx]
+	if st.has("dyn"):
+		st = st.dyn.call()
+		steps[idx] = st
 	if st.has("fx"):
 		prompt.text = ""
 		effect.emit(st.fx)
@@ -186,7 +201,7 @@ func _show_line(st: Dictionary) -> void:
 			aside_label.text = "(%s)" % st.a
 		_text(Rect2(82, 28, size.x - 92, 56), "“%s”" % st.t, Ui.TEXT, false)
 		var aside: String = " [i](%s)[/i]" % st.a if st.has("a") else ""
-		log_line("[color=#%s]%s[/color]%s: “%s”" % [Ui.GOLD.to_html(false), who.name, aside, st.t])
+		log_line("%s[color=#%s]%s[/color]%s: “%s”" % [st.get("mark", ""), Ui.GOLD.to_html(false), who.name, aside, st.t], st.get("extra", ""))
 	elif st.has("i"):
 		var me := _who(host)
 		line_portrait.visible = true
@@ -446,10 +461,21 @@ func choose(i: int) -> void:
 	var o: Dictionary = opts[i]
 	_clear_choices()
 	var rest: Array = []
+	# The chosen reply is marked in the history (▸, and the check with its chance); the quest log
+	# also gets whether the check passed.
+	var mark := "[color=#%s]▸[/color] " % Ui.DIM.to_html(false)
+	if o.has("checks"):
+		var p := _check_chance(o.checks)
+		mark += "[color=#%s][%s %d%%][/color] " % [_odds_color(p).to_html(false), _check_label(o.checks), p]
+	var extra := ""
+	if o.has("ok"):
+		extra = "  [color=#%s](%s)[/color]" % [Ui.DIM.to_html(false), "passed" if o.ok else "failed"]
+		if not o.ok and journal != "":
+			effect.emit("fail:" + journal)   # failed checks cut the quest's experience
 	if o.has("say"):
-		rest.append({"s": o.say, "t": o.t})
+		rest.append({"s": o.say, "t": o.t, "mark": mark, "extra": extra})
 	elif o.get("silent", false):
-		log_line("[i]%s[/i]" % o.t)
+		log_line(mark + "[i]%s[/i]" % o.t, extra)
 	rest.append_array(o.get("after", []))
 	_queued = []
 	choice_made.emit(id, i)

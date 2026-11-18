@@ -201,6 +201,9 @@ func _rejoin_talk(c: Dictionary) -> bool:
 
 
 func _on_dismiss() -> void:
+	if not Game.hand_over_quest_items(Game.party[member]):
+		await Game.main.message("%s carries a quest item (★), and nobody else in the party could take it.\n\nMuster someone first." % Game.party[member].name)
+		return
 	Game.roster.append(Game.party[member])
 	Game.party.remove_at(member)
 	member = -1

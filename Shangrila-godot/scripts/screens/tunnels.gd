@@ -52,8 +52,9 @@ func _ready() -> void:
 		buttons.append(b)
 	buttons.append(Ui.btn(self, "Use", Rect2(446, 252, 180, 32), _use_ahead,
 		"Look at, or use, what is straight ahead (Space)"))
-	buttons.append(Ui.btn(self, "Party", Rect2(446, 290, 88, 30), _on_party, "Your characters: abilities, gear and silver (C)"))
-	buttons.append(Ui.btn(self, "Quit", Rect2(538, 290, 88, 30), _on_quit, "Back to the main menu"))
+	buttons.append(Ui.btn(self, "Party", Rect2(446, 290, 58, 30), _on_party, "Your characters: abilities, gear and silver (C)"))
+	buttons.append(Ui.btn(self, "Quests", Rect2(507, 290, 58, 30), _on_quests, "The quest log: every quest and what was said (J)"))
+	buttons.append(Ui.btn(self, "Quit", Rect2(568, 290, 58, 30), _on_quit, "Back to the main menu"))
 	Ui.frame(self, Rect2(436, 364, 196, 62))
 	var help := Ui.label(self, "Cold, damp stone, older than the town above. The ladder leads back up.",
 		Vector2(444, 368), 11, Ui.DIM, 182)
@@ -141,6 +142,8 @@ func _scene(title: String, lines: Array, retreat: bool) -> void:
 	var box := DialogueBox.new()
 	box.cast = MarketData.cast()
 	box.host = host
+	box.journal = "skee"
+	box.journal_place = "Below Lehan: " + title.to_lower()
 	Ui.place(box, Rect2(20, 180, 600, 286))   # sized before _ready builds it
 	ov.add_child(box)
 	box.effect.connect(LehanQuests.apply)
@@ -173,6 +176,11 @@ func _on_party() -> void:
 		"back_args": {"at_cell": [area.pos.x, area.pos.y], "facing": area.facing}})
 
 
+func _on_quests() -> void:
+	if not _locked():
+		QuestLog.open()
+
+
 func _on_quit() -> void:
 	if await Game.main.confirm("Do you really want to quit to the main menu?\nUnsaved progress will be lost."):
 		Game.main.goto("title")
@@ -190,5 +198,6 @@ func _unhandled_input(e: InputEvent) -> void:
 		KEY_E: _walk(1)
 		KEY_SPACE, KEY_ENTER, KEY_KP_ENTER: _use_ahead()
 		KEY_C: _on_party()
+		KEY_J: _on_quests()
 		_: return
 	get_viewport().set_input_as_handled()

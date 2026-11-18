@@ -11,6 +11,10 @@ extends RefCounted
 ##   purse         the council's real budget is known
 ##   pay:N         the party pays N silver    hurt:N     everyone in the party loses up to N hits
 ##   place:key     a place in Lehan is found (on the town map)
+##   fail:key      a check failed on that quest (sent by the dialogue box; see finish_xp_steps)
+##   finish:key    the experience for finishing the quest, less for each failed check
+## Quest items (Lisbet's letter, Tam's page, Skee's bag, the glowing chip) follow the quest
+## values: after every effect, sync_items hands out or takes back whatever the quests say.
 
 ## The new characters: a little better than the starting companions, and harder to win.
 const RECRUITS := {
@@ -30,6 +34,8 @@ const RECRUITS := {
 const ICON_BASE := 10   # portrait icons Game.PORTRAIT_CAST + ICON_BASE + n
 const DONE_XP := 0.25   # story experience for finishing a quest
 const CHECK_XP := 0.05  # ... and for each obstacle passed with an ability
+const FAIL_CUT := 0.1   # each failed check on a quest takes this much off the finishing reward,
+const XP_FLOOR := 0.5   # ... down to this much of it
 
 
 static func state() -> Dictionary:
@@ -194,6 +200,70 @@ static func apply(fx: String) -> void:
 			c.hits = maxi(1, c.hits - Game.my_random(1, int(fx.substr(5))))
 	elif fx.begins_with("place:"):
 		Game.discover_place("lehan", fx.substr(6))
+	elif fx.begins_with("fail:"):
+		var k := fx.substr(5) + "_fails"
+		st[k] = str(int(st.get(k, "0")) + 1)
+	elif fx.begins_with("finish:"):
+		Game.story_xp(DONE_XP * xp_share(fx.substr(7)))
+	sync_items()
+
+
+## Failed checks on a quest so far.
+static func fails(key: String) -> int:
+	return int(get_q(key + "_fails", "0"))
+
+
+## How much of the finishing reward a quest pays: all of it, less a tenth for each failed check,
+## but never less than half.
+static func xp_share(key: String) -> float:
+	return maxf(XP_FLOOR, 1.0 - FAIL_CUT * fails(key))
+
+
+## The end of a quest: its experience, and a line saying how much of it the failures left. The
+## line is worked out when it is shown, since a check can still fail in the same scene.
+static func finish_xp_steps(key: String) -> Array:
+	return [{"fx": "finish:" + key, "wait": 0.1}, {"dyn": func(): return {"n": xp_line(key)}}]
+
+
+static func xp_line(key: String) -> String:
+	var n := fails(key)
+	var pct := roundi(xp_share(key) * 100)
+	if n == 0:
+		return "(Story experience: %d%%, without a single failed try.)" % pct
+	const WORDS := ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+	var count: String = WORDS[n] if n < WORDS.size() else str(n)
+	return "(Story experience: %d%%, after %s failed %s.)" % [pct, count, "try" if n == 1 else "tries"]
+
+
+## The quest items, and when the party carries each one (from the quest values).
+const QUEST_ITEMS := {
+	34: "Lisbet's letter: from taking the job until it is handed to Rudd",
+	35: "Tam's page: taken from the wage book, until Gell pays or burns it",
+	36: "Skee's bag: found in the tunnels, until it is given back",
+	37: "the glowing chip: from the chamber of the lights, until Skee has it",
+}
+
+
+static func _should_carry(id: int) -> bool:
+	match id:
+		34: return get_q("lisbet") == "carrying"
+		35: return get_q("boddo") == "found" and get_q("boddo_page") != ""
+		36: return get_q("skee_bag") != "" and get_q("skee_ask_bag") == "" and not done("skee")
+		37: return get_q("skee") == "seen" and get_q("skee_ask_stone") == ""
+	return false
+
+
+## Hands out the quest items the quests call for, and takes back those they no longer need.
+static func sync_items() -> void:
+	if Game.party.is_empty() and Game.roster.is_empty():
+		return
+	for id in QUEST_ITEMS:
+		var has := not Game.holder_of(id).is_empty()
+		var want := _should_carry(id)
+		if want and not has and not Game.party.is_empty():
+			Game.give_item(id, host_char())
+		elif has and not want:
+			Game.take_item(id)
 
 
 ## The character joins the inn's list, waiting to be mustered.

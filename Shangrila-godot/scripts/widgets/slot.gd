@@ -85,6 +85,8 @@ func _update_tip() -> void:
 		var t: String = it.name
 		if it.defense: t += "\nDefense %d" % it.defense
 		t += "\nWeight %d" % it.weight
+		if it.get("quest", false):
+			t += "\n★ Quest item: can't be thrown away or sold"
 		tooltip_text = t + ("\n" + hint if hint != "" else "")
 	else:
 		tooltip_text = hint

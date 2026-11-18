@@ -47,6 +47,7 @@ func _ready() -> void:
 	back = args.get("back", "inn")
 	back_args = args.get("back_args", {})
 	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, "Back to the inn" if back == "inn" else "Back to the streets")
+	Ui.btn(self, "Quests", Rect2(16, 56, 70, 28), QuestLog.open, "The quest log: every quest and what was said (J)")
 	# Character strip (ViewCha 110-118).
 	for j in 3:
 		var x := 104 + j * 158
@@ -201,6 +202,12 @@ func _on_raise(key: String) -> void:
 	refresh()
 
 
+func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J and not Game.main.modal_open:
+		QuestLog.open()
+		get_viewport().set_input_as_handled()
+
+
 func _on_leave() -> void:
 	Game.main.goto(back, back_args)
 
@@ -238,7 +245,9 @@ func drop(s: Slot, data: Dictionary) -> void:
 			log_label.text = Game.eat(c, id)
 			c.items[src] = 0
 		"trash":
-			if await Game.main.confirm("Do you really want to throw away the %s?" % Game.item(id).name, "Throw away"):
+			if Game.is_quest_item(id):
+				log_label.text = "%s is a quest item (★): it can't be thrown away." % Game.item(id).name
+			elif await Game.main.confirm("Do you really want to throw away the %s?" % Game.item(id).name, "Throw away"):
 				c.items[src] = 0
 				log_label.text = "%s threw away the %s." % [c.name, Game.item(id).name]
 		"member":

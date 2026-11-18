@@ -25,10 +25,11 @@ func _ready() -> void:
 	_build_places()
 
 	buttons.append(Ui.btn(self, "Leave town", Rect2(20, 436, 110, 32), _on_place.bind("gate"), "Out through the gate, onto the world map"))
+	buttons.append(Ui.btn(self, "Quests", Rect2(390, 436, 70, 32), _on_quests, "The quest log: every quest and what was said (J)"))
 	buttons.append(Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game"))
 	buttons.append(Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu"))
 	var who := "Party: " + (", ".join(Game.party.map(func(c): return c.name)) if Game.party.size() > 0 else "nobody")
-	info = Ui.label(self, who, Vector2(140, 444), 12, Ui.TEXT, 320)
+	info = Ui.label(self, who, Vector2(140, 444), 12, Ui.TEXT, 240)
 	if _arrival_pending():
 		Game.main.goto.call_deferred("streets")   # the arrival is played in the streets
 
@@ -102,6 +103,17 @@ func _set_busy(on: bool) -> void:
 ## Knocking at the employer's door after the meeting.
 func _knock() -> void:
 	await Game.main.message(LehanData.knock_text())
+
+
+func _on_quests() -> void:
+	if not buttons[0].disabled:   # not in the middle of a scene
+		QuestLog.open()
+
+
+func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J and not Game.main.modal_open:
+		_on_quests()
+		get_viewport().set_input_as_handled()
 
 
 func _on_save() -> void:

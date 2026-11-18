@@ -692,7 +692,7 @@ The scripts are in [DIALOGUES.md](DIALOGUES.md).
   any bonus and where it comes from, and the chance of success (overall, too, for several
   checks). Very useful while developing and testing; the detail may be trimmed for normal
   play later.
-- **Colour by chance (agreed, not built):** the skill tag is coloured by the chance of
+- **Colour by chance (built):** the skill tag is coloured by the chance of
   success, on the usual RPG difficulty scale: red (near impossible), orange, yellow, green,
   grey (a sure thing). For example 10% red, 30% orange, 50% yellow, 80% green, 100% grey. The
   colours stay in normal play even if the tooltip detail is trimmed: they are the player's
@@ -1041,6 +1041,65 @@ market square. The crier's notice puts it on the map, instead of the Mines.
 companions, not a first meeting. They are harder to win than the old companions, because each
 needs a quest. In return they are slightly better: for example one ability at 3, or one point
 more than the starting companions.
+
+### The quest log (built)
+**Built:** `scripts/data/journal.gd`, `scripts/widgets/quest_log.gd`. A window over the screen,
+so opening it never loses your place.
+
+A menu listing the current and finished quests. The twist: **it stores the whole conversations**,
+not just a line of status. In other games a quest log is little help after a long pause, because
+the details are forgotten. Here you can read back exactly what was said. This is partly an
+experiment, to see whether it works.
+- **For each quest:** its name, current or finished, and every scene played in it, in order:
+  narration, speech, the inner voice, the choices made, and how checks went (the skill, the
+  chance, passed or failed). Shown in the style of the dialogue history, with a heading per
+  scene (where it happened).
+  ```
+  LISBET'S LETTER (done)
+
+  — The market square —
+  Lisbet: "New face. Looking for work?"
+  > "What's in it?"
+  ...
+  — The gate road —
+  Someone's following. Lisbet said nobody should.
+  > [Perception 40%] Turn round and look properly. (passed)
+  ```
+- **Where it opens:** a Quests button next to Party in the streets, tunnels, town and dungeon
+  screens; from the Party screen; and from the world map.
+- The council's haggling and the mines job count as quests too.
+- Saved with the game.
+
+### Quest items (built)
+**Built:** items 34-37 in `scripts/game.gd`, handed out and taken back by `LehanQuests.sync_items`
+from the quest values. The Crowned Head from the shrine is a quest item too.
+
+Today picking up a quest thing (Skee's bag, Lisbet's letter, Tam's page from the wage book, the
+chip of glowing stone) only sets a quest flag: nothing shows in any pack. Instead:
+- **Real items:** they go into a character's pack like any item, take a slot, and show with a
+  quest mark (★). Handing them over in the quest removes them.
+- **Protected:** they can't be dropped, sold or given away outside the party.
+- **Moved within the party:** they can be passed between characters as usual.
+- **Never lost:** if the carrier leaves the party (the split, dismissing, death), the item goes
+  to another party member automatically.
+- **Read or examined:** some can be read again, for example Tam's page, or Lisbet's letter if
+  it was opened.
+
+### Failing costs experience (built)
+**Built:** `LehanQuests.xp_share` and `finish_xp_steps`; the dialogue box counts each failed
+check in a quest's scenes.
+
+Today a failed check costs a few hits at most, and on the obstacles that can be tried again
+(the rats, the collapse) each failure even gives +1 on the next try. So grinding through by
+failing over and over costs almost nothing, and the quest pays out the same in the end.
+- **Per failure, with a floor:** each failed check on a quest takes 10% off the experience for
+  finishing it, down to half. For example, a reward of 0.25 is 0.25 with no failures, 0.20 with
+  two, and 0.125 (the floor) with five or more. Finishing always gives something.
+- **All quests:** every failed check on any quest counts (Lisbet, Boddo, Skee, and later ones).
+- **The +1 for learning stays:** failing still teaches the obstacle, so nobody gets stuck for
+  good. The lost experience is the price.
+- **Shown at the end:** when the quest finishes, a line like "(Story experience: 80%, after two
+  failed tries.)", which is also kept in the quest log.
 
 ### A walkable market square
 **Started:** the square is in the game, and Lehan's streets with it (`scripts/areas/lehan_streets.gd`):

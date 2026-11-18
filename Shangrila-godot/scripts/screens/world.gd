@@ -45,9 +45,10 @@ func _ready() -> void:
 	var here: Dictionary = Game.LOCATIONS[Game.location]
 	var enter: String = "Look around" if here.screen == "" else "Enter " + here.name
 	buttons.append(Ui.btn(self, enter, Rect2(20, 436, 150, 32), _on_location.bind(Game.location), here.desc))
+	buttons.append(Ui.btn(self, "Quests", Rect2(390, 436, 70, 32), _on_quests, "The quest log: every quest and what was said (J)"))
 	buttons.append(Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game"))
 	buttons.append(Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu"))
-	info = Ui.label(self, "", Vector2(180, 444), 12, Ui.TEXT, 284)
+	info = Ui.label(self, "", Vector2(180, 444), 12, Ui.TEXT, 204)
 	info.text = "Click a place on the map to travel there."
 	if get_meta("args", {}).get("road", false) and _road_pending("lehan"):
 		_road_scene.call_deferred()
@@ -154,6 +155,17 @@ func _on_location(key: String) -> void:
 	await _move_marker(Game.LOCATIONS[Game.location].at, loc.at, 0.0, 1.0, 1.4 * days)
 	await Game.main.message("\n".join(Game.travel(key, days)))
 	Game.main.goto(loc.screen)
+
+
+func _on_quests() -> void:
+	if not buttons[0].disabled:   # not in the middle of a scene
+		QuestLog.open()
+
+
+func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J and not Game.main.modal_open:
+		_on_quests()
+		get_viewport().set_input_as_handled()
 
 
 func _on_save() -> void:

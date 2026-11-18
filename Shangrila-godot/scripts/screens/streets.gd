@@ -71,10 +71,11 @@ func _ready() -> void:
 		buttons.append(b)
 	buttons.append(Ui.btn(self, "Talk / Enter", Rect2(446, 252, 180, 32), _use_ahead,
 		"Talk to whoever is straight ahead, or go through the door (Space)"))
-	map_btn = Ui.btn(self, "Map", Rect2(446, 290, 88, 30), _on_map, "The town plan: click a place to go to its entrance (M)")
+	map_btn = Ui.btn(self, "Map", Rect2(446, 290, 58, 30), _on_map, "The town plan: click a place to go to its entrance (M)")
 	map_btn.toggle_mode = true
-	buttons.append(Ui.btn(self, "Save", Rect2(538, 290, 88, 30), _on_save, "Save the game"))
-	buttons.append(Ui.btn(self, "Party", Rect2(446, 326, 88, 30), _on_party, "Your characters: abilities, gear and silver (C)"))
+	buttons.append(Ui.btn(self, "Party", Rect2(507, 290, 58, 30), _on_party, "Your characters: abilities, gear and silver (C)"))
+	buttons.append(Ui.btn(self, "Quests", Rect2(568, 290, 58, 30), _on_quests, "The quest log: every quest and what was said (J)"))
+	buttons.append(Ui.btn(self, "Save", Rect2(446, 326, 88, 30), _on_save, "Save the game"))
 	buttons.append(Ui.btn(self, "Quit", Rect2(538, 326, 88, 30), _on_quit, "Back to the main menu"))
 	Ui.frame(self, Rect2(436, 364, 196, 62))
 	var help := Ui.label(self, "Walk up to people to talk, and into doors to go in. Map shows the town.",
@@ -104,7 +105,7 @@ func _after_move() -> void:
 		hint.text = _where()   # the arrival scene walks on its own
 		return
 	if not talking and LisbetQuest.tail_due(area.pos):
-		_dialog.call_deferred("On the gate road", LisbetQuest.tail_scene())
+		_dialog.call_deferred("On the gate road", LisbetQuest.tail_scene(), "lisbet")
 	var t := area.thing_at(area.ahead())
 	match t.get("kind", ""):
 		"person":
@@ -194,12 +195,12 @@ func _use(t: Dictionary) -> void:
 					Game.main.goto("inn")
 				"tannery":
 					Game.discover_place(TOWN, "tannery")
-					await _dialog("The Tannery", SkeeQuest.tannery())
+					await _dialog("The Tannery", SkeeQuest.tannery(), "skee")
 					if SkeeQuest.way_open() and LehanQuests.get_q("skee") != "":
 						Game.main.goto("tunnels")
 				"warehouse":
 					Game.discover_place(TOWN, "warehouse")
-					await _dialog("Gell's Warehouse", BoddoQuest.warehouse())
+					await _dialog("Gell's Warehouse", BoddoQuest.warehouse(), "boddo")
 				"council":
 					if not LehanData.has_job():
 						await Game.main.message("A clerk blocks the door of the stone hall.\n\n\"The council sits on council business. Have you any?\"\n\nNot yet, it seems.")
@@ -286,6 +287,7 @@ func _on_scene_fx(name: String) -> void:
 		var host_name: String = PrologueData.CAST[Game.story.host].name
 		for c in Game.party.duplicate():
 			if c.name != host_name:
+				Game.hand_over_quest_items(c)
 				Game.party.erase(c)
 				Game.roster.append(c)
 
@@ -326,11 +328,13 @@ func _lock(on: bool) -> void:
 # ---------------------------------------------------------------- talking
 
 func _talk(id: String) -> void:
-	await _dialog("Talking to " + MarketData.PEOPLE[id].name, MarketData.talk(id, Game.story.get("host", "")))
+	var quest := Journal.quest_of_person(MarketData.PEOPLE[id].key)   # before the talk changes it
+	await _dialog("Talking to " + MarketData.PEOPLE[id].name, MarketData.talk(id, Game.story.get("host", "")), quest)
 
 
 ## A conversation or a scene in the street, in a window over the lower part of the view.
-func _dialog(title: String, lines: Array) -> void:
+## `quest`: the quest it belongs to, kept in the quest log (see Journal).
+func _dialog(title: String, lines: Array, quest := "") -> void:
 	if lines.is_empty():
 		return
 	_lock(true)
@@ -346,6 +350,8 @@ func _dialog(title: String, lines: Array) -> void:
 	var box := DialogueBox.new()
 	box.cast = MarketData.cast()
 	box.host = host
+	box.journal = quest
+	box.journal_place = title
 	Ui.place(box, Rect2(20, 180, 600, 286))   # sized before _ready builds it
 	ov.add_child(box)
 	box.effect.connect(_on_effect)
@@ -417,8 +423,14 @@ func _unhandled_input(e: InputEvent) -> void:
 			map_btn.button_pressed = true
 			_on_map()
 		KEY_C: _on_party()
+		KEY_J: _on_quests()
 		_: return
 	get_viewport().set_input_as_handled()
+
+
+func _on_quests() -> void:
+	if not _locked():
+		QuestLog.open()
 
 
 ## The town plan drawn from the street map: streets, the square, the places found so far

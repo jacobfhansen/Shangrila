@@ -144,15 +144,16 @@ func _ready() -> void:
 		act_buttons[ACTS[i]] = b
 
 	# Bottom-left buttons (DungeonWin 1-8, 39).
-	var bl := [["Close", 10, 50, _on_close, "Leave the mines"],
-		["Save", 64, 46, _on_save, "Save the game"],
-		["Examine", 114, 62, _on_examine, "Examine the surroundings"],
-		["Sleep", 180, 50, _on_sleep, "Rest: turns endurance into hit points and restores mana"]]
+	var bl := [["Close", 10, 44, _on_close, "Leave the mines"],
+		["Save", 56, 40, _on_save, "Save the game"],
+		["Examine", 98, 56, _on_examine, "Examine the surroundings"],
+		["Sleep", 156, 42, _on_sleep, "Rest: turns endurance into hit points and restores mana"],
+		["Quests", 200, 50, QuestLog.open, "The quest log: every quest and what was said (J)"]]
 	for e in bl:
 		var b := Ui.btn(self, e[0], Rect2(e[1], 430, e[2], 32), e[3], e[4])
 		b.add_theme_font_size_override("font_size", 12)
 		masked_in_map.append(b)
-	map_btn = Ui.btn(self, "Map", Rect2(234, 430, 42, 32), _on_map, "Toggle the map (M)")
+	map_btn = Ui.btn(self, "Map", Rect2(252, 430, 32, 32), _on_map, "Toggle the map (M)")
 	map_btn.add_theme_font_size_override("font_size", 12)
 	map_btn.toggle_mode = true
 
@@ -238,6 +239,7 @@ func _unhandled_key_input(e: InputEvent) -> void:
 		KEY_M:
 			map_btn.button_pressed = not map_btn.button_pressed
 			_on_map()
+		KEY_J: QuestLog.open()
 		_: return
 	get_viewport().set_input_as_handled()
 

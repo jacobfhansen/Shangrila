@@ -170,6 +170,30 @@ is in `scripts/data/quest_skee.gd`.
 starts (each in their own voice), and Old Wenna wonders why you're still in town. This stops
 after a trip into the mines.
 
+**Skill checks on replies.** A reply that rolls a check shows the ability as a tag in the reply
+(`[Combat]`, `[Talk, then Perception or Lore]`), coloured by the chance of success: red, orange,
+yellow, green, grey for a sure thing. Hovering shows who rolls, their skill, any bonus and where
+it comes from, and the chance.
+
+**Failing costs experience.** Every failed check in a quest's scenes takes 10% off the story
+experience for finishing it, down to half. The quest's last scene says how much was left
+("Story experience: 80%, after two failed tries."). The +1 for each failed try at the rats or the
+collapse stays, so nobody gets stuck.
+
+**The quest log.** The Quests button (or J) in the streets, the tunnels, the town map, the world
+map, the mines and the character screen opens a window over the screen with the current, not yet
+taken and finished quests. Each keeps every scene of the quest as it was played: narration,
+speech, the inner voice, the replies chosen (▸, with the check and its chance) and whether each
+check passed. Kept in the save (`scripts/data/journal.gd`, `scripts/widgets/quest_log.gd`).
+
+**Quest items.** Lisbet's letter, Tam's page from the wage book, Skee's bag and the glowing chip
+are real items in a pack, marked with a gold ★, as is the Crowned Head from the shrine. They
+can't be thrown away (the shop doesn't buy anything yet), can be passed around the party, and go
+to someone who stays when their carrier leaves the party (the split, or dismissing at the inn;
+dismissing the last one who could take them is refused). They come and go with the quests
+(`LehanQuests.sync_items`), so older saves get theirs on loading. Tam's page can be read with
+Info.
+
 ## The council house (new)
 
 The crier's notice opens the council house on the north side of the square, and the old

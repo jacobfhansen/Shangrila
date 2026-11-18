@@ -54,7 +54,7 @@ static func _offer() -> Array:
 		var after: Array = [{"s": "lisbet", "t": "Seven. And you're a bandit, %s." % h}, {"fx": "xp:%s" % LehanQuests.CHECK_XP, "wait": 0.1}] + take.call(HAGGLED_PAY) if won \
 			else [{"s": "lisbet", "t": "Five, or I find a cheaper pair of legs. Lehan is full of legs."}] + take.call(PAY)
 		opts.append({"t": "For a sealed letter? Ten.", "say": _host(), "tags": [greedy],
-			"checks": [LehanQuests.chk(LehanQuests.host_char(), "talk", Game.NORMAL)], "after": after})
+			"ok": won, "checks": [LehanQuests.chk(LehanQuests.host_char(), "talk", Game.NORMAL)], "after": after})
 	opts.append({"t": "Not now.", "say": _host(),
 		"after": [{"s": "lisbet", "t": "Suit yourself. The letter can wait. I can't, but the letter can."}]})
 	return [
@@ -81,17 +81,17 @@ static func tail_scene() -> Array:
 	var me := LehanQuests.host_char()
 	var opts: Array = []
 	var seen := Game.check(me, "perception", Game.NORMAL)
-	opts.append({"t": "Turn round and look properly.", "checks": [LehanQuests.chk(me, "perception", Game.NORMAL)], "silent": true,
+	opts.append({"t": "Turn round and look properly.", "ok": seen, "checks": [LehanQuests.chk(me, "perception", Game.NORMAL)], "silent": true,
 		"after": _tail_look(seen, false)})
 	var hid := Game.check(me, "stealth", Game.NORMAL)
-	opts.append({"t": "Duck into a doorway and let them pass.", "checks": [LehanQuests.chk(me, "stealth", Game.NORMAL)], "silent": true,
+	opts.append({"t": "Duck into a doorway and let them pass.", "ok": hid, "checks": [LehanQuests.chk(me, "stealth", Game.NORMAL)], "silent": true,
 		"after": [{"n": "A boy in a cap too big for him hurries past the doorway, looking left and right... and loses the trail. He kicks a stone and slouches back towards the square."},
 			{"fx": "q:lisbet_tail=lost", "wait": 0.1}, {"fx": "xp:%s" % LehanQuests.CHECK_XP, "wait": 0.1}] if hid \
 			else [{"n": "A boy in a cap too big for him stops right in front of the doorway, and grins."},
 				{"n": "\"Nice try.\""}, {"n": "He falls back again, a careful dozen steps behind."},
 				{"fx": "q:lisbet_tail=followed", "wait": 0.1}]})
 	var called := Game.check(me, "talk", Game.NORMAL)
-	opts.append({"t": "Sergeant! This lad's been dogging me since the square!", "say": host, "checks": [LehanQuests.chk(me, "talk", Game.NORMAL)],
+	opts.append({"t": "Sergeant! This lad's been dogging me since the square!", "say": host, "ok": called, "checks": [LehanQuests.chk(me, "talk", Game.NORMAL)],
 		"after": [{"n": "The sergeant at the gate pushes off the wall and collars a boy in a big cap. The boy twists free, quick as an eel, and runs back the way he came."},
 			{"fx": "q:lisbet_tail=caught", "wait": 0.1}, {"fx": "xp:%s" % LehanQuests.CHECK_XP, "wait": 0.1}] if called \
 			else [{"n": "The sergeant looks over, shrugs, and goes back to picking his teeth. The footsteps keep their distance."},
@@ -99,7 +99,7 @@ static func tail_scene() -> Array:
 	if LehanQuests.can_nudge("lisbet"):
 		var sharp := Game.check(me, "perception", Game.NORMAL, 4)
 		opts.append({"t": "Let the spirit listen for the footsteps.", "tags": ["Spirit"], "silent": true,
-			"checks": [LehanQuests.chk(me, "perception", Game.NORMAL, 4, "the spirit's help")], "tip": "The spirit can help once on this quest.",
+			"ok": sharp, "checks": [LehanQuests.chk(me, "perception", Game.NORMAL, 4, "the spirit's help")], "tip": "The spirit can help once on this quest.",
 			"after": [{"fx": "q:lisbet_nudge=used", "wait": 0.1}, LehanQuests.nudge_line()] + _tail_look(sharp, true)})
 	opts.append({"t": "Ignore it and walk on.", "silent": true,
 		"after": [{"n": "The footsteps follow, all the way down the gate road."}, {"fx": "q:lisbet_tail=followed", "wait": 0.1}]})
@@ -129,12 +129,12 @@ static func deliver() -> Array:
 	opts.append({"t": "Hand it over as it is.", "silent": true, "after": [{"fx": "q:lisbet_seal=whole", "wait": 0.1}] + _rudd("whole")})
 	var nosy := LehanQuests.host_trait(["Curious", "Deceitful", "Greedy"])
 	var ok := Game.check(me, "thievery", Game.NORMAL)
-	opts.append({"t": "Open it first. Carefully.", "tags": [nosy] if nosy != "" else [], "checks": [LehanQuests.chk(me, "thievery", Game.NORMAL)], "tip": "To lift the seal and put it back unseen.",
+	opts.append({"t": "Open it first. Carefully.", "tags": [nosy] if nosy != "" else [], "ok": ok, "checks": [LehanQuests.chk(me, "thievery", Game.NORMAL)], "tip": "To lift the seal and put it back unseen.",
 		"silent": true, "after": _open(ok, false)})
 	if LehanQuests.can_nudge("lisbet"):
 		var steady := Game.check(me, "thievery", Game.NORMAL, 4)
 		opts.append({"t": "Open it, and let the spirit steady your fingers.", "tags": ["Spirit"], "silent": true,
-			"checks": [LehanQuests.chk(me, "thievery", Game.NORMAL, 4, "the spirit's help")], "tip": "The spirit can help once on this quest.",
+			"ok": steady, "checks": [LehanQuests.chk(me, "thievery", Game.NORMAL, 4, "the spirit's help")], "tip": "The spirit can help once on this quest.",
 			"after": [{"fx": "q:lisbet_nudge=used", "wait": 0.1}, LehanQuests.nudge_line()] + _open(steady, true)})
 	return [
 		{"n": "The sergeant is a few steps away, leaning on the gatepost. The letter is in your hand, the plain red seal under your thumb."},
@@ -208,7 +208,7 @@ static func _return() -> Array:
 			out.append({"choice": "lisbet_read", "options": [
 				{"t": "I did. Four hundred.", "say": _host(), "tags": ["Honest"] if LehanQuests.host_has("Honest") else [],
 					"after": [{"n": "Lisbet laughs, a real one."}, {"s": "lisbet", "t": "Honest and nosy. I can work with that."}] + _ending(pay, true)},
-				{"t": "Of course not.", "say": _host(), "tags": [liar] if liar != "" else [], "checks": [LehanQuests.chk(LehanQuests.host_char(), "talk", 10)], "tip": "She lies for a living.",
+				{"t": "Of course not.", "say": _host(), "tags": [liar] if liar != "" else [], "ok": lied, "checks": [LehanQuests.chk(LehanQuests.host_char(), "talk", 10)], "tip": "She lies for a living.",
 					"after": ([{"s": "lisbet", "t": "...Good. I believe you. Mostly."}, {"fx": "xp:%s" % LehanQuests.CHECK_XP, "wait": 0.1}] + _ending(pay, true)) if lied \
 						else ([{"s": "lisbet", "t": "Liar. A good one, almost. I like that less than you'd think."}] + _ending(pay, false))},
 			]})
@@ -226,7 +226,7 @@ static func _ending(pay: int, good: bool) -> Array:
 	out.append({"fx": "q:lisbet_fee=%d" % fee, "wait": 0.1})
 	out.append({"fx": "q:lisbet=done", "wait": 0.1})
 	out.append({"fx": "recruit:lisbet", "wait": 0.1})
-	out.append({"fx": "xp:%s" % LehanQuests.DONE_XP, "wait": 0.1})
 	out.append({"n": "(Lisbet Farrow is now on the inn's list. Mustering her costs %d silver.)" % fee})
+	out.append_array(LehanQuests.finish_xp_steps("lisbet"))
 	out.append_array(LehanQuests.quest_finished_steps())
 	return out

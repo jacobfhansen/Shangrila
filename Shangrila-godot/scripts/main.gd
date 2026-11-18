@@ -182,12 +182,19 @@ func show_item(id: int) -> void:
 	d.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var dmg: String = "-" if it.dmg[1] == 0 else "%d-%d" % [it.dmg[0], it.dmg[1]]
 	var lines := [["Weight", it.weight], ["Defense", it.defense], ["Attack", it.attack], ["Damage", dmg]]
+	if it.get("quest", false):
+		# A quest item: what is written on it (if anything) instead of the fighting values.
+		lines = [["Weight", it.weight]]
+		if it.has("text"):
+			var tx := _ink_label(b, it.text, Rect2(20, 142, 260, 54), 13)
+			tx.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	for i in lines.size():
 		var l := _ink_label(b, "%s:" % lines[i][0], Rect2(24, 124 + i * 18, 80, 18), 13)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var v := _ink_label(b, str(lines[i][1]), Rect2(100, 124 + i * 18, 60, 18), 13)
 		v.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	var price := _ink_label(b, "Value: " + Game.money_string(it.price), Rect2(24, 198, 200, 18), 13)
+	var price := _ink_label(b, "★ Quest item: can't be thrown away or sold" if it.get("quest", false)
+		else "Value: " + Game.money_string(it.price), Rect2(24, 198, 260, 18), 13)
 	price.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	Ui.btn(b, "OK", Rect2(200, 218, 80, 28), func(): _modal_done.emit(true))
 	await _modal_done

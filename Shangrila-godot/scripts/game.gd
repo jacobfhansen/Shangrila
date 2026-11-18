@@ -230,7 +230,18 @@ func _make_items() -> void:
 	_it(30, "Cheese", "cheese", "#e8c040", 15, 1, {"dims": true, "food": true, "health": [20, 25]}, "A good wedge of hard cheese.")
 	_it(31, "Clasp Knife", "knife", "#c8ccd4", 5, 2, {"dmg": [1, 3], "weapon": true, "dagger": true}, "A folding knife.")
 	_it(32, "Bardiche", "bardiche", "#a0a6b0", 125, 12, {"dmg": [2, 8], "weapon": true, "axe": true}, "A long-hafted axe with a crescent blade.")
-	_it(33, "Crowned Head", "stonehead", "#a8a090", 150, 0, {"dims": true}, "The stone head from the old shrine. Its face is worn smooth, but the crown is still clear, and it is faintly warm.")
+	_it(33, "Crowned Head", "stonehead", "#a8a090", 150, 0, {"dims": true, "quest": true}, "The stone head from the old shrine. Its face is worn smooth, but the crown is still clear, and it is faintly warm.")
+	# Quest items (★): they can't be thrown away or sold, and stay in the party (see
+	# LehanQuests.sync_items, which hands them out and takes them back as the quests move on).
+	_it(34, "Lisbet's Letter", "letter", "#e8dcc0", 1, 0, {"dims": true, "quest": true},
+		"A folded letter for Sergeant Rudd at the south gate, closed with a plain red seal. Nobody follows you. Nobody opens it.")
+	_it(35, "Tam's Page", "page", "#e0d0a8", 1, 0, {"dims": true, "quest": true,
+		"text": "\"Tam Reed, porter: fourteen weeks.\" A line through it, and in another ink: \"Died. No claim.\" Below, the same sum, paid to \"O. G.\""},
+		"A page torn from Master Gell's wage book: the proof of what was done to Tam Reed.")
+	_it(36, "Skee's Bag", "bag", "#6a5030", 10, 0, {"dims": true, "quest": true},
+		"A leather bag, half chewed by rats. Rat traps, a sling and a little carved charm against ghosts. A rat's head is burned into the flap.")
+	_it(37, "Glowing Chip", "chip", "#7aa8f0", 1, 0, {"dims": true, "quest": true},
+		"A flake of the ward-stone from the tunnels under Lehan. It stays faintly blue, and cold, like the light in the chamber.")
 
 
 func item(id: int) -> Dictionary:
@@ -566,6 +577,77 @@ func fits(id: int, dst: int) -> bool:
 	return dst >= PACK_FIRST and dst <= PACK_LAST
 
 
+func is_quest_item(id: int) -> bool:
+	return item(id).get("quest", false)
+
+
+## Who carries an item, in the party or at the inn ({} if nobody).
+func holder_of(id: int) -> Dictionary:
+	for c in party + roster:
+		if id in c.items:
+			return c
+	return {}
+
+
+## A quest item for the party: into the first free pack slot, the host's first. If every pack is
+## full, it takes the place of the host's last ordinary pack item (which is left behind).
+func give_item(id: int, first: Dictionary = {}) -> Dictionary:
+	if party.is_empty():
+		return {}
+	var order: Array = [first] if not first.is_empty() else []
+	order.append_array(party)
+	for c in order:
+		var s := free_pack_slot(c)
+		if s >= 0:
+			c.items[s] = id
+			return c
+	var c: Dictionary = order[0]
+	for s in range(PACK_LAST, PACK_FIRST - 1, -1):
+		if not is_quest_item(c.items[s]):
+			c.items[s] = id
+			return c
+	return {}
+
+
+## Takes an item away from whoever carries it (in the party or at the inn).
+func take_item(id: int) -> void:
+	for c in party + roster:
+		for s in c.items.size():
+			if c.items[s] == id:
+				c.items[s] = 0
+				return
+
+
+## A character is leaving the party: their quest items go to those who stay. False if nobody
+## stays to take them (then the character should not leave).
+func hand_over_quest_items(c: Dictionary) -> bool:
+	var stay := party.filter(func(m): return m != c)
+	var ids: Array = []
+	for s in c.items.size():
+		if is_quest_item(c.items[s]):
+			ids.append(c.items[s])
+	if ids.is_empty():
+		return true
+	if stay.is_empty():
+		return false
+	for id in ids:
+		take_item(id)
+		var to: Dictionary = stay[0]
+		for m in stay:
+			if free_pack_slot(m) >= 0:
+				to = m
+				break
+		var s := free_pack_slot(to)
+		if s < 0:
+			for k in range(PACK_LAST, PACK_FIRST - 1, -1):
+				if not is_quest_item(to.items[k]):
+					s = k
+					break
+		if s >= 0:
+			to.items[s] = id
+	return true
+
+
 func free_pack_slot(c: Dictionary) -> int:
 	for i in range(PACK_FIRST, PACK_LAST + 1):
 		if c.items[i] == 0:
@@ -761,6 +843,7 @@ func load_game() -> String:
 	known = data.get("known", ["lehan", "mines"])
 	story = data.get("story", {})
 	town_known = data.get("town_known", {})
+	LehanQuests.sync_items()   # quest items for games saved before they were items
 	var screen: String = data.get("screen", "inn")
 	return {"city": "town", "create": "inn", "market": "streets"}.get(screen, screen)   # screens that were retired
 

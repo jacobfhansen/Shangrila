@@ -526,7 +526,7 @@ func _lisbet_quest() -> void:
 	print("lisbet: notice before quest? ", Game.story.get("job_notice", false))
 	st._talk("2")
 	await _drive(st, [0], "32a_lisbet_offer")
-	print("lisbet: state ", LehanQuests.state())
+	print("lisbet: state ", LehanQuests.state(), " letter with ", Game.holder_of(34).get("name", "nobody"))
 	st.area.pos = Vector2i(11, 11)
 	st.area.facing = 2
 	st.view.snap()
@@ -539,7 +539,8 @@ func _lisbet_quest() -> void:
 	st.view.snap()
 	st._talk("7")
 	await _drive(st, [1], "32c_lisbet_seal")   # open it
-	print("lisbet: after gate ", LehanQuests.state(), " purse ", Game.story.get("council_purse", false))
+	print("lisbet: after gate ", LehanQuests.state(), " purse ", Game.story.get("council_purse", false),
+		" letter with ", Game.holder_of(34).get("name", "nobody"))
 	st._travel("market")
 	st._talk("2")
 	await _drive(st, [0], "32d_lisbet_back")
@@ -656,6 +657,7 @@ func _skee_quest() -> void:
 	await _tunnel_step(Vector2i(9, 7), 2)
 	await _drive(m.current, [])
 	await get_tree().create_timer(1.0).timeout
+	await _quest_item_check(36)
 	# The rats, until they're dealt with.
 	for i in 6:
 		if SkeeQuest.rats_done():
@@ -689,7 +691,55 @@ func _skee_quest() -> void:
 		st._talk("3")
 		await _drive(st, [0], "34h_skee_persuade" if i == 0 else "")
 		await get_tree().create_timer(1.0).timeout
-	print("skee: end ", LehanQuests.state(), " roster ", Game.roster.map(func(c): return c.name))
+	print("skee: end ", LehanQuests.state(), " roster ", Game.roster.map(func(c): return c.name),
+		" bag with ", Game.holder_of(36).get("name", "nobody"), " chip with ", Game.holder_of(37).get("name", "nobody"))
+	await _quest_log_check()
+
+
+## A quest item: who carries it, the pack on the character screen, and that Trash refuses it.
+func _quest_item_check(id: int) -> void:
+	var m: Node = Game.main
+	var c := Game.holder_of(id)
+	print("item %d (%s) with %s" % [id, Game.item(id).name, c.get("name", "nobody")])
+	if c.is_empty():
+		return
+	var back: String = m.current_name
+	var back_args := {}
+	if "area" in m.current:
+		back_args = {"at_cell": [m.current.area.pos.x, m.current.area.pos.y], "facing": m.current.area.facing}
+	m.goto("view", {"party": true, "index": Game.party.find(c), "back": back, "back_args": back_args})
+	await get_tree().create_timer(0.6).timeout
+	var v: Node = m.current
+	await _shot("35a_quest_item_in_pack")
+	var trash: Slot = null
+	for ch in v.get_children():
+		if ch is Slot and ch.kind == "trash":
+			trash = ch
+	await v.drop(trash, {"item": id, "src": c.items.find(id), "from": "pack"})
+	print("trash quest item: '%s' still with %s" % [v.log_label.text, Game.holder_of(id).get("name", "nobody")])
+	v._on_leave()
+	await get_tree().create_timer(1.0).timeout
+
+
+## The quest log over the streets: the first quest, then Lisbet's.
+func _quest_log_check() -> void:
+	var m: Node = Game.main
+	m.current._on_quests()
+	await get_tree().create_timer(0.6).timeout
+	var log: QuestLog = null
+	for ch in m.get_children():
+		if ch is QuestLog:
+			log = ch
+	print("quest log: ", Journal.listed().map(func(q): return [q.key, Journal.status(q.key), Journal.scenes(q.key).size()]))
+	await _shot("35b_quest_log")
+	for sc in Journal.scenes("skee"):
+		for l in sc.lines:
+			if "▸" in l:
+				print("  log choice [%s]: %s" % [sc.place, l])
+	log.text.scroll_to_line(log.text.get_line_count() - 1)
+	await get_tree().create_timer(0.4).timeout
+	await _shot("35c_quest_log_end")
+	log.close()
 
 
 ## In the tunnels: stand at `from` facing `dir`, and walk forward (into whatever is there).
