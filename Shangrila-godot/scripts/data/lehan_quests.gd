@@ -30,7 +30,13 @@ const RECRUITS := {
 		"abilities": {"combat": 3, "toughness": 3, "talk": 0},
 		"traits": ["Calm", "Vengeful", "Humble"],
 		"look": {"skin": "#7a8a5a", "shell": "#6a5236", "cloth": "#8a7050"}},
+	# Won by the mines job (MinesQuest), not a Lehan quest: he joins after the report to the council.
+	"hal": {"name": "Hal Venner", "race": "Human", "cls": "Warrior", "icon": 3,
+		"abilities": {"combat": 3, "toughness": 2, "survival": 1},
+		"traits": ["Brave", "Melancholy", "Loyal"],
+		"look": {"skin": "#d8a880", "hair": "#4a3020", "cloth": "#5a4a3a", "legs": "#3a3028"}},
 }
+const QUESTS := ["lisbet", "skee", "boddo"]   # the Lehan quests (Hal is won by the mines job)
 const ICON_BASE := 10   # portrait icons Game.PORTRAIT_CAST + ICON_BASE + n
 const DONE_XP := 0.25   # story experience for finishing a quest
 const CHECK_XP := 0.05  # ... and for each obstacle passed with an ability
@@ -53,7 +59,7 @@ static func done(key: String) -> bool:
 
 
 static func any_done() -> bool:
-	for k in RECRUITS:
+	for k in QUESTS:
 		if done(k):
 			return true
 	return false
@@ -141,7 +147,7 @@ const ERRAND_LINES := {
 
 
 static func errand_comment() -> Array:
-	if solo() or Game.visited.size() > 1:   # after a trip into the mines nobody minds
+	if solo() or Game.mines_entered():   # after a trip into the mines nobody minds
 		return []
 	var host := host_key()
 	for c in Game.party:
@@ -241,6 +247,10 @@ const QUEST_ITEMS := {
 	35: "Tam's page: taken from the wage book, until Gell pays or burns it",
 	36: "Skee's bag: found in the tunnels, until it is given back",
 	37: "the glowing shard: from the chamber of the lights, until Skee has it",
+	41: "the foreman's key: from the breach in the mines, until the stores are open",
+	42: "the lift crank: from the foreman's stores, until it is fitted to the lift",
+	48: "the Holm seal: from the jailers' armoury, kept",
+	49: "the jailer's record: from the jailers' armoury, kept",
 }
 
 
@@ -250,7 +260,7 @@ static func _should_carry(id: int) -> bool:
 		35: return get_q("boddo") == "found" and get_q("boddo_page") != ""
 		36: return get_q("skee_bag") != "" and get_q("skee_ask_bag") == "" and not done("skee")
 		37: return get_q("skee") == "seen" and get_q("skee_ask_stone") == ""
-	return false
+	return MinesQuest.should_carry(id)
 
 
 ## Hands out the quest items the quests call for, and takes back those they no longer need.
@@ -299,6 +309,8 @@ static func cast() -> Dictionary:
 
 ## Whether a person in the square has left it (to the inn's list).
 static func gone_from_square(key: String) -> bool:
+	if key == "hal":   # in the square once the mines job is taken, until he joins
+		return not CouncilData.accepted() or done(key)
 	return RECRUITS.has(key) and done(key)
 
 
@@ -323,6 +335,8 @@ static func muster_talk(c: Dictionary, purse: int) -> Array:
 			]
 		"skee":
 			return [{"s": k, "t": "Skee is ready. Skee has packed. Twice."}, {"fx": "join", "wait": 0.1}]
+		"hal":
+			return [{"s": k, "t": "For my father. Lead on."}, {"fx": "join", "wait": 0.1}]
 		"boddo":
 			var line := "Boddo carries. Where are we going?" if get_q("boddo_way") != "self" \
 				else "You paid Boddo's debt. Boddo goes where you go."

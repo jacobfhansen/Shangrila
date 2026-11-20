@@ -1,20 +1,18 @@
 class_name DungeonView
 extends SubViewport
-## First-person view of the mines. The original composed each view from seven pre-drawn
-## strips (OVDB / DrawOutView); here the same map is built as real 3D geometry.
-## With `area` set (e.g. LehanStreets) it shows that area instead: the area builds the scene and
-## keeps its own position, facing and walls.
+## First-person view of an area (MinesArea, LehanStreets, LehanTunnels). The original composed each
+## view of the mines from seven pre-drawn strips (OVDB / DrawOutView); here the map is built as real
+## 3D geometry. The area builds the scene and keeps its own position, facing and walls.
 
 signal moved
 
 const CELL := 2.0
-const EYE := 0.95
 const STEP_TIME := 0.16
 
 var cam: Camera3D
 var busy := false
 var yaw := 0.0
-var area: Object = null   # set before adding to the tree; null means the mines
+var area: Object = null   # set before adding to the tree
 
 
 func _ready() -> void:
@@ -28,125 +26,24 @@ func _ready() -> void:
 	cam.fov = 72
 	cam.near = 0.05
 	root.add_child(cam)
-	if area:
-		area.build(root, cam)
-	else:
-		_build_mines(root)
+	area.build(root, cam)
 	snap()
 
 
-func _build_mines(root: Node3D) -> void:
-	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color.BLACK
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.32, 0.27, 0.22)
-	env.ambient_light_energy = 0.8
-	env.fog_enabled = true
-	env.fog_light_color = Color(0.02, 0.015, 0.01)
-	env.fog_density = 0.12
-	var we := WorldEnvironment.new()
-	we.environment = env
-	root.add_child(we)
-
-	var wall_m := _mat("try2", Color(1.0, 0.95, 0.9))
-	var floor_m := _mat("floor_tiles", Color(0.9, 0.85, 0.8))
-	var ceil_m := _mat("rock", Color(0.6, 0.55, 0.5))
-	var walls := _st()
-	var floors := _st()
-	var ceils := _st()
-	var h := CELL / 2.0
-	for cell: Vector2i in Game.mines:
-		var c := Vector3(cell.x * CELL, 0, cell.y * CELL)
-		_quad(floors, c, Vector3.UP, Vector3.FORWARD, h)
-		_quad(ceils, c + Vector3(0, CELL, 0), Vector3.DOWN, Vector3.BACK, h)
-		for d in 4:
-			if Game.exit_open(cell, d):
-				continue
-			var dv := Vector3(Game.DIR_VEC[d].x, 0, Game.DIR_VEC[d].y)
-			_quad(walls, c + dv * h + Vector3(0, h, 0), -dv, Vector3.UP, h)
-	_add_mesh(root, walls, wall_m)
-	_add_mesh(root, floors, floor_m)
-	_add_mesh(root, ceils, ceil_m)
-
-	# Daylight behind the entrance (the L1-L3 "light" pictures of the original).
-	var sky := StandardMaterial3D.new()
-	sky.albedo_texture = Ui.tex("SKY")
-	sky.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	sky.disable_fog = true
-	var start := Vector3(Game.MINES_START.x * CELL, 0, Game.MINES_START.y * CELL)
-	var sky_st := _st()
-	_quad(sky_st, start + Vector3(0, h, h - 0.01), Vector3.FORWARD, Vector3.UP, h)
-	_add_mesh(root, sky_st, sky)
-	var day := OmniLight3D.new()
-	day.light_color = Color(0.7, 0.8, 1.0)
-	day.light_energy = 1.2
-	day.omni_range = 4.0
-	day.position = start + Vector3(0, 1.2, 0.8)
-	root.add_child(day)
-
-	var torch := OmniLight3D.new()
-	torch.light_color = Color(1.0, 0.78, 0.5)
-	torch.light_energy = 2.2
-	torch.omni_range = 9.0
-	torch.omni_attenuation = 1.4
-	torch.position = Vector3(0.15, 0.1, 0.1)
-	cam.add_child(torch)
-	var flicker := create_tween().set_loops()
-	flicker.tween_property(torch, "light_energy", 1.95, 0.23)
-	flicker.tween_property(torch, "light_energy", 2.25, 0.31)
-	flicker.tween_property(torch, "light_energy", 2.05, 0.19)
-
-
-func _mat(tex: String, tint: Color) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.albedo_texture = Ui.tex(tex)
-	m.albedo_color = tint
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	m.roughness = 0.95
-	return m
-
-
-func _st() -> SurfaceTool:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	return st
-
-
-## Adds a square of half-size h at c, facing n, with u as its "up" direction.
-func _quad(st: SurfaceTool, c: Vector3, n: Vector3, u: Vector3, h: float) -> void:
-	var r := u.cross(n)
-	var tl := c - r * h + u * h
-	var tr := c + r * h + u * h
-	var br := c + r * h - u * h
-	var bl := c - r * h - u * h
-	for v in [[tl, Vector2(0, 0)], [tr, Vector2(1, 0)], [br, Vector2(1, 1)], [tl, Vector2(0, 0)], [br, Vector2(1, 1)], [bl, Vector2(0, 1)]]:
-		st.set_normal(n)
-		st.set_uv(v[1])
-		st.add_vertex(v[0])
-
-
-func _add_mesh(root: Node3D, st: SurfaceTool, m: Material) -> void:
-	var mi := MeshInstance3D.new()
-	mi.mesh = st.commit()
-	mi.material_override = m
-	root.add_child(mi)
-
-
 func _cell_pos(cell: Vector2i) -> Vector3:
-	return Vector3(cell.x * CELL, area.eye if area else EYE, cell.y * CELL)
+	return Vector3(cell.x * CELL, area.eye, cell.y * CELL)
 
 
 func get_pos() -> Vector2i:
-	return area.pos if area else Game.pos
+	return area.pos
 
 
 func get_facing() -> int:
-	return area.facing if area else Game.facing
+	return area.facing
 
 
 func _can_move(from: Vector2i, dir: int) -> bool:
-	return area.can_move(from, dir) if area else Game.can_move(from, dir)
+	return area.can_move(from, dir)
 
 
 ## Place the camera at the current position and facing without animation.
@@ -159,10 +56,7 @@ func snap() -> void:
 func turn(d: int) -> void:
 	if busy:
 		return
-	if area:
-		area.facing = posmod(area.facing + d, 4)
-	else:
-		Game.facing = posmod(Game.facing + d, 4)
+	area.facing = posmod(area.facing + d, 4)
 	yaw -= d * PI / 2.0
 	busy = true
 	var tw := create_tween()
@@ -185,11 +79,7 @@ func step(dir: int) -> bool:
 		bump.tween_property(cam, "position", p, 0.08)
 		bump.finished.connect(func(): busy = false)
 		return false
-	if area:
-		area.pos += Game.DIR_VEC[dir]
-	else:
-		Game.pos += Game.DIR_VEC[dir]
-		Game.visited[Game.pos] = true
+	area.pos += Game.DIR_VEC[dir]
 	busy = true
 	var tw := create_tween()
 	tw.tween_property(cam, "position", _cell_pos(get_pos()), STEP_TIME).set_trans(Tween.TRANS_SINE)

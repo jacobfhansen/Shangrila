@@ -1,7 +1,9 @@
 extends Control
-## DungeonWin - exploring the mines, and fighting in them.
+## DungeonWin - exploring the mines (MinesArea, MinesQuest), and fighting in them.
 ## Keys: W/Up forward, S/Down back, A/Left turn left, D/Right turn right,
-## Q/E step sideways, M map.
+## Q/E step sideways, Space use or examine what is ahead, M map, J quests.
+## Args: {"resume": true} after a scene changed something (the view is rebuilt), {"arrived": how}
+## after moving to another level.
 ## In combat: A Attack, P Parry, S Spell, U Use, E Equip, T Turn, F Flee, H Hide, X Pass,
 ## D Defaults, Esc back/cancel, Space hurry up.
 
@@ -50,12 +52,18 @@ var auto := false
 var fast := false      # hurry the current round
 var steps_quiet := 0
 var last_pos := Game.pos
+var area := MinesArea.new()
+var talking := false
+var came_from := Game.pos   # the square before the last step (running from a placed group goes back there)
+var combat_tag := ""        # what the fight is: a placed group's key, "warden", or "" for wandering monsters
+var after_scene := {}       # what a scene asked for, done when it closes: {"travel": [level, how]} / {"fight": "warden"}
 
 
 func _ready() -> void:
 	Ui.stone_background(self)
 
 	view = DungeonView.new()
+	view.area = area
 	add_child(view)
 	view.moved.connect(_after_move)
 	Ui.frame(self, Rect2(14, 14, 272, 272), Color.BLACK, Color("#a07a40"), 4)
@@ -111,6 +119,7 @@ func _ready() -> void:
 	log_view.clicked.connect(func(): fast = true)
 
 	compass = Compass.new()
+	compass.area = area
 	add_child(compass)
 	Ui.place(compass, Rect2(289, 276, 101, 101))
 
@@ -144,10 +153,10 @@ func _ready() -> void:
 		act_buttons[ACTS[i]] = b
 
 	# Bottom-left buttons (DungeonWin 1-8, 39).
-	var bl := [["Close", 10, 44, _on_close, "Leave the mines"],
+	var bl := [["Close", 10, 44, _on_close, "Leave the mines (from the entrance)"],
 		["Save", 56, 40, _on_save, "Save the game"],
-		["Examine", 98, 56, _on_examine, "Examine the surroundings"],
-		["Sleep", 156, 42, _on_sleep, "Rest: turns endurance into hit points and restores mana"],
+		["Examine", 98, 56, _on_examine, "Use what is ahead, or search the walls around you (Space)"],
+		["Sleep", 156, 42, _on_sleep, "Rest: turns endurance into hit points and restores mana (safe at a camp)"],
 		["Quests", 200, 50, QuestLog.open, "The quest log: every quest and what was said (J)"]]
 	for e in bl:
 		var b := Ui.btn(self, e[0], Rect2(e[1], 430, e[2], 32), e[3], e[4])
@@ -158,8 +167,21 @@ func _ready() -> void:
 	map_btn.toggle_mode = true
 
 	_explore_ui()
-	say("You enter the mines. Daylight fades behind you.")
-	_after_move()
+	var args: Dictionary = get_meta("args", {})
+	Game.visited[Vector3i(Game.pos.x, Game.pos.y, Game.mine_level)] = true
+	came_from = Game.pos
+	last_pos = Game.pos
+	if args.get("resume", false):
+		_hint()
+		return
+	var lv := Game.mine_level
+	say("Level %d: %s." % [lv, MinesArea.NAMES[lv - 1].to_lower()] if args.has("arrived") else "You enter the mines. Daylight fades behind you.")
+	_hint()
+	var first := not Game.mines_entered() if lv == 1 else LehanQuests.get_q("m_reached_%d" % lv) == ""
+	if first:
+		Game.story["mines_entered"] = true
+		LehanQuests.apply("q:m_reached_%d=1" % lv)
+		_scene.call_deferred(MinesArea.NAMES[lv - 1], MinesQuest.arrival(lv))
 
 
 func _small_btn(text: String, r: Rect2, cb: Callable, tip: String) -> Button:
@@ -195,14 +217,64 @@ func _refresh_party() -> void:
 
 func _after_move() -> void:
 	compass.queue_redraw()
-	if Game.pos != last_pos:
-		last_pos = Game.pos
-		steps_quiet += 1
-		if Game.pos != Game.MINES_START and steps_quiet > QUIET_STEPS and Game.my_random(1, 100) <= ENCOUNTER_CHANCE:
-			start_combat(Combat.new(Game.depth()))
+	if talking:
+		return
+	if Game.pos == last_pos:
+		_hint()
+		return
+	came_from = last_pos
+	last_pos = Game.pos
+	steps_quiet += 1
+	var t := area.thing_at(Game.pos)
+	match t.get("kind", ""):
+		"group":
+			var g: Dictionary = MinesQuest.GROUPS[t.key]
+			say(g.intro)
+			combat_tag = t.key
+			var c := Combat.new(0, g.m)
+			c.dark = true
+			start_combat(c)
 			return
-	if Game.pos == Game.MINES_START and Game.facing == 2:
-		say("Daylight. The way out lies behind you (Close).")
+		"note", "trap", "breach":
+			_scene.call_deferred({"note": "Something written", "trap": "Careful!", "breach": "The breach"}[t.kind],
+				MinesQuest.scene(Game.mine_level, t))
+			return
+		"camp":
+			say("A camp. The party can rest here safely (Sleep).")
+	if t.get("kind", "") != "camp" and Game.pos != MinesArea.START and steps_quiet > QUIET_STEPS \
+			and Game.my_random(1, 100) <= ENCOUNTER_CHANCE:
+		combat_tag = ""
+		start_combat(Combat.new(Game.depth()))
+		return
+	_hint()
+
+
+## What lies ahead, in the status line while exploring.
+func _hint() -> void:
+	if combat:
+		return
+	var t := area.thing_at(area.ahead())
+	var k: String = t.get("kind", "")
+	var text: String = {
+		"exit": "Ahead: daylight. The way out (walk on, or Space).",
+		"down": "Ahead: a shaft, with a ladder going down.",
+		"up": "Ahead: a ladder going up.",
+		"lift": "Ahead: the lift.",
+		"chest": "Ahead: an open chest." if t.get("done", false) else "Ahead: a chest.",
+		"lever": "Ahead: a lever.",
+		"cart": "Ahead: an ore cart, jammed across the rails.",
+		"air": "Ahead: the air smells wrong.",
+		"door": "Ahead: a locked door.",
+		"water": "Ahead: the passage is flooded.",
+		"ward": "Ahead: a carved stone slab blocks the way.",
+		"npc": "Ahead: someone is there.",
+		"warden": "Ahead: the Warden, before the gate.",
+		"vein": "Ahead: a seam of ore in the rock." if not t.get("done", false) else "",
+		"pillar": "Ahead: a carved pillar.",
+		"words": "Ahead: words carved in the wall.",
+	}.get(k, "")
+	status_label.text = text if text != "" else "No enemies in sight."
+	status_label.add_theme_color_override("font_color", Ui.TEXT if text != "" else Ui.DIM)
 
 
 func _turn(d: int) -> void:
@@ -213,18 +285,56 @@ func _turn(d: int) -> void:
 
 ## rel: 0 forward, 1 right, 2 back, 3 left - relative to facing.
 func _walk(rel: int) -> void:
-	if map_mode or combat or Game.main.modal_open or view.busy:
+	if map_mode or combat or talking or Game.main.modal_open or view.busy:
 		return
 	var dir := (Game.facing + rel) % 4
-	if not view.step(dir):
-		if Game.mines.get(Game.pos, [false, false, false, false])[dir]:
-			say("The passage %s is blocked by rubble." % Game.DIR_NAMES[dir].to_lower())
-		else:
-			say("A wall blocks the way %s." % Game.DIR_NAMES[dir].to_lower())
+	if view.step(dir):
+		return
+	var t := area.thing_at(Game.pos + Game.DIR_VEC[dir])
+	if rel == 0 and not t.has("looks") and t.get("kind", "wall") != "wall":
+		_use(t)
+	else:
+		say("A wall blocks the way %s." % Game.DIR_NAMES[dir].to_lower())
+
+
+## Uses a thing in front of the party.
+func _use(t: Dictionary) -> void:
+	match t.get("kind", ""):
+		"exit":
+			_on_close()
+		"down", "up":
+			var to: int = Game.mine_level + (1 if t.kind == "down" else -1)
+			_travel(to, t.kind)
+		"", "wall", "secret", "tomb":
+			pass
+		_:
+			_scene(_title(t), MinesQuest.scene(Game.mine_level, t))
+
+
+func _title(t: Dictionary) -> String:
+	return {"chest": "A chest", "lever": "A lever", "cart": "The ore cart", "air": "Bad air", "door": "A locked door",
+		"water": "The flooded passage", "ward": "The ward door", "npc": "Survivors" if t.get("ch", "") == "S" else "Saelen",
+		"warden": "The Warden", "vein": "A seam of ore", "pillar": "A carved pillar", "words": "Carved words",
+		"lift": "The lift"}.get(t.kind, "In the mines")
+
+
+## Moves the party to another level: down or up a ladder (arriving by the matching way), or by lift.
+func _travel(to: int, how: String) -> void:
+	var near: String = {"down": "<", "up": ">", "lift": "L"}[how]
+	var spot := MinesArea.arrive_near(to, near)
+	if spot.is_empty():
+		say("At the top of the ladder an ore cart stands jammed across the way. You can't get past it from here." if how == "up"
+			else "The way is blocked.")
+		return
+	say({"down": "You climb down the ladder...", "up": "You climb up the ladder...", "lift": "The lift sinks and rises through the dark..."}[how])
+	Game.mine_level = to
+	Game.pos = spot[0]
+	Game.facing = spot[1]
+	Game.main.goto("dungeon", {"arrived": how})
 
 
 func _unhandled_key_input(e: InputEvent) -> void:
-	if not e.is_pressed() or Game.main.modal_open:
+	if not e.is_pressed() or Game.main.modal_open or talking:
 		return
 	if combat:
 		_combat_key(e)
@@ -253,7 +363,14 @@ func _on_map() -> void:
 
 
 func _on_close() -> void:
+	if talking or combat:
+		return
+	if Game.mine_level != 1 or (Game.pos - MinesArea.START).length() > 1.5:
+		say("The way out is at the mouth of the mines, on the first level.")
+		return
 	if await Game.main.confirm("Do you really want to leave the mines?"):
+		Game.pos = MinesArea.START   # next time, in again at the entrance
+		Game.facing = MinesArea.START_FACING
 		Game.main.goto("world")
 
 
@@ -264,17 +381,39 @@ func _on_save() -> void:
 		say("Could not save the game!")
 
 
+## Uses what is ahead; with nothing there, searches the walls around for anything hidden.
 func _on_examine() -> void:
+	if talking or combat or view.busy or Game.main.modal_open:
+		return
+	var t := area.thing_at(area.ahead())
+	if t.get("kind", "") not in ["", "wall", "secret", "tomb"]:
+		_use(t)
+		return
+	for d in 4:
+		var n: Vector2i = Game.pos + Game.DIR_VEC[d]
+		var h := area.thing_at(n)
+		if h.get("kind", "") == "secret":
+			var eyes := LehanQuests.best("perception")
+			if Game.check(eyes, "perception", Game.NORMAL):
+				LehanQuests.apply("q:m_secret=1")
+				LehanQuests.apply("xp:%s" % LehanQuests.CHECK_XP)
+				await Game.main.message("%s taps the wall to the %s. It sounds hollow: loose boards, painted to look like rock. Behind them is a small hidden space." % [eyes.name.split(" ")[0], Game.DIR_NAMES[d].to_lower()])
+				Game.main.goto("dungeon", {"resume": true})
+				return
 	var open := []
 	for d in 4:
-		if Game.exit_open(Game.pos, d):
+		if area.can_move(Game.pos, d):
 			open.append(Game.DIR_NAMES[d].to_lower())
-	say("You search around. Passages lead %s." % ", ".join(open))
+	say("You search around and find nothing hidden. Passages lead %s." % (", ".join(open) if not open.is_empty() else "nowhere"))
 
 
 func _on_sleep() -> void:
-	if Game.my_random(1, 100) <= 30:
+	if talking or combat:
+		return
+	var camp: bool = area.thing_at(Game.pos).get("kind", "") == "camp"
+	if not camp and Game.my_random(1, 100) <= 30:
 		say("The party settles down to rest... but something finds you first!")
+		combat_tag = ""
 		start_combat(Combat.new(Game.depth()))
 		return
 	var hungry := []
@@ -286,9 +425,76 @@ func _on_sleep() -> void:
 		if c.hits < c.max_hits:
 			hungry.append(c.name)
 	_refresh_party()
-	say("The party rests. Wounds close and mana returns.")
+	say("The party rests by the camp's old fire. Wounds close and mana returns." if camp else "The party rests. Wounds close and mana returns.")
 	if not hungry.is_empty():
 		say("%s too hungry to heal fully - eat something." % (" and ".join(hungry) + (" is" if hungry.size() == 1 else " are")))
+
+
+# ---------------------------------------------------------------- scenes
+
+## A scene in the dialogue window, over the screen. Afterwards the view is rebuilt if anything
+## changed in the mines, and whatever the scene asked for (another level, a fight) happens.
+func _scene(title: String, lines: Array) -> void:
+	if talking or lines.is_empty():
+		return
+	talking = true
+	after_scene = {}
+	var host: String = Game.story.get("host", "")
+	if host == "":
+		lines = lines.filter(func(st): return not st.has("i") and not st.has("sp") and not (st.has("s") and st.s == ""))
+	var before := _state()
+	var ov := Control.new()
+	add_child(ov)
+	Ui.place(ov, Rect2(0, 0, 640, 480))
+	Ui.frame(ov, Rect2(10, 150, 620, 322), Color("#1a120a"), Color("#a07a40"), 2)
+	Ui.label(ov, title, Vector2(22, 156), 15, Ui.GOLD)
+	var box := DialogueBox.new()
+	box.cast = MinesQuest.cast()
+	box.host = host
+	box.journal = "mines"
+	box.journal_place = "The mines, level %d: %s" % [Game.mine_level, title.to_lower()]
+	Ui.place(box, Rect2(20, 180, 600, 286))   # sized before _ready builds it
+	ov.add_child(box)
+	box.effect.connect(_on_effect)
+	box.play(lines)
+	await box.finished
+	box.show_buttons([["Go on", func(): box.finished.emit()]])
+	await box.finished
+	ov.queue_free()
+	talking = false
+	_refresh_party()
+	if after_scene.has("travel"):
+		_travel(after_scene.travel[0], after_scene.travel[1])
+	elif after_scene.has("fight"):
+		combat_tag = "warden"
+		var c := Combat.new(0, [{"key": "warden", "n": 1}])
+		c.dark = true
+		start_combat(c)
+	elif _state() != before:
+		Game.main.goto("dungeon", {"resume": true})
+	else:
+		_hint()
+
+
+func _on_effect(fx: String) -> void:
+	if fx.begins_with("travel:"):
+		var p := fx.split(":")
+		after_scene = {"travel": [int(p[1]), p[2]]}
+	elif fx.begins_with("fight:"):
+		after_scene = {"fight": fx.substr(6)}
+	else:
+		MinesQuest.apply(fx)
+
+
+## The mines' quest values, to see whether a scene changed anything that shows in the view.
+func _state() -> String:
+	var parts := []
+	var st := LehanQuests.state()
+	for k in st:
+		if str(k).begins_with("m_"):
+			parts.append("%s=%s" % [k, st[k]])
+	parts.sort()
+	return ",".join(parts)
 
 
 # ---------------------------------------------------------------- combat UI state
@@ -322,7 +528,10 @@ func start_combat(c: Combat) -> void:
 	enemy_panel.combat = c
 	enemy_panel.visible = true
 	status_label.add_theme_color_override("font_color", Ui.TEXT)
-	say("Something stirs in the dark! You face %s." % c.describe())
+	say(("You face %s." if combat_tag != "" else "Something stirs in the dark! You face %s.") % c.describe())
+	var host := LehanQuests.host_char() if Game.story.get("host", "") != "" else {}
+	if not host.is_empty() and (host.items[Game.SLOT_RHAND] in [46, 47] or host.items[Game.SLOT_LHAND] in [46, 47]):
+		say("The jailers' steel is cold in %s's hands. Something inside them recoils from it." % host.name.split(" ")[0])
 	for ch in Game.party:
 		var w := c.weapon_info(ch)
 		if w.name == "fists" and not c.weapon_slots(ch).is_empty():
@@ -551,8 +760,12 @@ func _resolve() -> void:
 func _end_combat(result: String) -> void:
 	phase = ""
 	var c := combat
+	var tag := combat_tag
+	combat_tag = ""
 	match result:
 		"won":
+			if tag != "" and tag != "warden":
+				LehanQuests.apply("q:m_grp_%s=1" % tag)
 			var lines := c.rewards()
 			for l in lines:
 				say(l)
@@ -562,8 +775,14 @@ func _end_combat(result: String) -> void:
 		"fled":
 			say("You get away. Your hearts are still pounding.")
 			combat = null
+			if tag != "" and tag != "warden" and came_from != Game.pos:
+				Game.pos = came_from   # the placed monsters still hold their ground
+				last_pos = Game.pos
+				view.snap()
 		"lost":
 			combat = null
+			if tag == "warden":
+				LehanQuests.apply("q:m_warden=met")
 			say("The last of the party falls...")
 			await _pause(0.6)
 			await Game.main.message("The party has fallen.\nYou wake up at the inn in %s, bruised and robbed of half your coins." % Game.city.name)
@@ -579,3 +798,6 @@ func _end_combat(result: String) -> void:
 		p.highlight = false
 	_refresh_party()
 	_explore_ui()
+	_hint()
+	if result == "fled" and tag == "warden" and LehanQuests.get_q("m_warden") == "":
+		_scene("The Warden", MinesQuest.warden_after())

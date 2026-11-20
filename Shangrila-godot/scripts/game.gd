@@ -91,18 +91,6 @@ const SLOT_RFINGER := 28
 const SLOT_LFINGER := 29
 const SLOT_QUIVER := 30
 
-## Dungeon "The Mines": "x,y,exits". Extracted verbatim from InitData.
-const MINES_DATA := [
-	"16,11,ES", "17,11,NESW", "18,11,SW", "16,12,NESW", "17,12,NESW", "18,12,NESW", "19,12,EW", "20,12,EW",
-	"21,12,EW", "22,12,EW", "23,12,NSW", "16,13,NE", "17,13,NESW", "18,13,NW", "23,13,NS", "17,14,NS",
-	"23,14,NS", "17,15,NS", "23,15,NS", "17,16,NS", "20,16,ES", "21,16,ESW", "22,16,ESW", "23,16,NW", "16,17,EW",
-	"17,17,NESW", "18,17,EW", "19,17,EW", "20,17,NESW", "21,17,NESW", "22,17,NSW", "8,18,ES", "9,18,SW",
-	"17,18,NS", "20,18,NE", "21,18,NESW", "22,18,NW", "8,19,NES", "9,19,NSW", "12,19,ES", "13,19,ESW",
-	"14,19,SW", "17,19,NS", "8,20,NESW", "9,20,NESW", "10,20,EW", "11,20,EW", "12,20,NESW", "13,20,NESW",
-	"14,20,NESW", "15,20,EW", "16,20,EW", "17,20,NW", "8,21,NES", "9,21,NSW", "12,21,NE", "13,21,NESW",
-	"14,21,NW", "8,22,NES", "9,22,NSW", "13,22,NS", "8,23,NE", "9,23,NW", "13,23,NS", "13,24,NS", "13,25,N",
-]
-const MINES_START := Vector2i(13, 25)
 const DIR_NAMES := ["North", "East", "South", "West"]
 const DIR_LETTERS := ["N", "E", "S", "W"]
 const DIR_VEC := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
@@ -117,6 +105,8 @@ const LOCATIONS := {
 		"desc": "A walled town with an inn and a weapon smith."},
 	"mines": {"name": "The Mines", "kind": "dungeon", "at": Vector2(292, 200), "screen": "dungeon",
 		"desc": "Old mine workings in the hills above Lehan."},
+	"marsh_shrine": {"name": "The Drowned Shrine", "kind": "plot", "at": Vector2(424, 300), "screen": "",
+		"desc": "An old shrine on the causeways of the Thuug marshes, half sunk in black water. The jailers' record says they drowned something of the spirit's there. (The marshes are not in the game yet.)"},
 }
 ## Town maps. Places appear on them as they are discovered; `start` are known on arrival.
 ## `at` is the position on the town image (600x370, made by tools/make_textures.py).
@@ -142,19 +132,19 @@ const TOWNS := {
 }
 
 ## Routes between locations, with the number of days on the road.
-const ROUTES := [["lehan", "mines", 1], ["shrine", "lehan", 1]]
+const ROUTES := [["lehan", "mines", 1], ["shrine", "lehan", 1], ["lehan", "marsh_shrine", 3]]
 ## Endurance each character uses per day of travel (food is what refills it).
 const TRAVEL_COST := 8
 
 var main: Node            # set by main.gd, used for modal dialogs
 var items := {}           # id -> item dictionary (templates, never mutated)
-var mines := {}           # Vector2i -> Array[bool] exits [N, E, S, W]
 var city := {}
 
 var roster: Array = []    # "Mob" - characters waiting at the inn
 var party: Array = []     # up to 6 characters
-var visited := {}         # Vector2i -> true
-var pos := MINES_START
+var visited := {}         # Vector3i(x, y, level) -> true: the squares of the mines seen so far
+var mine_level := 1       # the level of the mines the party is on (see MinesArea)
+var pos := MinesArea.START   # the party's square on that level
 var facing := 0           # 0 N, 1 E, 2 S, 3 W
 var location := "lehan"   # key in LOCATIONS: where the party is on the world map
 var known: Array = ["lehan", "mines"]   # discovered locations
@@ -168,10 +158,6 @@ func _ready() -> void:
 	rng.randomize()
 	_make_items()
 	_make_world()
-	for s in MINES_DATA:
-		var p: PackedStringArray = s.split(",")
-		var ex: String = p[2]
-		mines[Vector2i(int(p[0]), int(p[1]))] = [ex.contains("N"), ex.contains("E"), ex.contains("S"), ex.contains("W")]
 	new_game()
 
 
@@ -242,6 +228,33 @@ func _make_items() -> void:
 		"A leather bag, half chewed by rats. Rat traps, a sling and a little carved charm against ghosts. A rat's head is burned into the flap.")
 	_it(37, "Glowing Shard", "chip", "#7aa8f0", 1, 0, {"dims": true, "quest": true},
 		"A shard from the broken figure in the tunnels under Lehan. It stays faintly blue, and cold, like the light in the chamber.")
+	# The mines (see MinesArea and MinesQuest): miners' kit, the foreman's stores, the jailers' arms.
+	_it(38, "Miner's Pick", "pick", "#9aa0aa", 70, 6, {"dmg": [1, 6], "weapon": true, "axe": true},
+		"A heavy pick with a worn ash handle. Made for rock, but it bites anything. Ore can be chipped out with it.")
+	_it(39, "Leather Cap", "cap", "#7a5030", 15, 2, {"armor": true, "head": true, "defense": 1},
+		"A miner's padded leather cap, good against low ceilings and falling stones.")
+	_it(40, "Miner's Lamp", "lamp", "#c8a040", 20, 4, {"dims": true},
+		"A brass lamp with a shielded flame. In bad air the flame shrinks and turns blue, long before you feel it.")
+	_it(41, "Foreman's Key", "key", "#a08850", 1, 0, {"dims": true, "quest": true},
+		"An iron key on a leather thong, taken from the foreman's belt at the breach.")
+	_it(42, "Lift Crank", "crank", "#6a6a70", 40, 0, {"dims": true, "quest": true},
+		"The iron crank for the lift's winding drum, kept in the foreman's stores.")
+	_it(43, "Silver-Grey Ore", "ore", "#a8a8b8", 30, 12, {"dims": true},
+		"A lump of ore from the new diggings, heavy and glittering. The smith in Lehan pays well for it.")
+	_it(44, "Steel Sword", "sword", "#e0e4ec", 55, 30, {"dmg": [2, 8], "weapon": true, "sword": true, "attack": 1},
+		"Good steel from the foreman's stores, better than anything the smith in Lehan sells.")
+	_it(45, "Steel Cap", "helmet", "#b0b4bc", 35, 12, {"armor": true, "head": true, "defense": 2},
+		"A close-fitting steel cap, made for the miners who dig where the rock is loose.")
+	_it(46, "Jailer's Blade", "sword", "#a0b0c8", 60, 40, {"dmg": [2, 8], "weapon": true, "sword": true, "attack": 1, "bane": "oath"},
+		"An old blade from the jailers' armoury. It bites deeper into their oath-bound dead. It is cold, and the host does not like to hold it.")
+	_it(47, "Ward-Etched Shield", "shield", "#8a90a0", 45, 30, {"armor": true, "defense": 2},
+		"A shield etched with old warding lines. Cold to the touch; the host would rather not carry it.")
+	_it(48, "Holm Seal", "seal", "#b08840", 1, 0, {"dims": true, "quest": true,
+		"text": "A heavy signet: a tower within a ring of chain. Around it, worn small: \"WE HOLD\"."},
+		"A signet ring from the jailers' armoury in the sealed galleries. The mark of one of Lehan's old families.")
+	_it(49, "Jailer's Record", "page", "#d8c8a0", 2, 0, {"dims": true, "quest": true,
+		"text": "\"...the body we sealed below, and set the Warden at the gate. Iron and oath will hold it: no blade of ours can harm the Warden, nor any blade while the pieces of the tyrant still sleep apart. The second piece we took to the marsh-folk's causeway and drowned it at the old shrine, where the water never clears...\""},
+		"A brittle page from the jailers' armoury, in an old hand.")
 
 
 func item(id: int) -> Dictionary:
@@ -542,9 +555,14 @@ func add_silver(c: Dictionary, amount: int) -> void:
 	c.silver = maxi(0, c.silver + amount)
 
 
-## How far into the mines the party is - deeper means tougher monsters.
+## How deep in the mines the party is, for the wandering monsters (Combat.TIERS: depth / 7).
 func depth() -> int:
-	return absi(pos.x - MINES_START.x) + absi(pos.y - MINES_START.y)
+	return (mine_level - 1) * 7 + 3
+
+
+## Whether the party has been down the mines yet.
+func mines_entered() -> bool:
+	return story.get("mines_entered", false)
 
 
 ## The whole party fell: they wake up at the inn, robbed of half their coins.
@@ -552,8 +570,9 @@ func party_defeated() -> void:
 	for c in party:
 		c.hits = 1
 		add_silver(c, -c.silver / 2)
-	pos = MINES_START
-	facing = 0
+	mine_level = 1
+	pos = MinesArea.START
+	facing = MinesArea.START_FACING
 	location = "lehan"
 
 
@@ -696,25 +715,15 @@ func pay(amount: int) -> bool:
 	return true
 
 
-# ---------------------------------------------------------------- dungeon
-
-func can_move(from: Vector2i, dir: int) -> bool:
-	var ex: Array = mines.get(from, [false, false, false, false])
-	return ex[dir] and mines.has(from + DIR_VEC[dir])
-
-
-func exit_open(cell: Vector2i, dir: int) -> bool:
-	return can_move(cell, dir)
-
-
 # ---------------------------------------------------------------- game / save
 
 func new_game() -> void:
 	roster = []
 	party = []
-	visited = {MINES_START: true}
-	pos = MINES_START
-	facing = 0
+	visited = {}
+	mine_level = 1
+	pos = MinesArea.START
+	facing = MinesArea.START_FACING
 	location = "lehan"
 	known = ["lehan", "mines"]
 	story = {}
@@ -747,10 +756,10 @@ func has_save() -> bool:
 func save_game(screen: String) -> bool:
 	var v := []
 	for k in visited:
-		v.append([k.x, k.y])
+		v.append([k.x, k.y, k.z])
 	var data := {
-		"version": 5, "screen": screen, "roster": roster, "party": party,
-		"visited": v, "pos": [pos.x, pos.y], "facing": facing,
+		"version": 6, "screen": screen, "roster": roster, "party": party,
+		"visited": v, "level": mine_level, "pos": [pos.x, pos.y], "facing": facing,
 		"location": location, "known": known, "story": story, "town_known": town_known,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -829,19 +838,29 @@ func load_game() -> String:
 					equip_from_pack(c)
 	for c in roster + party:
 		update_derived(c)
+	story = data.get("story", {})
 	visited = {}
-	for p in data.get("visited", []):
-		visited[Vector2i(p[0], p[1])] = true
-	var p: Array = data.get("pos", [MINES_START.x, MINES_START.y])
-	pos = Vector2i(p[0], p[1])
-	if not mines.has(pos):
-		pos = MINES_START
-	facing = data.get("facing", 0)
+	mine_level = clampi(int(data.get("level", 1)), 1, MinesArea.MAPS.size())
+	pos = MinesArea.START
+	facing = MinesArea.START_FACING
+	if data.get("version", 1) < 6:
+		# The mines were redrawn (three new levels): old saves start again at the entrance.
+		if data.get("visited", []).size() > 1:
+			story["mines_entered"] = true
+	else:
+		for p in data.get("visited", []):
+			visited[Vector3i(int(p[0]), int(p[1]), int(p[2]))] = true
+		var p: Array = data.get("pos", [pos.x, pos.y])
+		pos = Vector2i(int(p[0]), int(p[1]))
+		facing = int(data.get("facing", 0))
+		if not MinesArea.walkable(mine_level, pos):
+			mine_level = 1
+			pos = MinesArea.START
+			facing = MinesArea.START_FACING
 	location = data.get("location", "lehan")
 	if not LOCATIONS.has(location):
 		location = "lehan"
 	known = data.get("known", ["lehan", "mines"])
-	story = data.get("story", {})
 	town_known = data.get("town_known", {})
 	LehanQuests.sync_items()   # quest items for games saved before they were items
 	var screen: String = data.get("screen", "inn")

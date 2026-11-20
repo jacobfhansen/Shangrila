@@ -31,13 +31,37 @@ const MONSTERS := {
 		"speed": 2, "coins": [0, 3], "max": 4, "shape": "brigand", "col": "#4a4038", "verb": "slashes"},
 	"renegade": {"name": "Renegade", "plural": "Renegades", "lvl": 7, "hp": [8, 12], "def": 9, "atk": 5, "dmg": [2, 6],
 		"speed": 3, "coins": [2, 8], "max": 2, "shape": "enemy", "col": "#6a2020", "verb": "strikes"},
+	# The mines' second level: cave creatures drawn by the breach.
+	"gloomweaver": {"name": "Gloomweaver", "plural": "Gloomweavers", "lvl": 3, "hp": [3, 7], "def": 7, "atk": 3, "dmg": [1, 4],
+		"speed": 4, "coins": [0, 0], "max": 4, "shape": "spider", "col": "#c8c0b0", "verb": "bites"},
+	"gloom_mother": {"name": "Gloomweaver Mother", "plural": "Gloomweaver Mothers", "lvl": 5, "hp": [12, 16], "def": 8,
+		"atk": 4, "dmg": [2, 6], "speed": 3, "coins": [0, 0], "max": 1, "shape": "spider", "size": 1.35, "col": "#e4dccc",
+		"verb": "bites"},
+	"delver": {"name": "Delver", "plural": "Delvers", "lvl": 4, "hp": [7, 11], "def": 7, "atk": 3, "dmg": [2, 5],
+		"speed": 2, "coins": [0, 0], "max": 3, "shape": "delver", "col": "#6a5a50", "verb": "claws"},
+	"lurker": {"name": "Cave Lurker", "plural": "Cave Lurkers", "lvl": 4, "hp": [6, 10], "def": 8, "atk": 4, "dmg": [1, 6],
+		"speed": 5, "coins": [0, 1], "max": 2, "shape": "lurker", "col": "#3e4846", "verb": "lashes"},
+	# The third level: the jailers' oath-bound dead, guarding the tomb.
+	"oathbound": {"name": "Oathbound", "plural": "Oathbound", "lvl": 5, "hp": [6, 10], "def": 8, "atk": 3, "dmg": [1, 6],
+		"speed": 1, "coins": [0, 2], "max": 4, "shape": "oath", "col": "#b0aca0", "verb": "hacks", "undead": true, "oath": true},
+	"oath_archer": {"name": "Oath-Archer", "plural": "Oath-Archers", "lvl": 5, "hp": [5, 8], "def": 7, "atk": 4, "dmg": [1, 5],
+		"speed": 2, "coins": [0, 2], "max": 3, "shape": "oath_archer", "col": "#a8a498", "verb": "shoots", "undead": true,
+		"oath": true},
+	"sworn_knight": {"name": "Sworn Knight", "plural": "Sworn Knights", "lvl": 7, "hp": [12, 18], "def": 9, "atk": 5,
+		"dmg": [2, 7], "speed": 1, "coins": [1, 5], "max": 1, "shape": "oath_knight", "col": "#9a9890", "verb": "cleaves",
+		"undead": true, "oath": true},
+	# It cannot be beaten (yet): blows do nothing, it can't be turned or put to sleep, and it
+	# doesn't follow anyone who runs. See "The mines" in IDEAS.md.
+	"warden": {"name": "Warden", "plural": "Wardens", "lvl": 12, "hp": [99, 99], "def": 6, "atk": 7, "dmg": [3, 9],
+		"speed": 3, "coins": [0, 0], "max": 1, "shape": "warden", "col": "#7a7a84", "verb": "strikes", "undead": true,
+		"oath": true, "invulnerable": true, "no_chase": true},
 }
 
-## Which monsters live how deep into the mines.
+## The wandering monsters on each level of the mines (depth / 7, see Game.depth).
 const TIERS := [
 	["rat", "bat", "kobold"],
-	["kobold", "goblin", "spider", "skeleton"],
-	["goblin", "skeleton", "orc", "renegade", "spider"],
+	["gloomweaver", "lurker", "delver", "bat"],
+	["oathbound", "oath_archer", "gloomweaver"],
 ]
 
 ## Things monsters sometimes drop.
@@ -208,7 +232,7 @@ func weapon_info(c: Dictionary) -> Dictionary:
 		if it.weapon:
 			var verb := "stabs" if it.dagger else ("swings the %s" % it.name)
 			return {"name": it.name, "dmg": it.dmg, "skill": Game.to_hit(c, slot), "ranged": false, "verb": verb,
-				"ability": Game.weapon_ability(c, slot)}
+				"ability": Game.weapon_ability(c, slot), "bane": it.get("bane", "")}
 	var monk: bool = c.cls == Game.MONK
 	return {"name": "fists", "dmg": [1, 4] if monk else [1, 2], "skill": Game.ability(c, "combat"), "ranged": false,
 		"verb": "punches", "ability": "combat"}
@@ -391,6 +415,8 @@ func _valid_group(gi: int) -> int:
 
 ## Deals damage to a monster; returns the extra text for a kill.
 func _hurt(gi: int, m: Dictionary, dmg: int) -> String:
+	if groups[gi].def.get("invulnerable", false):
+		return " It does nothing. The %s does not even slow." % groups[gi].def.name
 	m.hp = maxi(0, m.hp - dmg)
 	m.sleep = 0
 	if m.hp == 0:
@@ -420,6 +446,8 @@ func _attack(i: int, gi: int) -> Array:
 			return ["%s shoots at the %s and misses." % [c.name, def.name]]
 		return ["%s %s at the %s, but misses." % [c.name, verb, def.name]]
 	var dmg := Game.my_random(w.dmg[0], w.dmg[1]) + Game.ability(c, w.ability) / 3
+	if w.get("bane", "") != "" and def.get(w.bane, false):
+		dmg += 2   # the jailers' arms bite deeper into their own dead
 	var how := ""
 	if sneak:
 		dmg *= 2
@@ -505,6 +533,8 @@ func _turn(i: int, gi: int) -> Array:
 			return ["%s raises the holy symbol, but nothing here is undead." % c.name]
 		gi = u[0]
 	var def: Dictionary = groups[gi].def
+	if def.get("invulnerable", false):
+		return ["%s raises the holy symbol. The %s looks at it, and comes on." % [c.name, def.name]]
 	var bonus := Game.ability(c, "magic") + (2 if c.cls == Game.CLERIC else 0)
 	if not roll(bonus, 6 + def.lvl / 2):
 		return ["%s calls on the gods, but the %s keep coming." % [c.name, def.plural]]
@@ -517,6 +547,10 @@ func _turn(i: int, gi: int) -> Array:
 
 func _flee(i: int) -> Array:
 	var c: Dictionary = Game.party[i]
+	for gi in alive_groups():
+		if groups[gi].def.get("no_chase", false):
+			fled = true
+			return ["%s turns and runs, and the rest follow. The %s does not chase you: it goes back to its place, and waits." % [c.name, groups[gi].def.name]]
 	var foes := 0
 	for gi in alive_groups():
 		foes += living(gi).filter(func(m): return m.sleep == 0).size()

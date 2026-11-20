@@ -132,8 +132,9 @@ In the weapon smith, Talk and Haggle only print flavour text. Haggle could use t
 lower prices, and Talk could give rumours and hints about the mines.
 
 ### Examine in the mines
-Examine only prints a message. It could find hidden things, read signs or spot traps (Perception
-skill), which would also make the Nisk Perception bonus useful.
+**Built** with the new mines: Examine (Space) uses what is ahead, and otherwise searches the walls
+around with Perception (it finds the stash on level 1). Traps are spotted with Perception when
+stepped on.
 
 ### Unfinished map
 Six passages in the mines lead to squares the original never defined, so they show as rubble.
@@ -1156,7 +1157,15 @@ failing over and over costs almost nothing, and the quest pays out the same in t
 - **Shown at the end:** when the quest finishes, a line like "(Story experience: 80%, after two
   failed tries.)", which is also kept in the quest log.
 
-### The mines: levels, grinding and story (agreed, not built)
+### The mines: levels, grinding and story (built)
+**Built:** `scripts/areas/mines.gd` (the three maps and the 3D view), `scripts/data/mines_quest.gd`
+(the scenes, chests, placed groups, Hal, the report), the new monsters in `scripts/combat.gd` and the
+textures in `tools/make_textures.py`. As built: the stash is found with Examine (Perception); the
+smith buys the ore (forging from it is not built); the jailer's record says no blade can harm the
+Warden "while the pieces of the tyrant still sleep apart". Not built yet: anything beyond the
+Warden, and the checkpoint saves at the camps (see "Death, wounds and saves").
+
+
 The mines are the first place where a player who likes that approach can grind, and also where
 the council's job (J2), the missing miners and the first look at the spirit's tomb come together.
 Grinding is a choice, not a must: the story can be done by a party that fights as little as it

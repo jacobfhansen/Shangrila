@@ -58,6 +58,7 @@ func _ready() -> void:
 	Ui.place(box, Rect2(20, 194, 600, 274))   # sized before _ready builds it
 	add_child(box)
 	box.choice_made.connect(_on_choice)
+	box.effect.connect(MinesQuest.apply)
 	_run.call_deferred()
 
 

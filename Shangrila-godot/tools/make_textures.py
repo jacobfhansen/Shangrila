@@ -655,6 +655,150 @@ def carved_stone():
     img.save(OUT / "carved_stone.png")
 
 
+# ---------------------------------------------------------------- the mines (three levels)
+
+def _rough_rock(w, h, seed, base, contrast=70):
+    """Rough-hewn rock: big lumps, cracks and grain, tileable."""
+    lumps = tile_noise(w, h, 3, seed, 5)
+    grain = tile_noise(w, h, 16, seed + 1, 3)
+    cracks = np.abs(tile_noise(w, h, 5, seed + 2, 4) - 0.5)
+    lum = (lumps - 0.5) * contrast + (grain - 0.5) * 30 - np.clip(0.04 - cracks, 0, 1) * 900
+    return np.stack([base[i] + lum for i in range(3)], -1)
+
+
+def _timber(d, w, h, wood=(96, 64, 36)):
+    """Mine timbering: two posts and a cap beam, with a little shading."""
+    dark = tuple(max(0, c - 34) for c in wood)
+    for x0 in (6, w - 30):
+        d.rectangle([x0, 0, x0 + 24, h], fill=wood)
+        d.line([(x0 + 2, 0), (x0 + 2, h)], fill=tuple(min(255, c + 22) for c in wood), width=2)
+        d.line([(x0 + 22, 0), (x0 + 22, h)], fill=dark, width=3)
+        for y in range(18, h, 41):
+            d.line([(x0 + 5, y), (x0 + 19, y + 6)], fill=dark, width=1)
+    d.rectangle([0, 4, w, 28], fill=wood)
+    d.line([(0, 26), (w, 26)], fill=dark, width=3)
+    d.line([(0, 6), (w, 6)], fill=tuple(min(255, c + 22) for c in wood), width=2)
+    for x in (18, w - 18):
+        d.ellipse([x - 3, 13, x + 3, 19], fill=(40, 36, 34))
+
+
+def mines_textures():
+    """Walls and floors for the three levels of the mines, and the special pieces."""
+    w = h = 256
+    # Level 1, the old workings: brown rough rock, some of it timbered; gravel floor.
+    to_img(_rough_rock(w, h, 700, (92, 76, 60))).save(OUT / "mine_rock.png")
+    img = to_img(_rough_rock(w, h, 701, (88, 72, 58)))
+    _timber(ImageDraw.Draw(img), w, h)
+    img.save(OUT / "mine_timber.png")
+    n = tile_noise(128, 128, 24, 702, 3)
+    pebbles = tile_noise(128, 128, 10, 703, 2)
+    lum = (n - 0.5) * 60 + np.where(pebbles > 0.62, 25, 0)
+    to_img(np.stack([86 + lum, 74 + lum, 60 + lum], -1)).save(OUT / "mine_floor.png")
+    # Level 2, the new diggings: paler, fresher rock with pick marks, and ore veins.
+    rgb = _rough_rock(w, h, 710, (128, 120, 108), contrast=50)
+    img = to_img(rgb)
+    d = ImageDraw.Draw(img)
+    rng = np.random.default_rng(711)
+    for _ in range(90):
+        x, y = rng.integers(0, w), rng.integers(0, h)
+        L = rng.integers(8, 20)
+        d.line([(x, y), (x + L * 0.6, y + L)], fill=(84, 78, 70), width=2)
+        d.line([(x + 1, y), (x + 1 + L * 0.6, y + L)], fill=(160, 152, 140), width=1)
+    img.save(OUT / "dig_rock.png")
+    vein = img.copy()
+    d = ImageDraw.Draw(vein)
+    pts = [(0, 150), (40, 132), (90, 140), (130, 110), (180, 118), (220, 92), (256, 100)]
+    d.line(pts, fill=(70, 62, 70), width=16)
+    for k in range(140):
+        t = rng.random()
+        i = min(int(t * (len(pts) - 1)), len(pts) - 2)
+        f = t * (len(pts) - 1) - i
+        x = pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f + rng.normal(0, 4)
+        y = pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f + rng.normal(0, 5)
+        r = rng.integers(1, 4)
+        col = (200, 196, 210) if rng.random() < 0.7 else (230, 190, 90)
+        d.ellipse([x - r, y - r, x + r, y + r], fill=col)
+    vein.save(OUT / "ore_vein.png")
+    n = tile_noise(128, 128, 20, 712, 3)
+    lum = (n - 0.5) * 50
+    to_img(np.stack([118 + lum, 110 + lum, 98 + lum], -1)).save(OUT / "dig_floor.png")
+    # Level 3, the sealed galleries: old fitted stone, darker and colder, worn carvings.
+    img = blocks(w, h, rows=4, cols_per_row=3, seed=720, mortar=2, base=(64, 66, 74), jitter=10)
+    d = ImageDraw.Draw(img)
+    rng = np.random.default_rng(721)
+    for _ in range(5):
+        x, y = int(rng.integers(20, w - 60)), int(rng.integers(20, h - 40))
+        for k in range(int(rng.integers(3, 6))):
+            d.arc([x + k * 9, y, x + k * 9 + 8, y + 12], 0, 300, fill=(48, 50, 58), width=1)
+        d.line([(x, y + 18), (x + 44, y + 18)], fill=(50, 52, 60), width=1)
+    img.save(OUT / "jail_stone.png")
+    blocks(128, 128, rows=2, cols_per_row=2, seed=722, mortar=2, base=(72, 72, 78), jitter=8).save(OUT / "jail_floor.png")
+    # The tomb gate: two great leaves of dark bronze with iron bands and a seal across them.
+    img = to_img(_rough_rock(w, h, 730, (40, 36, 30), contrast=30))
+    d = ImageDraw.Draw(img)
+    d.rectangle([20, 16, w - 20, h], fill=(70, 54, 34))
+    d.line([(w // 2, 16), (w // 2, h)], fill=(30, 22, 14), width=4)
+    for y in (48, 120, 192):
+        d.rectangle([20, y, w - 20, y + 10], fill=(46, 44, 46))
+        for x in range(30, w - 20, 26):
+            d.ellipse([x - 3, y + 2, x + 3, y + 8], fill=(90, 88, 84))
+    d.ellipse([w // 2 - 26, 90, w // 2 + 26, 142], fill=(60, 58, 64), outline=(30, 28, 32), width=3)
+    d.ellipse([w // 2 - 14, 102, w // 2 + 14, 130], outline=(36, 34, 40), width=2)
+    img.save(OUT / "tomb_gate.png")
+    # A plank door with iron straps (the foreman's stores).
+    n = tile_noise(128, 128, 2, 740, 5)
+    img = to_img(np.stack([110 + n * 40, 76 + n * 30, 46 + n * 20], -1))
+    d = ImageDraw.Draw(img)
+    for x in range(0, 128, 26):
+        d.line([(x, 0), (x, 128)], fill=(56, 38, 22), width=3)
+    for y in (22, 98):
+        d.rectangle([0, y, 128, y + 8], fill=(52, 50, 52))
+    d.rectangle([92, 58, 104, 72], fill=(60, 58, 60))
+    img.save(OUT / "mine_door.png")
+
+    # Level 3's ward pillars (a chain, a seal, an eye carved in the stone) and the inscription.
+    carve, lit = (36, 38, 46), (96, 100, 116)
+    def _panel(seed):
+        im = blocks(256, 256, rows=1, cols_per_row=1, seed=seed, mortar=3, base=(70, 72, 82), jitter=6)
+        return im, ImageDraw.Draw(im)
+    im, d = _panel(750)
+    for k in range(4):
+        y = 52 + k * 42
+        d.ellipse([100, y, 156, y + 50], outline=carve, width=7)
+        d.ellipse([102, y + 2, 154, y + 48], outline=lit, width=1)
+    im.save(OUT / "ward_chain.png")
+    im, d = _panel(751)
+    d.ellipse([58, 58, 198, 198], outline=carve, width=9)
+    d.ellipse([92, 92, 164, 164], outline=carve, width=6)
+    d.line([(128, 30), (128, 92)], fill=carve, width=7)
+    d.line([(128, 164), (128, 226)], fill=carve, width=7)
+    im.save(OUT / "ward_seal.png")
+    im, d = _panel(752)
+    d.chord([40, 84, 216, 172], 180, 360, outline=carve, width=8)
+    d.chord([40, 84, 216, 172], 0, 180, outline=carve, width=8)
+    d.ellipse([104, 104, 152, 152], fill=carve)
+    d.ellipse([120, 120, 136, 136], fill=lit)
+    im.save(OUT / "ward_eye.png")
+    im, d = _panel(753)
+    rng = np.random.default_rng(754)
+    for row in range(7):
+        y = 34 + row * 28
+        x = 26
+        while x < 220:
+            g = int(rng.integers(0, 4))
+            if g == 0:
+                d.line([(x, y), (x + 8, y + 16)], fill=carve, width=3)
+            elif g == 1:
+                d.arc([x, y, x + 12, y + 16], 0, 270, fill=carve, width=3)
+            elif g == 2:
+                d.line([(x, y + 8), (x + 10, y + 8)], fill=carve, width=3)
+                d.line([(x + 5, y), (x + 5, y + 16)], fill=carve, width=3)
+            else:
+                d.ellipse([x, y + 4, x + 8, y + 12], outline=carve, width=2)
+            x += int(rng.integers(13, 20))
+    im.save(OUT / "ward_words.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -676,3 +820,4 @@ if __name__ == "__main__":
     tannery_front()
     carved_stone()
     print("wrote textures to", OUT)
+    mines_textures()

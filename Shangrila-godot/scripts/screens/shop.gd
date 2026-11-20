@@ -25,6 +25,7 @@ func _ready() -> void:
 	Ui.btn(self, "Leave", Rect2(12, 20, 50, 30), func(): Game.main.goto("streets", {"at": "smith"}), "Back out into the street")
 	Ui.btn(self, "Haggle", Rect2(66, 20, 56, 30), _on_haggle, "Try to get a better price")
 	Ui.btn(self, "Talk", Rect2(126, 20, 44, 30), _on_talk, "Talk to the smith")
+	Ui.btn(self, "Sell ore", Rect2(12, 372, 156, 30), _on_sell_ore, "The smith buys the ore from the mines' new diggings")
 
 	Ui.frame(self, Rect2(16, 62, 148, 121), Color(0, 0, 0, 0.6), Color("#a07a40"), 2)
 	Ui.image(self, "The_Enemy", Rect2(20, 66, 140, 113))
@@ -175,6 +176,25 @@ func _on_pay() -> void:
 					break
 	basket.clear()
 	talk_label.text = "\"Pleasure doing business! The goods are in your backpacks.\""
+	refresh()
+
+
+## The smith buys Silver-Grey Ore from the mines (MinesQuest.ORE_ID) at its price, paid to whoever carries it.
+func _on_sell_ore() -> void:
+	var n := 0
+	var paid := 0
+	for c in Game.party:
+		for k in range(1, 31):
+			if c.items[k] == MinesQuest.ORE_ID:
+				c.items[k] = 0
+				var price := _price(MinesQuest.ORE_ID)
+				Game.add_silver(c, price)
+				n += 1
+				paid += price
+	if n == 0:
+		talk_label.text = "\"Ore? Bring me some from those new diggings in the mines, and I'll pay a fair price.\""
+	else:
+		talk_label.text = "The smith weighs the ore in a big hand and whistles.\n\n\"Good stuff. %d silver for the lot.\"" % paid
 	refresh()
 
 

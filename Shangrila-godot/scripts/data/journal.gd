@@ -39,8 +39,10 @@ static func scenes(quest: String) -> Array:
 ## "current", "offered" (heard of, not taken), "done", or "" (not known yet).
 static func status(key: String) -> String:
 	if key == "mines":
+		if LehanQuests.done("mines"):
+			return "done"
 		if CouncilData.accepted():
-			return "current"   # (reporting back to the council is not built yet)
+			return "current"
 		if LehanData.has_job():
 			return "offered"
 	else:
@@ -67,6 +69,8 @@ static func quest_of_person(key: String) -> String:
 	match key:
 		"lisbet", "skee", "boddo":
 			return key
+		"hal":
+			return "mines"
 		"crier":
 			return "mines" if LehanData.has_job() or LehanQuests.any_done() else ""
 		"guard":

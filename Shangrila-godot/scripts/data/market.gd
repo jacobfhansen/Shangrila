@@ -19,6 +19,8 @@ const PEOPLE := {
 		"look": {"skin": "#e0eaf0", "hair": "#c8e0d0", "cloth": "#3a6a5a", "legs": "#2a4a40"}},
 	"7": {"key": "guard", "name": "Sergeant Rudd", "race": "Human", "height": 1.8,
 		"look": {"skin": "#c89870", "hair": "#2a2018", "cloth": "#7a2a20", "legs": "#3a3a40", "hat": true, "beard": true}},
+	"8": {"key": "hal", "name": "Hal Venner", "race": "Human", "height": 1.8,
+		"look": {"skin": "#d8a880", "hair": "#4a3020", "cloth": "#5a4a3a", "legs": "#3a3028"}},
 }
 
 
@@ -80,7 +82,7 @@ static func talk(id: String, host: String) -> Array:
 					{"s": "wenna", "t": "You came from Tanners' Row, didn't you? I saw you go in at the narrow house."},
 					{"s": "wenna", "t": "That grey-coated fellow left at dawn. A packed cart and a hurry. Nobody in Lehan knows his name, and I know everybody's name."},
 				]
-			if LehanData.has_job() and Game.visited.size() <= 1:
+			if LehanData.has_job() and not Game.mines_entered():
 				out.push_front({"s": "wenna", "t": "Still here? I thought you lot were for the mines. Six men up there, and you're buying eggs."})
 			if not out.is_empty():
 				return out
@@ -96,6 +98,8 @@ static func talk(id: String, host: String) -> Array:
 				{"s": "guard", "t": "Still in town? Most of your sort move on once the money's spent."},
 				{"s": "guard", "t": "The grey-coat on Tanners' Row went out through this gate at dawn. Headed north, with a cart. Not my business where."},
 			]
+		"hal":
+			return MinesQuest.hal_talk()
 		"siv":
 			return [
 				{"s": "siv", "t": "Alnon leaf, fresh from the marsh. The smith sells you steel to make holes. I sell what closes them."},

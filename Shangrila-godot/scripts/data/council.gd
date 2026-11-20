@@ -349,17 +349,9 @@ static func _accept() -> Array:
 	return out
 
 
-## Visits after the job is taken. (Reporting back after the mines is not in the game yet.)
+## Visits after the job is taken: reporting back (see MinesQuest.report).
 static func _after_job() -> Array:
-	var job: Dictionary = Game.story.get("mines_job", {"pay": state().offer})
-	var out: Array = [{"s": "brask", "t": "You have the council's word: %s when you return with news of the miners." % _coins(job.pay)}]
-	if Game.visited.size() > 1:
-		out.append({"s": "brannoc", "t": "Back so soon? Unless you've found them, the hills are that way."})
-		out.append({"n": "(Reporting back to the council is not in the game yet.)"})
-	else:
-		out.append({"s": "brannoc", "t": "Well? The hills are that way. Out the south gate."})
-	out.append({"end": true})
-	return out
+	return MinesQuest.report()
 
 
 static func _coins(silver: int) -> String:

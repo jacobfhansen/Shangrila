@@ -1,6 +1,7 @@
 extends Node
 ## Developer aid: `godot --path . -- --tour=<dir>` visits every screen and saves screenshots.
-## Add `--part=quests` to run only the Lehan quests and the council (the whole tour is long).
+## Add `--part=quests` to run only the Lehan quests and the council (the whole tour is long), or
+## `--part=mines` for the mines job, from the entrance to the report at the council.
 
 var out := ""
 var part := ""
@@ -14,6 +15,8 @@ func _ready() -> void:
 			part = a.substr(7)
 	if part == "quests":
 		_quests_only.call_deferred()
+	elif part == "mines":
+		_mines_part.call_deferred()
 	else:
 		_run.call_deferred()
 
@@ -300,7 +303,7 @@ func _run() -> void:
 	dg._on_map()
 	# --- combat
 	_mechanics()
-	Game.pos = Vector2i(17, 17)
+	Game.pos = MinesArea.START
 	Game.rng.seed = 7
 	dg.start_combat(Combat.new(12))
 	await _shot("12_combat_command")
@@ -887,3 +890,197 @@ func _lehan_all_hosts() -> void:
 	Game.visited = saved[3]
 	Game.pos = saved[4]
 	Game.facing = saved[5]
+
+# ---------------------------------------------------------------- the mines
+
+## The mines job on the real dungeon screen: every level, the puzzles, a few fights, the miners,
+## Saelen, the Warden (and running from it), then the report at the council.
+func _mines_part() -> void:
+	var m: Node = Game.main
+	Checkpoints.start("mines", "ithrae")
+	for c in Game.party:   # a sturdier company, so the tour doesn't end at the inn
+		c.abilities.combat += 2
+		c.abilities.toughness += 2
+		Game.update_derived(c)
+		c.hits = c.max_hits
+	await get_tree().create_timer(1.0).timeout
+	await _drive(m.current, [], "40a_mines_arrival")
+	await _shot("40b_mines_entrance")
+	var dg: Node = m.current
+	dg.map_btn.button_pressed = true
+	dg._on_map()
+	await _shot("40c_mines_map")
+	dg.map_btn.button_pressed = false
+	dg._on_map()
+	# Level 1: the kobolds, their chest, the camp chest, the points lever and the cart, the stash.
+	await _mine_step(1, Vector2i(5, 1), 3)
+	await _mine_fight("40d_kobolds")
+	await _mine_use(1, Vector2i(2, 1), 3, [])
+	await _mine_use(1, Vector2i(15, 6), 3, [], "40e_camp_chest")
+	await _mine_use(1, Vector2i(3, 10), 3, [2], "40f_cart")
+	await _mine_use(1, Vector2i(14, 10), 1, [0])
+	await _mine_use(1, Vector2i(3, 10), 3, [])
+	for i in 8:
+		if LehanQuests.get_q("m_secret") != "":
+			break
+		await _mine_at(1, Vector2i(16, 3), 0)
+		m.current._on_examine()
+		await get_tree().create_timer(0.4).timeout
+		if m.modal_open:
+			m._modal_done.emit(true)
+		await get_tree().create_timer(0.8).timeout
+	await _mine_use(1, Vector2i(16, 2), 0, [])
+	print("mines L1: ", _mines_state(), " items ", _mine_items())
+	# Down to level 2.
+	await _mine_at(1, Vector2i(2, 10), 3)
+	m.current._walk(0)
+	await get_tree().create_timer(1.2).timeout
+	await _drive(m.current, [], "41a_level2_arrival")
+	await _mine_at(2, Vector2i(7, 7), 0)
+	await _shot("41b_bad_air")
+	m.current._walk(0)
+	await _drive(m.current, [])
+	await get_tree().create_timer(1.0).timeout
+	await _mine_step(2, Vector2i(14, 16), 1)
+	await _drive(m.current, [], "41c_breach")
+	await get_tree().create_timer(1.0).timeout
+	await _mine_use(2, Vector2i(14, 3), 0, [])
+	await _mine_use(2, Vector2i(15, 1), 1, [], "41d_stores")
+	await _mine_use(2, Vector2i(3, 5), 1, [])
+	await _mine_use(2, Vector2i(9, 15), 3, [0])   # the drain first: it floods back
+	await _mine_use(2, Vector2i(11, 15), 2, [0])
+	await _mine_use(2, Vector2i(9, 15), 3, [0])
+	await _mine_at(2, Vector2i(12, 15), 0)
+	await _shot("41e_drained")
+	await _mine_use(2, Vector2i(11, 13), 3, [0], "41f_survivors")
+	await _mine_step(2, Vector2i(5, 11), 1)
+	await _mine_fight("41g_delvers")
+	print("mines L2: ", _mines_state(), " items ", _mine_items())
+	# Up the ladder, fit the crank to the lift, and ride it back down.
+	await _mine_at(2, Vector2i(1, 2), 0)
+	m.current._walk(0)
+	await get_tree().create_timer(1.5).timeout
+	print("mines: up the ladder to level ", Game.mine_level, " at ", Game.pos)
+	await _mine_use(1, Vector2i(16, 14), 0, [], "40g_lift")
+	await _mine_use(1, Vector2i(16, 14), 0, [0])
+	await get_tree().create_timer(1.5).timeout
+	print("mines: the lift took us to level ", Game.mine_level, " at ", Game.pos)
+	# Level 3.
+	await _mine_at(2, Vector2i(15, 16), 1)
+	m.current._walk(0)
+	await get_tree().create_timer(1.5).timeout
+	await _drive(m.current, [], "42a_level3_arrival")
+	await _mine_use(3, Vector2i(6, 7), 2, [0])
+	await _mine_use(3, Vector2i(1, 7), 0, [0], "42b_pillar")
+	await _mine_use(3, Vector2i(5, 7), 0, [0])
+	await _mine_use(3, Vector2i(3, 7), 0, [0])
+	await _mine_use(3, Vector2i(14, 5), 1, [], "42c_armoury")
+	await _mine_use(3, Vector2i(14, 5), 3, [])
+	for i in 4:
+		if LehanQuests.get_q("m_saelen") == "home":
+			break
+		await _mine_use(3, Vector2i(6, 5), 3, [1 if i < 2 else 3], "42d_saelen" if i == 0 else "")
+	await _mine_at(3, Vector2i(8, 3), 0)
+	await _shot("42e_warden")
+	m.current._walk(0)
+	await _drive(m.current, [0])
+	await get_tree().create_timer(1.0).timeout
+	dg = m.current
+	var fled := false
+	for i in 200:
+		if dg.combat == null:
+			break
+		if dg.phase == "command":
+			if i > 0 and not fled:
+				await _shot("42f_warden_fight")
+				dg._on_action("flee")
+				fled = true
+			dg._on_defaults()
+		if m.modal_open:
+			m._modal_done.emit(true)
+		await get_tree().create_timer(0.3).timeout
+	await get_tree().create_timer(0.8).timeout
+	await _drive(m.current, [])
+	print("mines L3: ", _mines_state(), " warden ", LehanQuests.get_q("m_warden"), " hits ", Game.party.map(func(c): return c.hits))
+	# Out by the lift and the entrance, and to the council.
+	await _mine_use(3, Vector2i(15, 11), 1, [0])
+	await get_tree().create_timer(1.5).timeout
+	await _mine_at(1, Vector2i(12, 16), 2)
+	m.current._walk(0)
+	await get_tree().create_timer(0.6).timeout
+	if m.modal_open:
+		m._modal_done.emit(true)
+	await get_tree().create_timer(1.0).timeout
+	print("mines: left to ", m.current.get_script().resource_path.get_file(), " marsh known ", "marsh_shrine" in Game.known)
+	await _shot("43a_world_marsh")
+	Game.location = "lehan"
+	m.goto("council")
+	await _drive(m.current, [0], "43b_report")
+	print("mines: report -> roster ", Game.roster.map(func(c): return c.name), " journal ", Journal.status("mines"),
+		" seal told ", LehanQuests.get_q("m_seal_told"), " fails ", LehanQuests.fails("mines"))
+	print("mines part done")
+	get_tree().quit()
+
+
+## Stands the party on a square of a level, facing a way, with the view rebuilt.
+func _mine_at(lv: int, cell: Vector2i, dir: int) -> void:
+	Game.mine_level = lv
+	Game.pos = cell
+	Game.facing = dir
+	Game.main.goto("dungeon", {"resume": true})
+	await get_tree().create_timer(0.6).timeout
+
+
+## Steps forward from a square (onto a placed group, a breach, ...).
+func _mine_step(lv: int, from: Vector2i, dir: int) -> void:
+	await _mine_at(lv, from, dir)
+	Game.main.current._walk(0)
+	await get_tree().create_timer(0.8).timeout
+
+
+## Uses what is ahead and plays the scene with the given choices.
+func _mine_use(lv: int, cell: Vector2i, dir: int, picks: Array, shot := "") -> void:
+	await _mine_at(lv, cell, dir)
+	Game.main.current._on_examine()
+	await _drive(Game.main.current, picks, shot)
+	await get_tree().create_timer(1.0).timeout
+
+
+## Lets a fight play out on its own (Auto), closing the victory message.
+func _mine_fight(shot := "") -> void:
+	var dg: Node = Game.main.current
+	if dg.combat == null:
+		print("mines: no fight")
+		return
+	if shot != "":
+		await _shot(shot)
+	dg.auto_btn.button_pressed = true
+	dg._on_auto()
+	for i in 300:
+		if Game.main.current != dg or dg.combat == null:
+			break
+		if dg.phase == "command":
+			dg._on_defaults()
+		await get_tree().create_timer(0.2).timeout
+	for i in 10:
+		if Game.main.modal_open:
+			Game.main._modal_done.emit(true)
+		await get_tree().create_timer(0.2).timeout
+	print("mines: fight over, screen ", Game.main.current.get_script().resource_path.get_file(), " hits ", Game.party.map(func(c): return c.hits))
+
+
+func _mines_state() -> Dictionary:
+	var st := {}
+	for k in LehanQuests.state():
+		if str(k).begins_with("m_"):
+			st[k] = LehanQuests.state()[k]
+	return st
+
+
+func _mine_items() -> Array:
+	var out := []
+	for c in Game.party:
+		for s in range(1, 31):
+			if c.items[s] >= 38:
+				out.append(Game.item(c.items[s]).name)
+	return out

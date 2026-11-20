@@ -74,8 +74,9 @@ static func start(key: String, host: String) -> void:
 				Game.roster.erase(c)
 				Game.party.append(c)
 			Game.location = "mines"
-			Game.pos = Game.MINES_START
-			Game.facing = 0
+			Game.mine_level = 1
+			Game.pos = MinesArea.START
+			Game.facing = MinesArea.START_FACING
 			Game.main.goto("dungeon")
 		_:
 			Game.main.goto("town")

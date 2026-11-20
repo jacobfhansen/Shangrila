@@ -114,8 +114,62 @@ static func draw_monster(ci: CanvasItem, def: Dictionary, r: Rect2, dead: bool) 
 		col = Color(0.3, 0.28, 0.26)
 	var eye := Color("#ff3020") if not dead else Color(0.2, 0.2, 0.2)
 	var c := r.get_center()
-	var s := r.size.x / 64.0
+	var s := r.size.x / 64.0 * float(def.get("size", 1.0))
 	match def.shape:
+		"delver":
+			# A blind, burrowing beast: a hunched mound of a body, a snout and great digging claws.
+			ci.draw_colored_polygon(_ell(c + Vector2(0, 10) * s, 22 * s, 15 * s), col)
+			ci.draw_colored_polygon(_ell(c + Vector2(16, 2) * s, 11 * s, 8 * s), col.lightened(0.1))
+			ci.draw_colored_polygon(PackedVector2Array([c + Vector2(24, 0) * s, c + Vector2(33, 4) * s, c + Vector2(25, 7) * s]),
+				col.lightened(0.35))
+			for k in 3:
+				ci.draw_line(c + Vector2(10 + k * 4, 22) * s, c + Vector2(14 + k * 5, 31) * s, Color("#d8d0c0"), 2 * s)
+				ci.draw_line(c + Vector2(-14 + k * 4, 22) * s, c + Vector2(-12 + k * 5, 31) * s, Color("#d8d0c0"), 2 * s)
+			ci.draw_line(c + Vector2(12, -1) * s, c + Vector2(18, -1) * s, col.darkened(0.5), 1.5 * s)
+		"lurker":
+			# Something long and thin that waits in side passages: a stooped shape, long arms, pale eyes.
+			ci.draw_colored_polygon(PackedVector2Array([c + Vector2(-8, 30) * s, c + Vector2(8, 30) * s, c + Vector2(10, -4) * s,
+				c + Vector2(4, -20) * s, c + Vector2(-6, -18) * s, c + Vector2(-10, -2) * s]), col)
+			ci.draw_colored_polygon(_ell(c + Vector2(0, -20) * s, 8 * s, 7 * s), col.lightened(0.1))
+			ci.draw_polyline(PackedVector2Array([c + Vector2(-8, -8) * s, c + Vector2(-20, 6) * s, c + Vector2(-24, 26) * s]),
+				col.lightened(0.15), 2.5 * s)
+			ci.draw_polyline(PackedVector2Array([c + Vector2(8, -8) * s, c + Vector2(22, 4) * s, c + Vector2(26, 24) * s]),
+				col.lightened(0.15), 2.5 * s)
+			ci.draw_circle(c + Vector2(-3, -21) * s, 1.8 * s, Color("#d0f0e0") if not dead else eye)
+			ci.draw_circle(c + Vector2(3, -21) * s, 1.8 * s, Color("#d0f0e0") if not dead else eye)
+		"oath", "oath_archer", "oath_knight", "warden":
+			# The jailers' dead: bones in rusted mail and an old helm. The knight carries a shield,
+			# the archer a bow; the Warden is bigger, in plate, with cold blue eyes.
+			var big := {"oath_knight": 1.1, "warden": 1.3}.get(def.shape, 1.0) as float
+			var k := s * big
+			var o := c + Vector2(0, 30 * s - 30 * k)
+			var mail := col.darkened(0.25) if def.shape != "warden" else Color("#4a4c56") if not dead else col
+			ci.draw_colored_polygon(PackedVector2Array([o + Vector2(-12, -6) * k, o + Vector2(12, -6) * k,
+				o + Vector2(15, 20) * k, o + Vector2(-15, 20) * k]), mail)
+			ci.draw_line(o + Vector2(-5, 20) * k, o + Vector2(-7, 30) * k, col, 3 * k)
+			ci.draw_line(o + Vector2(5, 20) * k, o + Vector2(7, 30) * k, col, 3 * k)
+			ci.draw_circle(o + Vector2(0, -16) * k, 9 * k, col)
+			ci.draw_colored_polygon(PackedVector2Array([o + Vector2(-11, -16) * k, o + Vector2(-10, -27) * k,
+				o + Vector2(10, -27) * k, o + Vector2(11, -16) * k]), mail.lightened(0.15))
+			ci.draw_line(o + Vector2(0, -27) * k, o + Vector2(0, -12) * k, mail.darkened(0.3), 2 * k)
+			var glow := Color("#80c0ff") if def.shape == "warden" else Color(0.05, 0.05, 0.05)
+			if dead:
+				glow = Color(0.1, 0.1, 0.1)
+			ci.draw_circle(o + Vector2(-4, -16) * k, 2.2 * k, glow)
+			ci.draw_circle(o + Vector2(4, -16) * k, 2.2 * k, glow)
+			match def.shape:
+				"oath_archer":
+					ci.draw_arc(o + Vector2(18, 2) * k, 14 * k, -1.2, 1.2, 12, Color("#7a5a30"), 2 * k)
+					ci.draw_line(o + Vector2(23, -11) * k, o + Vector2(23, 15) * k, Color(0.8, 0.8, 0.8), 1 * k)
+				"oath_knight":
+					ci.draw_colored_polygon(PackedVector2Array([o + Vector2(-24, -6) * k, o + Vector2(-10, -6) * k,
+						o + Vector2(-10, 12) * k, o + Vector2(-17, 20) * k, o + Vector2(-24, 12) * k]), Color("#5a5048"))
+					ci.draw_line(o + Vector2(14, 4) * k, o + Vector2(24, -18) * k, Color(0.7, 0.7, 0.75), 2.5 * k)
+				"warden":
+					ci.draw_line(o + Vector2(16, 18) * k, o + Vector2(22, -26) * k, Color(0.75, 0.78, 0.85), 4 * k)
+					ci.draw_line(o + Vector2(12, -14) * k, o + Vector2(30, -12) * k, Color(0.6, 0.6, 0.65), 3 * k)
+				_:
+					ci.draw_line(o + Vector2(14, 4) * k, o + Vector2(22, -14) * k, Color(0.6, 0.55, 0.5), 2.5 * k)
 		"enemy":
 			ci.draw_texture_rect_region(Ui.tex("The_Enemy"), r, Rect2(52, 2, 92, 92),
 				Color(0.4, 0.4, 0.4) if dead else Color.WHITE)

@@ -195,6 +195,38 @@ func _draw() -> void:
 			draw_colored_polygon(_ell(Vector2(16, 17), 11, 11), Color(c, 0.18))
 			_poly([Vector2(11, 11), Vector2(19, 8), Vector2(23, 15), Vector2(20, 24), Vector2(12, 22), Vector2(9, 16)], c)
 			draw_line(Vector2(13, 13), Vector2(19, 11), c.lightened(0.5), 1.0)
+		"pick":
+			draw_line(Vector2(9, 29), Vector2(19, 5), WOOD, 3)
+			draw_polyline(PackedVector2Array([Vector2(5, 10), Vector2(12, 5), Vector2(19, 4), Vector2(26, 6), Vector2(30, 11)]), c, 3.5)
+		"cap":
+			draw_colored_polygon(_ell(Vector2(16, 18), 11, 8), c)
+			_poly([Vector2(5, 19), Vector2(27, 19), Vector2(28, 23), Vector2(4, 23)], c.darkened(0.25))
+			draw_line(Vector2(16, 10), Vector2(16, 19), c.darkened(0.4), 1.0)
+		"lamp":
+			_poly([Vector2(11, 12), Vector2(21, 12), Vector2(22, 26), Vector2(10, 26)], c)
+			_poly([Vector2(13, 14), Vector2(19, 14), Vector2(19, 23), Vector2(13, 23)], Color("#f8e8a0"), false)
+			draw_circle(Vector2(16, 19), 2.2, Color("#ffb040"))
+			draw_arc(Vector2(16, 10), 4, PI, TAU, 10, c.darkened(0.3), 2)
+		"key":
+			draw_circle(Vector2(9, 16), 5, c)
+			draw_circle(Vector2(9, 16), 2, Color(0, 0, 0, 0.6))
+			draw_line(Vector2(13, 16), Vector2(28, 16), c, 3)
+			draw_line(Vector2(24, 16), Vector2(24, 21), c, 2.5)
+			draw_line(Vector2(28, 16), Vector2(28, 22), c, 2.5)
+		"crank":
+			draw_line(Vector2(6, 26), Vector2(16, 16), c, 4)
+			draw_line(Vector2(16, 16), Vector2(26, 16), c, 4)
+			draw_line(Vector2(26, 16), Vector2(26, 6), c, 4)
+			_poly([Vector2(3, 24), Vector2(8, 29), Vector2(5, 31), Vector2(1, 27)], WOOD)
+		"ore":
+			_poly([Vector2(7, 14), Vector2(15, 7), Vector2(25, 10), Vector2(28, 20), Vector2(19, 27), Vector2(8, 24)], c.darkened(0.3))
+			for pt in [Vector2(12, 14), Vector2(18, 12), Vector2(22, 19), Vector2(14, 21), Vector2(20, 23)]:
+				draw_circle(pt, 1.6, c.lightened(0.5))
+			draw_circle(Vector2(17, 17), 1.4, Color("#e8c060"))
+		"seal":
+			draw_arc(Vector2(16, 20), 8, 0, TAU, 20, c, 3)
+			_poly([Vector2(11, 5), Vector2(21, 5), Vector2(22, 13), Vector2(10, 13)], c)
+			draw_line(Vector2(16, 6), Vector2(16, 12), c.darkened(0.45), 1.5)
 		_:
 			draw_circle(Vector2(16, 16), 10, c)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
