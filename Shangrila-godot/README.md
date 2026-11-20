@@ -221,6 +221,13 @@ Three levels of 16 × 16, drawn as text maps in `scripts/areas/mines.gd` (MinesA
 textures from `tools/make_textures.py`. What happens in them is in `scripts/data/mines_quest.gd`
 (MinesQuest). The dungeon screen (`scripts/screens/dungeon.gd`) walks them; Space (or Examine)
 uses what is straight ahead, and with nothing there searches the walls for anything hidden.
+Chests, levers, lifts and ladders sit in niches off the passages and are used from in front, so
+they never block the way. Clicking a portrait opens that character's sheet; Leave comes back.
+The map (M) draws every square you have walked and marks what you have seen beside it (camps,
+chests, levers, lifts, ways up and down, blocked ways, people), with a legend underneath that
+lists only what has been found on that level.
+Thin mineral threads (helictites) hang from the ceilings here and there, twisting and branching
+like spider's legs; they are grown from each square's coordinates, so they never move.
 
 1. **The old workings** (rough rock and timbering): rats, bats and kobolds; a kobold den and a
    rat nest; the miners' cold camp with a spare lamp; an ore cart jammed across the rails to the
@@ -304,6 +311,11 @@ host is any of joss, maera, ommuk, ithrae, tikkat. The story before the checkpoi
 with simple choices (see `scripts/checkpoints.gd`).
 
 
-`godot-4 --path . -- --tour=$PWD/.tour` visits every screen, saves screenshots into `.tour/`,
-and runs a few rule checks (see `scripts/dev_tour.gd`). It also simulates 200 auto-fights
+**The tour:** `tools/tour.sh` visits every screen, saves screenshots into `.tour/`, and runs a few
+rule checks (see `scripts/dev_tour.gd`). `tools/tour.sh quests` runs only the Lehan quests and the
+council, and `tools/tour.sh mines` the mines job from the entrance to the report. The whole tour
+takes under a minute: the script turns vsync off (so a hidden window isn't slowed to a frame a
+second) and runs time 5x faster (`TOUR_TIME_SCALE` changes it). The log is `.tour/tour.log`, and
+the tour writes its own save (`tour_save.json`), never the player's. By hand it is
+`godot-4 --path . -- --tour=$PWD/.tour [--part=quests|mines]`. It also simulates 200 auto-fights
 at several depths and prints the win rate, which is handy when tuning monsters in `scripts/combat.gd`.

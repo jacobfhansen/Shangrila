@@ -284,6 +284,10 @@ func _run() -> void:
 	var before := Game.party_silver()
 	await sh._on_pay()
 	print("paid: ", before - Game.party_silver(), " expected 14; brand pack: ", Game.party[0].items.slice(10, 28))
+	Game.story["mines_entered"] = true   # no arrival scene over the screenshots
+	Game.mine_level = 1
+	Game.pos = MinesArea.START + Vector2i(2, 0)
+	Game.facing = 1
 	m.goto("dungeon")
 	await _shot("08_dungeon")
 	var dg: Node = m.current
@@ -912,11 +916,22 @@ func _mines_part() -> void:
 	await _shot("40c_mines_map")
 	dg.map_btn.button_pressed = false
 	dg._on_map()
+	# A click on a portrait opens the character sheet; Leave comes back to the same square.
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	var was: Vector2i = Game.pos
+	dg._on_portrait_input(click, 1)
+	await get_tree().create_timer(0.6).timeout
+	await _shot("40c2_sheet_from_mines")
+	m.current._on_leave()
+	await get_tree().create_timer(0.6).timeout
+	print("mines: sheet and back: ", m.current.name, " at ", Game.pos, " (was ", was, ")")
 	# Level 1: the kobolds, their chest, the camp chest, the points lever and the cart, the stash.
 	await _mine_step(1, Vector2i(5, 1), 3)
 	await _mine_fight("40d_kobolds")
 	await _mine_use(1, Vector2i(2, 1), 3, [])
-	await _mine_use(1, Vector2i(15, 6), 3, [], "40e_camp_chest")
+	await _mine_use(1, Vector2i(14, 7), 0, [], "40e_camp_chest")
 	await _mine_use(1, Vector2i(3, 10), 3, [2], "40f_cart")
 	await _mine_use(1, Vector2i(14, 10), 1, [0])
 	await _mine_use(1, Vector2i(3, 10), 3, [])
@@ -931,6 +946,16 @@ func _mines_part() -> void:
 		await get_tree().create_timer(0.8).timeout
 	await _mine_use(1, Vector2i(16, 2), 0, [])
 	print("mines L1: ", _mines_state(), " items ", _mine_items())
+	# The tour jumps from place to place; mark every square walked over, as a player would have.
+	for y in 18:
+		for x in 18:
+			if MinesArea.walkable(1, Vector2i(x, y)):
+				Game.visited[Vector3i(x, y, 1)] = true
+	m.current.map_btn.button_pressed = true
+	m.current._on_map()
+	await _shot("40h_map_explored")
+	m.current.map_btn.button_pressed = false
+	m.current._on_map()
 	# Down to level 2.
 	await _mine_at(1, Vector2i(2, 10), 3)
 	m.current._walk(0)
@@ -957,7 +982,7 @@ func _mines_part() -> void:
 	await _mine_fight("41g_delvers")
 	print("mines L2: ", _mines_state(), " items ", _mine_items())
 	# Up the ladder, fit the crank to the lift, and ride it back down.
-	await _mine_at(2, Vector2i(1, 2), 0)
+	await _mine_at(2, Vector2i(2, 1), 3)
 	m.current._walk(0)
 	await get_tree().create_timer(1.5).timeout
 	print("mines: up the ladder to level ", Game.mine_level, " at ", Game.pos)

@@ -2,7 +2,7 @@ extends Node
 ## Global game state and rules. Started as a port of Shangrila.p / ShangrilaUtils.p (1997); the
 ## character rules are now the simpler ones in IDEAS.md: ten abilities from 0 to 10, silver only.
 
-const SAVE_PATH := "user://shangrila_save.json"
+var SAVE_PATH := "user://shangrila_save.json"   # the dev tour uses its own (see main.gd)
 
 const RACES := ["Human", "Thuug", "Aeldroe", "Nisk"]
 enum { HUMAN, THUUG, AELDROE, NISK }

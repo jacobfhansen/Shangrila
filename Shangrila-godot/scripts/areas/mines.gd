@@ -20,18 +20,18 @@ const NAMES := ["The old workings", "The new diggings", "The sealed galleries"]
 const MAPS := [
 	[
 		"##################",
-		"#b..k.#r........d#",
-		"#.###.#.######.#s#",
+		"#b..k.#r.......#d#",
+		"#####.#.######.#s#",
 		"#.#...#.#....#.#.#",
 		"#.#.###.#.##.#...#",
 		"#...#...#..#.###.#",
-		"###.#.###..#.#a..#",
+		"###.#.###..#.#a#.#",
 		"#...#.#.####.#C#.#",
 		"#.#.#.#..n.#...#.#",
 		"###...####.###.#.#",
-		"#>c..p.....#...l.#",
+		"#>c..p.....#...l##",
 		"###.##.###.#.#####",
-		"#...#....#...#...#",
+		"#...#....#...#..##",
 		"#.#.#.##.#.#.#.#L#",
 		"#.#...#..#.#...#.#",
 		"#.#####.##.#####.#",
@@ -41,7 +41,7 @@ const MAPS := [
 	[
 		"##################",
 		"#<...#.....###..g#",
-		"#.##.#.###.#.#F###",
+		"####.#.###.#.#F###",
 		"#.#..#.#Y#.#.#...#",
 		"#.#.##.#.#.#.#.#.#",
 		"#...o#...#...#.#.#",
@@ -54,8 +54,8 @@ const MAPS := [
 		"#.##.#.#.####.##.#",
 		"#..#.#...#S..W...#",
 		"##.#.#.#####w#.#L#",
-		"#o.#...#v........#",
-		"#..###.####u...X>#",
+		"#o.#...#v.......##",
+		"#..###.####u#..X>#",
 		"##################",
 	],
 	[
@@ -331,6 +331,8 @@ func build(root: Node3D, cam: Camera3D) -> void:
 					if level == 2:
 						_bones(root, at, 1)
 
+	_icicles(root)
+
 	var torch := OmniLight3D.new()
 	torch.light_color = Color(1.0, 0.78, 0.5)
 	torch.light_energy = 2.2
@@ -535,6 +537,95 @@ func _bones(root: Node3D, at: Vector3, n: int) -> void:
 	for i in n * 3:
 		_box(root, at + Vector3(rng.randf_range(-0.7, 0.7), 0.03, rng.randf_range(-0.7, 0.7)),
 			Vector3(0.35, 0.05, 0.06), bone, Vector3(0, rng.randf() * TAU, 0))
+
+
+## Mineral threads (helictites) hanging from the ceiling here and there: thin, twisting crystal
+## strands that branch and curl like a spider's legs, mostly along the walls and in corners where water
+## seeps through the rock. Plenty in the old workings, a few in the new diggings (the rock is freshly
+## cut), and fine white lime threads in the old sealed galleries. Placed from the square's coordinates,
+## so they are the same every visit. Every strand segment is one instance of a single MultiMesh.
+func _icicles(root: Node3D) -> void:
+	var chance: float = [0.55, 0.35, 0.25][level - 1]
+	var base: Color = [Color(0.7, 0.62, 0.5), Color(0.72, 0.75, 0.78), Color(0.9, 0.88, 0.82)][level - 1]
+	var segs := []   # [from, to, radius, colour]
+	var cs := DungeonView.CELL
+	var sz := size()
+	for y in sz.y:
+		for x in sz.x:
+			var cell := Vector2i(x, y)
+			if _rocky(cell):
+				continue
+			var rng := RandomNumberGenerator.new()
+			rng.seed = x * 7919 + y * 104729 + level * 31
+			if rng.randf() > chance:
+				continue
+			# Grow beside a wall of the square (a corridor: either side), not in the middle.
+			var sides := []
+			for d in 4:
+				if _rocky(cell + Game.DIR_VEC[d]):
+					sides.append(Vector2(Game.DIR_VEC[d]))
+			var lean := Vector2.ZERO
+			if not sides.is_empty():
+				lean = sides[rng.randi() % sides.size()] * 0.7
+			for f in rng.randi_range(1, 3):
+				var off := (lean + Vector2(rng.randf_range(-0.25, 0.25), rng.randf_range(-0.25, 0.25))).clamp(Vector2(-0.92, -0.92), Vector2(0.92, 0.92))
+				var col := base.darkened(rng.randf_range(0.0, 0.2))
+				_strand(segs, rng, Vector3(x * cs + off.x, cs, y * cs + off.y), Vector3.DOWN,
+					rng.randf_range(0.25, 0.6), 0.018 if level < 3 else 0.01, col, 0)
+	if segs.is_empty():
+		return
+	var rod := CylinderMesh.new()
+	rod.top_radius = 1.0
+	rod.bottom_radius = 1.0
+	rod.height = 1.0
+	rod.radial_segments = 4
+	rod.rings = 1
+	var m := StandardMaterial3D.new()
+	m.vertex_color_use_as_albedo = true
+	m.roughness = 0.3
+	m.metallic_specular = 0.8
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+	mm.mesh = rod
+	mm.instance_count = segs.size()
+	for i in segs.size():
+		var sg: Array = segs[i]
+		var a: Vector3 = sg[0]
+		var d: Vector3 = sg[1] - a
+		var up := d.normalized()
+		var side := up.cross(Vector3.RIGHT if absf(up.x) < 0.9 else Vector3.FORWARD).normalized()
+		var fwd := side.cross(up)
+		var r: float = sg[2]
+		mm.set_instance_transform(i, Transform3D(Basis(side * r, up * d.length(), fwd * r), a + d / 2.0))
+		mm.set_instance_color(i, sg[3])
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.material_override = m
+	root.add_child(mmi)
+
+
+## One strand: short segments in a wandering direction, thinning as it goes; the first strand mostly
+## hangs down, its branches curl off sideways and even upward, as helictites do.
+func _strand(segs: Array, rng: RandomNumberGenerator, at: Vector3, dir: Vector3, length: float,
+		r: float, col: Color, depth: int) -> void:
+	var p := at
+	var d := dir
+	var left := length
+	while left > 0.0 and r > 0.003:
+		var step := minf(left, rng.randf_range(0.04, 0.08))
+		d = (d + Vector3(rng.randf_range(-0.6, 0.6), rng.randf_range(-0.35, 0.25), rng.randf_range(-0.6, 0.6))).normalized()
+		if depth == 0:
+			d = (d + Vector3.DOWN * 0.6).normalized()
+		var q := p + d * step
+		q.y = minf(q.y, DungeonView.CELL - 0.01)
+		segs.append([p, q, r, col])
+		p = q
+		left -= step
+		r *= 0.93
+		if depth < 2 and rng.randf() < 0.22:
+			var out := Vector3(rng.randf_range(-1, 1), rng.randf_range(-0.4, 0.5), rng.randf_range(-1, 1)).normalized()
+			_strand(segs, rng, p, out, left * rng.randf_range(0.4, 0.8), r * 0.75, col.lightened(0.08), depth + 1)
 
 
 # ---------------------------------------------------------------- building blocks

@@ -46,7 +46,7 @@ func _ready() -> void:
 
 	back = args.get("back", "inn")
 	back_args = args.get("back_args", {})
-	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, "Back to the inn" if back == "inn" else "Back to the streets")
+	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, {"inn": "Back to the inn", "dungeon": "Back to the mines", "tunnels": "Back to the tunnels"}.get(back, "Back to the streets"))
 	Ui.btn(self, "Quests", Rect2(16, 56, 70, 28), QuestLog.open, "The quest log: every quest and what was said (J)")
 	# Character strip (ViewCha 110-118).
 	for j in 3:
@@ -159,7 +159,25 @@ func refresh() -> void:
 	stat_labels["ac"].text = str(Game.armor(c))
 	stat_labels["hit"].text = "%d / %d" % [Game.to_hit(c, Game.SLOT_RHAND), Game.to_hit(c, Game.SLOT_LHAND)]
 	stat_labels["dam"].text = "%s / %s" % [Game.damage_string(c, Game.SLOT_RHAND), Game.damage_string(c, Game.SLOT_LHAND)]
-	stat_labels["xp"].text = str(c.xp)
+	# Experience: what this character has / what their cheapest raise costs (there are no levels;
+	# experience is spent on abilities with the + buttons).
+	var next := -1
+	var next_key := ""
+	for k in ability_rows:
+		var cost := Game.raise_cost(c, k)
+		if cost >= 0 and (next < 0 or cost < next):
+			next = cost
+			next_key = k
+	var xl: Label = stat_labels["xp"]
+	xl.mouse_filter = Control.MOUSE_FILTER_PASS
+	if next < 0:
+		xl.text = str(c.xp)
+		xl.tooltip_text = "Every ability is at the top."
+	else:
+		xl.text = "%d / %d" % [c.xp, next]
+		xl.tooltip_text = "%d experience. The cheapest raise, %s to %d, costs %d.%s" % [c.xp,
+			Game.ABILITY_NAMES[next_key], Game.ability(c, next_key) + 1, next,
+			" Click its + to spend it." if c.xp >= next else " %d more needed." % (next - c.xp)]
 	stat_labels["silver"].text = str(c.silver)
 	for k in slots:
 		slots[k].item_id = c.items[k]

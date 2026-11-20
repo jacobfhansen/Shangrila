@@ -5,3 +5,6 @@
 
 # Original 1997 source, kept locally only
 Shangrila-old-code/
+
+# The dev tour's log (tools/tour.sh)
+Shangrila-godot/.tour/tour.log

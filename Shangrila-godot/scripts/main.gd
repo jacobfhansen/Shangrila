@@ -17,6 +17,7 @@ func _ready() -> void:
 	var host := ""
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--tour="):
+			Game.SAVE_PATH = "user://tour_save.json"   # never touch the player's own save
 			add_child(load("res://scripts/dev_tour.gd").new())
 		elif a.begins_with("--start="):
 			start = a.substr(8)

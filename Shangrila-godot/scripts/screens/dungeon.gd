@@ -95,7 +95,7 @@ func _ready() -> void:
 		add_child(p)
 		Ui.place(p, Rect2(x, y + 20, 48, 48))
 		p.index = c.icon
-		p.tooltip_text = "%s, %s %s" % [c.name, Game.RACES[c.race], Game.CLASSES[c.cls]]
+		p.tooltip_text = "%s, %s %s (click for the character sheet)" % [c.name, Game.RACES[c.race], Game.CLASSES[c.cls]]
 		p.mouse_filter = Control.MOUSE_FILTER_STOP
 		p.gui_input.connect(_on_portrait_input.bind(i))
 		ports.append(p)
@@ -153,17 +153,17 @@ func _ready() -> void:
 		act_buttons[ACTS[i]] = b
 
 	# Bottom-left buttons (DungeonWin 1-8, 39).
-	var bl := [["Close", 10, 44, _on_close, "Leave the mines (from the entrance)"],
-		["Save", 56, 40, _on_save, "Save the game"],
-		["Examine", 98, 56, _on_examine, "Use what is ahead, or search the walls around you (Space)"],
-		["Sleep", 156, 42, _on_sleep, "Rest: turns endurance into hit points and restores mana (safe at a camp)"],
-		["Quests", 200, 50, QuestLog.open, "The quest log: every quest and what was said (J)"]]
+	var bl := [["Close", 10, 40, _on_close, "Leave the mines (from the entrance)"],
+		["Save", 52, 36, _on_save, "Save the game"],
+		["Examine", 90, 54, _on_examine, "Use what is ahead, or search the walls around you (Space)"],
+		["Sleep", 146, 40, _on_sleep, "Rest: turns endurance into hit points and restores mana (safe at a camp)"],
+		["Quests", 188, 46, QuestLog.open, "The quest log: every quest and what was said (J)"]]
 	for e in bl:
 		var b := Ui.btn(self, e[0], Rect2(e[1], 430, e[2], 32), e[3], e[4])
-		b.add_theme_font_size_override("font_size", 12)
+		b.add_theme_font_size_override("font_size", 11)
 		masked_in_map.append(b)
-	map_btn = Ui.btn(self, "Map", Rect2(252, 430, 32, 32), _on_map, "Toggle the map (M)")
-	map_btn.add_theme_font_size_override("font_size", 12)
+	map_btn = Ui.btn(self, "Map", Rect2(236, 430, 40, 32), _on_map, "Toggle the map (M)")
+	map_btn.add_theme_font_size_override("font_size", 11)
 	map_btn.toggle_mode = true
 
 	_explore_ui()
@@ -631,12 +631,19 @@ func _on_group_picked(gi: int) -> void:
 	_commit()
 
 
+## A click on a portrait: in a fight, while choosing whom to heal, it picks the target; while
+## exploring it opens that character's sheet.
 func _on_portrait_input(e: InputEvent, i: int) -> void:
+	if not (e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT):
+		return
+	if combat == null:
+		if not talking and not view.busy and not Game.main.modal_open:
+			Game.main.goto("view", {"party": true, "index": i, "back": "dungeon", "back_args": {"resume": true}})
+		return
 	if phase != "target" or enemy_panel.targeting:
 		return
-	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
-		orders[cur] = {"act": pending, "target": i, "ally": true}
-		_commit()
+	orders[cur] = {"act": pending, "target": i, "ally": true}
+	_commit()
 
 
 func _commit() -> void:
