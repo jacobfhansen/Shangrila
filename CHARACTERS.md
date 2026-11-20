@@ -82,7 +82,8 @@ hiding places, and lives in fear of being found.
 Traits: Cautious, Pious, Honest · Wins them over: a task (protect him from the sect)
 
 **Hal Venner** – Human Warrior · Tier 1
-The mine foreman's son, who went in after the vanished miners and came back alone.
+The mine foreman's son, who went in after the vanished miners and came back alone. He saw his
+father die at the breach and ran (see "The mines" in IDEAS.md).
 Traits: Brave, Melancholy, Loyal · Wins them over: a task (find out what happened in the
 mines)
 
