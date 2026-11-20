@@ -116,7 +116,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 				else:
 					_quad(walls, wall_c, -dv, Vector3.UP, h, h)
 	_add(root, walls, _mat("try2", Color(0.85, 0.8, 0.75)))
-	_add(root, carved, _mat("carved_stone", Color.WHITE))
+	_add(root, carved, _mat("try2", Color(0.68, 0.7, 0.78)))   # older, colder stone in the chamber
 	_add(root, floors, _mat("floor_tiles", Color(0.7, 0.65, 0.6)))
 	_add(root, ceils, _mat("rock", Color(0.5, 0.46, 0.42)))
 
@@ -202,13 +202,32 @@ func _lights(root: Node3D, at: Vector3) -> void:
 	var pulse := glow.create_tween().set_loops()
 	pulse.tween_property(glow, "light_energy", 1.6, 1.4)
 	pulse.tween_property(glow, "light_energy", 2.8, 1.6)
-	# The ward-stone: a standing block with a faint glow of its own.
-	var m := StandardMaterial3D.new()
-	m.albedo_texture = Ui.tex("carved_stone")
-	m.emission_enabled = true
-	m.emission = Color(0.25, 0.4, 0.8)
-	m.emission_energy_multiplier = 0.6
-	_box(root, at + Vector3(0, 0.6, 0.55), Vector3(0.7, 1.2, 0.3), m)
+	# The broken figure: a stump on its base and a heap of pieces, a few of them glowing.
+	var dead := _mat("try2", Color(0.8, 0.78, 0.74))
+	var lit := StandardMaterial3D.new()
+	lit.albedo_texture = Ui.tex("try2")
+	lit.emission_enabled = true
+	lit.emission = Color(0.25, 0.4, 0.8)
+	lit.emission_energy_multiplier = 0.9
+	# What is left of the bricks that once walled the doorway (the open side, north).
+	var brick := _plain(Color("#5a4a3e"))
+	var h := CELL / 2.0
+	for sx in [-1, 1]:
+		_box(root, at + Vector3(sx * (h - 0.25), 0.25, -h + 0.12), Vector3(0.5, 0.5, 0.2), brick)
+	var brng := RandomNumberGenerator.new()
+	brng.seed = 31
+	for i in 7:
+		_box(root, at + Vector3(brng.randf_range(-h + 0.2, h - 0.2), 0.05, -h + brng.randf_range(0.2, 0.7)),
+			Vector3(0.24, 0.1, 0.12), brick, Vector3(0, brng.randf() * TAU, 0))
+	var base := at + Vector3(0, 0, 0.45)
+	_box(root, base + Vector3(0, 0.1, 0), Vector3(0.8, 0.2, 0.6), dead)
+	_box(root, base + Vector3(0.05, 0.38, 0), Vector3(0.36, 0.36, 0.3), dead, Vector3(0, 0.2, 0.08))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 23
+	for i in 12:
+		var s := rng.randf_range(0.1, 0.32)
+		_box(root, base + Vector3(rng.randf_range(-0.8, 0.8), s * 0.4, rng.randf_range(-0.7, 0.4)),
+			Vector3(s, s * 0.7, s * 0.9), lit if i % 4 == 1 else dead, Vector3(rng.randf(), rng.randf() * TAU, rng.randf()))
 
 
 func _st() -> SurfaceTool:

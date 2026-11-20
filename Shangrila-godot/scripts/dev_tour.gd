@@ -692,7 +692,7 @@ func _skee_quest() -> void:
 		await _drive(st, [0], "34h_skee_persuade" if i == 0 else "")
 		await get_tree().create_timer(1.0).timeout
 	print("skee: end ", LehanQuests.state(), " roster ", Game.roster.map(func(c): return c.name),
-		" bag with ", Game.holder_of(36).get("name", "nobody"), " chip with ", Game.holder_of(37).get("name", "nobody"))
+		" bag with ", Game.holder_of(36).get("name", "nobody"), " shard with ", Game.holder_of(37).get("name", "nobody"))
 	await _quest_log_check()
 
 

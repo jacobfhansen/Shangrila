@@ -158,11 +158,12 @@ talk the tanner round (Talk), find the loose drain (Perception), let the spirit 
 or pay her 5 silver. Below is a small 3D maze lit by your torch (`scripts/areas/lehan_tunnels.gd`,
 screen `scripts/screens/tunnels.gd`): a rat nest blocking the way east (Stealth, Survival or
 Combat; failing drives you back, bitten), a collapse (Perception or Survival, or Toughness; failing
-costs hits), Skee's bag in a side passage, and the chamber of the lights: an old ward-stone carved
-with the crown from the shrine's stone head. Reading it (Lore) or feeling it (Magic) tells more,
-and the spirit can reach for it and remember something. Each failed try at the rats or the
+costs hits), Skee's bag in a side passage, and the chamber of the lights: behind an old bricked-up doorway,
+the shattered remains of a figure, broken on purpose, with part of what might be a crown and a few
+shards still glowing. Reading what's left of the carvings (Lore) or holding a shard (Magic) tells
+more, and the spirit can reach for the shards and almost remember something. Each failed try at the rats or the
 collapse gives +1 on the next. Walk into the ladder to climb out. Then Skee must be persuaded it
-wasn't ghosts, one argument per talk (the glowing chip, what the carvings said, his bag, the host's
+wasn't ghosts, one argument per talk (the glowing shard, what the carvings said, his bag, the host's
 calm, or simply company); if every argument fails, he comes anyway. He joins for no fee. The text
 is in `scripts/data/quest_skee.gd`.
 
@@ -186,7 +187,7 @@ taken and finished quests. Each keeps every scene of the quest as it was played:
 speech, the inner voice, the replies chosen (▸, with the check and its chance) and whether each
 check passed. Kept in the save (`scripts/data/journal.gd`, `scripts/widgets/quest_log.gd`).
 
-**Quest items.** Lisbet's letter, Tam's page from the wage book, Skee's bag and the glowing chip
+**Quest items.** Lisbet's letter, Tam's page from the wage book, Skee's bag and the glowing shard
 are real items in a pack, marked with a gold ★, as is the Crowned Head from the shrine. They
 can't be thrown away (the shop doesn't buy anything yet), can be passed around the party, and go
 to someone who stays when their carrier leaves the party (the split, or dismissing at the inn;

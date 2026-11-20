@@ -1012,8 +1012,12 @@ streets, with a scuffle as a last resort.
 #### Skee: the lights under Lehan (built)
 As built: the way down is under the tannery, a new door on Tanners' Row (paying the tanner 5 silver
 always works). The tunnels are a small maze with the rats blocking the way east, a collapse, Skee's
-dropped bag (helps persuade him) and the lights chamber. The carvings read "Sealed below by the
-crowned one. Let it sleep." Failed tries at the rats and the collapse give +1 next time. If every
+dropped bag (helps persuade him) and the lights chamber. Behind an old bricked-up doorway lie the
+shattered remains of a figure, broken on purpose, with part of what might have been a crown. A few
+shards still glow faintly, and one is taken for Skee. What's left of the carvings reads "...kept
+below... let it sleep." The hints are kept quiet on purpose: the player may deduce that the jailers
+found the figure, destroyed it and walled it in (see "The jailers: hidden among us": remnants
+found already destroyed). Failed tries at the rats and the collapse give +1 next time. If every
 argument fails, Skee comes anyway. His abilities: Missile 2, Stealth 2, Perception 2, Survival 1.
 The original suggestion:
 Skee is a Nisk rat-catcher, Superstitious and Cautious, and is won over by persuasion. He has

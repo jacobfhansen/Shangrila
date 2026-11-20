@@ -5,8 +5,9 @@ extends RefCounted
 ##
 ## The way down is under the tannery on Tanners' Row (pick the grate, talk the tanner round, find
 ## the loose drain, or pay her). Below (LehanTunnels, walked in 3D): a rat nest, a collapse, Skee's
-## bag, and the chamber of the lights: an old ward-stone carved with the crown from the shrine's
-## stone head. Then Skee has to be persuaded that it isn't ghosts; what was found down there helps.
+## bag, and the chamber of the lights: the shattered remains of an old figure, maybe crowned like
+## the shrine's stone head, a few shards still glowing. Then Skee has to be persuaded that it isn't
+## ghosts; what was found down there helps.
 ##
 ## Quest values: skee = going / seen / done; skee_way (the way down is open); skee_tried_<way>;
 ## skee_rats, skee_collapse, skee_bag; skee_lore, skee_ward, skee_touched; skee_ask_<way>.
@@ -242,43 +243,47 @@ static func bag() -> Array:
 		_fx("q:skee_bag=1"), {"n": "(You take Skee's bag.)"}]
 
 
-## The chamber of the lights. One way of looking per visit; the first time also takes a glowing
-## chip of stone for Skee.
+## The chamber of the lights: the shattered remains of a figure that once stood there, smashed on
+## purpose and walled in (the player may guess by whom), a few of its shards still glowing. One way of looking per visit; the first time also takes a glowing
+## shard for Skee.
 static func lights() -> Array:
 	var first := _q("skee") == "going"
 	var out: Array = []
 	if first:
-		out.append({"n": "The passage opens into a round chamber. Blue light, cold and steady, comes from a standing stone in the middle. Its sides are carved: lines, circles, and over and over again, a crown."})
-		out.append({"i": "The crown. The same crown as on the stone head from the shrine."})
-		out.append({"sp": "I know this. I knew this, once. Before the dark."})
+		out.append({"n": "The passage ends in an old doorway that was once bricked up. Most of the bricks have fallen in."})
+		out.append({"n": "Beyond it is a round chamber. In the middle lies a heap of broken stone, all that is left of something that once stood here. A figure, perhaps. Most of the pieces are grey and dead, but here and there a shard gives off a weak blue light, cold and steady."})
+		out.append({"n": "The breaks are sharp and clean. This didn't fall with age. Someone broke it, on purpose and thoroughly."})
+		out.append({"n": "On one of the larger pieces runs part of a carved band. A circlet, maybe. Or a crown."})
+		out.append({"i": "A crown, like the one on the stone head from the shrine? Hard to say. It's broken off just where it would matter."})
+		out.append({"sp": "Something here is familiar. I can't hold on to it."})
 		out.append(_fx("q:skee=seen"))
 		Game.story["crown_ward_seen"] = true
 	else:
-		out.append({"n": "The ward-stone glows on, cold and patient."})
+		out.append({"n": "A few shards still glow faintly among the rubble."})
 	var opts: Array = []
-	var done: Array = [] if not first else [{"n": "You chip off a flake of the glowing stone for Skee. It stays faintly blue in your palm."},
+	var done: Array = [] if not first else [{"n": "You pick a small glowing shard out of the rubble for Skee. It stays faintly blue in your palm."},
 		{"n": "(Go back to Skee in the market square.)"}]
 	if _q("skee_lore") == "":
 		var scholar := LehanQuests.best("lore")
 		var ok := Game.check(scholar, "lore", Game.NORMAL)
-		opts.append({"t": "Read the carvings.", "silent": true, "ok": ok, "checks": [LehanQuests.chk(scholar, "lore", Game.NORMAL)],
-			"after": ([{"n": "%s traces the lines. Warding script, older than Lehan: \"Sealed below by the crowned one. Let it sleep.\"" % _first(scholar)},
+		opts.append({"t": "Read what is left of the carvings.", "silent": true, "ok": ok, "checks": [LehanQuests.chk(scholar, "lore", Game.NORMAL)],
+			"after": ([{"n": "%s fits a few pieces together. Warding script, older than Lehan, most of it lost. What is left says something like \"...kept below... let it sleep.\"" % _first(scholar)},
 				_fx("q:skee_lore=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
-				else [{"n": "Old letters, older words. Whatever they say, nobody here can read it."}]) + done})
+				else [{"n": "Old letters on broken stone, too few to make sense of."}]) + done})
 	if _q("skee_ward") == "":
 		var caster := LehanQuests.best("magic")
 		var ok := Game.ability(caster, "magic") > 0 and Game.check(caster, "magic", Game.NORMAL)
-		opts.append({"t": "Lay a hand on the stone and feel what it does.", "silent": true, "ok": ok, "checks": [LehanQuests.chk(caster, "magic", Game.NORMAL).merged({"needs_skill": true})],
-			"after": ([{"n": "%s's hand tingles, then aches. It isn't a light at all. It's a lock. And something on the other side is leaning on it." % _first(caster)},
+		opts.append({"t": "Hold a glowing shard and feel what it does.", "silent": true, "ok": ok, "checks": [LehanQuests.chk(caster, "magic", Game.NORMAL).merged({"needs_skill": true})],
+			"after": ([{"n": "%s's hand tingles. There is still a pull in the shards, faint but steady: a ward, broken but not quite gone. It seems to hold something down. What, it's hard to tell." % _first(caster)},
 				_fx("q:skee_ward=1"), _fx("xp:%s" % LehanQuests.CHECK_XP)] if ok
 				else [{"n": "Cold stone. A hum, maybe, too low to be sure of."}]) + done})
 	if _host() != "" and _q("skee_touched") == "":
-		opts.append({"t": "Let the spirit reach for the stone.", "tags": ["Spirit"], "silent": true,
+		opts.append({"t": "Let the spirit reach for the shards.", "tags": ["Spirit"], "silent": true,
 			"tip": "No check. The spirit wants to.",
-			"after": [_fx("q:skee_touched=1"), {"sp": "Mine. This was mine once. Or I was its."},
-				{"i": "For a heartbeat the host is somewhere else: a hall of pale stone, a crown on a cushion, a door closing. Then the tunnel again, and the cold."},
-				{"n": "The blue light flickers, once, as if something below had stirred in its sleep."}] + done})
-	opts.append({"t": "Just take a chip of the stone for Skee, and go." if first else "Leave the stone be.", "silent": true, "after": done})
+			"after": [_fx("q:skee_touched=1"), {"sp": "I have been near this before. I don't know when."},
+				{"i": "For a moment the host sees pale stone and a door closing. Then only the tunnel again, and the cold."},
+				{"n": "One of the shards flickers, then steadies."}] + done})
+	opts.append({"t": "Just take a glowing shard for Skee, and go." if first else "Leave the rubble be.", "silent": true, "after": done})
 	out.append({"choice": "lights", "options": opts, "prompt": "Choose (1-%d)" % opts.size()})
 	return out
 
@@ -295,9 +300,9 @@ static func _persuade() -> Array:
 	if _q("skee_ask_stone") == "":
 		tried_all = false
 		var ok := Game.check(talker, "talk", Game.NORMAL, 2)
-		opts.append(_spoken(talker, {"t": "No ghost. An old stone with a glow in it. Here, hold it. It's only stone.",
-			"ok": ok, "checks": [LehanQuests.chk(talker, "talk", Game.NORMAL, 2, "the glowing chip helps")],
-			"after": [_fx("q:skee_ask_stone=1"), {"n": "Skee turns the chip over and over in his small hands."}] + (join if ok else _not_sure())}))
+		opts.append(_spoken(talker, {"t": "No ghost. Old broken stone with a glow in it. Here, hold it. It's only stone.",
+			"ok": ok, "checks": [LehanQuests.chk(talker, "talk", Game.NORMAL, 2, "the glowing shard helps")],
+			"after": [_fx("q:skee_ask_stone=1"), {"n": "Skee turns the shard over and over in his small hands."}] + (join if ok else _not_sure())}))
 	if _q("skee_lore") != "" and _q("skee_ask_lore") == "":
 		tried_all = false
 		opts.append({"t": "The carvings are wards. They keep something down there. Not up here with us.", "say": _host(), "tags": ["Lore"],

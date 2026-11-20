@@ -13,7 +13,7 @@ extends RefCounted
 ##   place:key     a place in Lehan is found (on the town map)
 ##   fail:key      a check failed on that quest (sent by the dialogue box; see finish_xp_steps)
 ##   finish:key    the experience for finishing the quest, less for each failed check
-## Quest items (Lisbet's letter, Tam's page, Skee's bag, the glowing chip) follow the quest
+## Quest items (Lisbet's letter, Tam's page, Skee's bag, the glowing shard) follow the quest
 ## values: after every effect, sync_items hands out or takes back whatever the quests say.
 
 ## The new characters: a little better than the starting companions, and harder to win.
@@ -240,7 +240,7 @@ const QUEST_ITEMS := {
 	34: "Lisbet's letter: from taking the job until it is handed to Rudd",
 	35: "Tam's page: taken from the wage book, until Gell pays or burns it",
 	36: "Skee's bag: found in the tunnels, until it is given back",
-	37: "the glowing chip: from the chamber of the lights, until Skee has it",
+	37: "the glowing shard: from the chamber of the lights, until Skee has it",
 }
 
 

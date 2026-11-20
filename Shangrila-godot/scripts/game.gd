@@ -240,8 +240,8 @@ func _make_items() -> void:
 		"A page torn from Master Gell's wage book: the proof of what was done to Tam Reed.")
 	_it(36, "Skee's Bag", "bag", "#6a5030", 10, 0, {"dims": true, "quest": true},
 		"A leather bag, half chewed by rats. Rat traps, a sling and a little carved charm against ghosts. A rat's head is burned into the flap.")
-	_it(37, "Glowing Chip", "chip", "#7aa8f0", 1, 0, {"dims": true, "quest": true},
-		"A flake of the ward-stone from the tunnels under Lehan. It stays faintly blue, and cold, like the light in the chamber.")
+	_it(37, "Glowing Shard", "chip", "#7aa8f0", 1, 0, {"dims": true, "quest": true},
+		"A shard from the broken figure in the tunnels under Lehan. It stays faintly blue, and cold, like the light in the chamber.")
 
 
 func item(id: int) -> Dictionary:
