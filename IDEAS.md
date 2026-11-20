@@ -228,7 +228,58 @@ Built from:
 - **Small deviations:** a character with low discipline may swap an order for what they would
   rather do (a hot-head attacks instead of parrying, a coward hides). The log says why.
 - **Morale breaks:** under heavy pressure (friends falling, losing badly), morale can break.
-  The character flees, freezes or refuses to act.
+  The character flees, freezes or refuses to act. See "Daring to stay" below for fleeing.
+
+**Daring to stay (agreed, not built)**
+Companions don't stay in a hopeless fight just because they were told to. Each one keeps
+asking themselves whether they dare to stay, and in the end they may run.
+- **When they ask:** there's no check while the fight goes well. Under pressure they make a check
+  once per round: their Nerve against how bad it looks (numbers below). Pressure comes from:
+  - their own hits running low;
+  - a friend falling;
+  - the foes clearly outnumbering or outclassing the party.
+- **Warning signs first:** a companion doesn't bolt without warning. A round before they run,
+  the log shows them wavering ("Brand looks over his shoulder") and their portrait changes
+  colour. That gives the player a round to act.
+- **Rallying:** a new combat order. Someone tries to steady a wavering friend, or to call back
+  one who has fled. It probably rolls on Charisma, and the R8 Command power makes it stronger.
+- **Traits matter:** brave characters hardly ever run, cowards run early, and loyal ones stay
+  while a friend is down. This is one of the ways the hidden traits come out.
+- **Fled:** the companion is greyed out. They can't be hit or given orders, and they come back
+  when the fight ends. Fleeing has a cost:
+  - no experience and no share of the loot from that fight;
+  - friends who stayed think less of them ("Shared deeds").
+- **The host never flees.** The spirit holds the host's body, so only companions run.
+
+- **Everyone who stayed falls** (and the host is only wounded): the whole party wakes at the
+  checkpoint, the companions who fled included.
+- **Rallied back:** a companion who is rallied and comes back mid-fight gets that fight's
+  experience after all.
+
+Starting numbers (to tune in playtests):
+- **Nerve** (Will Power is gone since the ten skills, so Nerve is worked out, not trained; most
+  companions land between 0 and 3):
+  - class: Warrior, Paladin, Monk +2; Cleric, Ranger +1; Thief, Mage, Enchanter 0;
+  - traits: Brave +2, Coward −2, Loyal +2 while a friend is down;
+  - experience: +1 per 5 raises, at most +2;
+  - R8 Command (later): +1 to +2 for everyone.
+- **Pressure**, counted again each round:
+  - own hits below half +1, below a quarter +2;
+  - each friend wounded this fight +1, each friend dead +2, the host down +2;
+  - each friend who fled +1 (panic spreads);
+  - foes outnumber the party +1, twice as many +2;
+  - foes outclass the party (their levels against Game.power) +1 to +2;
+  - over half the foes down −1.
+- **The check:** no check while pressure is below 2. Otherwise d10 + Nerve ≥ 3 + pressure,
+  with no automatic fail on a 1, so a steady companion doesn't bolt by bad luck alone.
+  - The first fail makes them **wavering** (the warning in the log, the portrait's colour).
+  - A pass while wavering steadies them again; a second fail in a row and they **flee**.
+  - Example, Nerve 1: at pressure 2 they pass 70% a round (about 9% chance of running within
+    two rounds), at pressure 4 50% (about 25%), at pressure 6 30%. A brave Warrior (Nerve 4)
+    at pressure 4 passes 80%; a cowardly Thief (Nerve −2) 20%.
+- **Rally** (takes the rallier's turn): d10 + Talk ≥ 3 + the target's pressure. A wavering
+  companion steadies and gets +2 Nerve for the rest of the fight. Calling back one who fled is
+  harder (+2 to the difficulty); they return the next round.
 
 **Outside combat, bad relations can lead to**
 - **Refusing to join:** at the inn, a character will not muster into a party with someone
