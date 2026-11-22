@@ -390,6 +390,48 @@ func power(c: Dictionary) -> int:
 	return ability(c, best_fighting(c)) + ability(c, "toughness") + other_raises(c) / 2
 
 
+## All the raises bought since the character was made (for Nerve: veterans keep their nerve).
+func raises_bought(c: Dictionary) -> int:
+	var start: Dictionary = c.get("start_abilities", {})
+	var n := 0
+	for k in ABILITIES:
+		n += maxi(0, ability(c, k) - int(start.get(k, ability(c, k))))
+	return n
+
+
+## A companion has died: there is no raising the dead (IDEAS.md). They leave the party; what
+## they carried goes to the others as far as their packs hold, their silver is shared. Returns
+## the log lines.
+func bury(c: Dictionary) -> Array:
+	party.erase(c)
+	var lines := ["%s is dead." % c.name]
+	if not story.has("dead"):
+		story["dead"] = []
+	story.dead.append(c.name)
+	if party.is_empty():
+		return lines
+	var left := []
+	for s in range(1, c.items.size()):
+		var id: int = c.items[s]
+		if id == 0:
+			continue
+		var taken := false
+		for o in party:
+			var fs := free_pack_slot(o)
+			if fs >= 0:
+				o.items[fs] = id
+				taken = true
+				break
+		if not taken:
+			left.append(item(id).name)
+	var each: int = c.silver / party.size()
+	for o in party:
+		add_silver(o, each)
+	lines.append("The others take what %s carried%s." % [c.name.split(" ")[0],
+		"" if left.is_empty() else " (no room for: %s)" % ", ".join(left)])
+	return lines
+
+
 ## Raises bought since the character was made in abilities other than their best fighting one
 ## and Toughness.
 func other_raises(c: Dictionary) -> int:

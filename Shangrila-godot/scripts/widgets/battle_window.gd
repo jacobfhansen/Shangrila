@@ -26,6 +26,8 @@ signal _spirit_chosen
 
 func start(fixed: Array) -> void:
 	combat = Combat.new(0, fixed)
+	combat.lethal = false   # the road ambush: nobody dies, and nobody runs (the spirit can't yet
+	combat.will = false     # command anyone, so there is no rallying either)
 	_build()
 	_say("%s You face %s." % [title, combat.describe()])
 	_run()
@@ -169,7 +171,8 @@ func _run() -> void:
 				ports[a.i].highlight = false
 		if not is_inside_tree():
 			return
-		combat.end_round()
+		for l in combat.end_round():
+			_say(l)
 	var result := combat.outcome()
 	if result == "won":
 		for l in combat.rewards():

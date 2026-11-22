@@ -236,7 +236,7 @@ Built from:
 - **Morale breaks:** under heavy pressure (friends falling, losing badly), morale can break.
   The character flees, freezes or refuses to act. See "Daring to stay" below for fleeing.
 
-**Daring to stay (agreed, not built)**
+**Daring to stay (built)**
 Companions don't stay in a hopeless fight just because they were told to. Each one keeps
 asking themselves whether they dare to stay, and in the end they may run.
 - **When they ask:** there's no check while the fight goes well. Under pressure they make a check
@@ -1290,7 +1290,7 @@ streets' textures, so you can tell at a glance how deep you are:
   - level 3: the jailers' old arms (an old blade, a ward-etched shield) that hit the guardians
     harder, but feel cold to the host.
 
-### Death, wounds and saves (agreed, not built)
+### Death, wounds and saves (step 1 built: in fights)
 How the classic party RPGs mostly did it (Wizardry, The Bard's Tale, Might and Magic, Ultima, the
 Gold Box games), with a middle step before death.
 - **Severely wounded at 0 hits:** a character who drops to 0 hits is out of the fight and has to
@@ -1306,9 +1306,9 @@ Gold Box games), with a middle step before death.
   They leave the party, and can be mustered again once healed ("Not yet. Two more days."). Later,
   possibly also: a healer (the temple, Siv the herb seller) or a Cleric's spell to speed it up,
   and slower healing while resting at a checkpoint camp.
-- **A companion dies:** they stay in the party as a body (†): they can't act and still take a
-  slot. The temple in Lehan raises them for silver, with a lasting cost (for example some lost
-  experience).
+- **A companion dies:** there is no raising the dead; cheaply bringing anyone back would make
+  death meaningless. The player either loads a saved game or mourns the loss. Their gear and silver
+  go to the others, as far as the packs hold.
 - **The host is severely wounded:** the same as anyone else. They're out of the fight and must be
   carried, and the spirit is muffled until they recover.
 - **The host dies:** game over. Back to a checkpoint save, or to one of the player's own saves.
@@ -1328,11 +1328,27 @@ Gold Box games), with a middle step before death.
       Ithrae ♥  Joss †  Tikkat ♥
   ```
 
-**Open questions**
-- How deep below 0 can a character go before dying: a fixed -5, or based on Toughness?
-- How many days of rest at the inn, and what it costs per day.
-- Which temple: does Ommuk's standing with the temple (from the split) make raising cheaper?
-- Does the game keep a day count (for the save list and resting)?
+**Decided**
+- **Death limit:** 3 + Toughness below 0 (Toughness 0 dies below −3, Toughness 3 below −6).
+- **Recovery:** the game keeps a day count (travel days, rest days). A severely wounded companion
+  rests at the inn for 2 days at 3 silver a day, out of the party ("Not yet. One more day."). A
+  Cleric's heal or a night at a camp only patches hits, it doesn't cure a severe wound.
+- **No raising the dead** (see above).
+- **Built in two steps:** first, in fights, the severely wounded and dead states together with
+  "Daring to stay"; then recovery outside fights (inn rest, the day count), the checkpoint
+  autosaves at the camps and the save slots.
+
+**As built (step 1)**
+- Hits go below 0; the fallen in the front rank are still struck a third as often as the
+  standing, so a downed friend is worth healing. Mend brings them back up from below 0.
+- A dead companion leaves the party (Game.bury); the host's death ends the game (back to the
+  title, to load a save). After a fight the badly wounded come around with 1 hit, for now:
+  resting at the inn comes in step 2.
+- The Warden's fights and the prologue's road ambush are not lethal, and on the road nobody
+  flees (the spirit can't yet command anyone).
+- Fleeing is counted on the character (`fled`), for the later "Shared deeds".
+- Simulated: against a fresh party, two Delvers or four kobolds never shake anyone; the
+  Gloomweaver Mother's brood makes someone flee in most fights, as does a Sworn Knight's group.
 
 ### A walkable market square
 **Started:** the square is in the game, and Lehan's streets with it (`scripts/areas/lehan_streets.gd`):

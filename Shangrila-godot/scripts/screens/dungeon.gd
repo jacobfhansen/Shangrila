@@ -9,16 +9,17 @@ extends Control
 
 const ENCOUNTER_CHANCE := 12      # percent per step
 const QUIET_STEPS := 3            # steps after a fight before the next one can start
-const ACTS := ["attack", "parry", "spells", "use", "equip", "turn", "flee", "hide", "pass"]
-const ACT_LABELS := ["Attack", "Parry", "Spells", "Use", "Equip", "Turn", "Flee", "Hide", "Pass"]
+const ACTS := ["attack", "parry", "spells", "use", "equip", "turn", "rally", "flee", "hide", "pass"]
+const ACT_LABELS := ["Attack", "Parry", "Spells", "Use", "Equip", "Turn", "Rally", "Flee", "Hide", "Pass"]
 const ACT_KEYS := {KEY_A: "attack", KEY_P: "parry", KEY_S: "spells", KEY_U: "use", KEY_E: "equip",
-	KEY_T: "turn", KEY_F: "flee", KEY_H: "hide", KEY_X: "pass"}
+	KEY_T: "turn", KEY_R: "rally", KEY_F: "flee", KEY_H: "hide", KEY_X: "pass"}
 const ACT_TIPS := {
 	"attack": "Attack a group with the weapon in hand (A)", "parry": "Defend: harder to hit this round (P)",
 	"spells": "Cast this character's spell (S)", "use": "Eat or drink something from the pack (U)",
 	"equip": "Ready a weapon from the pack (E)", "turn": "Turn undead - clerics and paladins (T)",
 	"flee": "Try to get the party away (F)", "hide": "Slip into the shadows; next attack hits twice as hard (H)",
 	"pass": "Do nothing (X)",
+	"rally": "Steady a wavering friend, or call back one who has fled (R)",
 }
 
 var view: DungeonView
@@ -148,8 +149,9 @@ func _ready() -> void:
 	status_label.clip_text = false
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	for i in ACTS.size():
-		var b := Ui.btn(self, ACT_LABELS[i], Rect2(419 + (i % 3) * 72, 358 + (i / 3) * 39, 67, 34),
+		var b := Ui.btn(self, ACT_LABELS[i], Rect2(419 + (i % 4) * 54, 358 + (i / 4) * 39, 51, 34),
 			_on_action.bind(ACTS[i]), ACT_TIPS[ACTS[i]])
+		b.add_theme_font_size_override("font_size", 13)
 		act_buttons[ACTS[i]] = b
 
 	# Bottom-left buttons (DungeonWin 1-8, 39).
@@ -202,13 +204,22 @@ func _refresh_party() -> void:
 		var c: Dictionary = Game.party[i]
 		bars[i].who = c
 		ports[i].modulate = Color(0.45, 0.3, 0.3) if c.hits <= 0 else Color.WHITE
-		ports[i].star = Game.can_raise(c)
+		ports[i].star = combat == null and Game.can_raise(c)
 		var t := ""
 		if combat:
-			if c.hits <= 0:
+			if combat.dead.has(i):
+				t = "Dead"
+				ports[i].modulate = Color(0.25, 0.22, 0.22)
+			elif combat.gone.has(i):
+				t = "Coming back" if combat.returning.has(i) else "Fled"
+				ports[i].modulate = Color(1, 1, 1, 0.3)
+			elif c.hits <= 0:
 				t = "Down"
 			elif orders.has(i):
 				t = Combat.order_text(orders[i], combat)
+			if combat.waver.has(i):
+				t = ("Wavering\n" + t).strip_edges()
+				ports[i].modulate = Color(1.0, 0.62, 0.25)
 			if combat.hidden.has(i):
 				t = ("Hidden\n" + t).strip_edges()
 		order_labels[i].text = t
@@ -474,6 +485,7 @@ func _scene(title: String, lines: Array) -> void:
 	elif after_scene.has("fight"):
 		combat_tag = "warden"
 		var c := Combat.new(0, [{"key": "warden", "n": 1}])
+		c.lethal = false   # he keeps the gate; he does not hunt the fallen
 		c.dark = true
 		start_combat(c)
 	elif _state() != before:
@@ -557,7 +569,7 @@ func _new_round() -> void:
 
 func _next_character(after: int) -> void:
 	for i in range(after + 1, Game.party.size()):
-		if Game.party[i].hits > 0:
+		if combat.can_act(i):
 			cur = i
 			_show_command()
 			return
@@ -603,6 +615,13 @@ func _on_action(act: String) -> void:
 				return
 			orders[cur] = {"act": act, "slot": slots[pick], "item": c.items[slots[pick]]}
 			_commit()
+		"rally":
+			var who := combat.rally_targets(cur)
+			if who.size() == 1:
+				orders[cur] = {"act": "rally", "target": who[0], "ally": true}
+				_commit()
+				return
+			_ask_target(act, "ally")
 		"attack", "spells", "turn":
 			var kind := combat.target_kind(cur, act)
 			if kind == "enemy":
@@ -625,6 +644,8 @@ func _ask_target(act: String, kind: String) -> void:
 	if kind == "enemy":
 		enemy_panel.targeting = true
 		status_label.text = "%s: click the monsters to %s. (Esc to go back)" % [Game.party[cur].name, "attack" if act == "attack" else "target"]
+	elif act == "rally":
+		status_label.text = "%s: click the portrait of the one to rally. (Esc to go back)" % Game.party[cur].name
 	else:
 		status_label.text = "%s: click the portrait of the one to heal. (Esc to go back)" % Game.party[cur].name
 
@@ -648,6 +669,10 @@ func _on_portrait_input(e: InputEvent, i: int) -> void:
 		return
 	if phase != "target" or enemy_panel.targeting:
 		return
+	if pending == "rally" and not i in combat.rally_targets(cur):
+		return
+	if pending != "rally" and (combat.dead.has(i) or combat.gone.has(i)):
+		return
 	orders[cur] = {"act": pending, "target": i, "ally": true}
 	_commit()
 
@@ -665,7 +690,7 @@ func _back() -> void:
 	if phase != "command":
 		return
 	for i in range(cur - 1, -1, -1):
-		if Game.party[i].hits > 0:
+		if combat.can_act(i):
 			orders.erase(i)
 			cur = i
 			_show_command()
@@ -692,7 +717,7 @@ func _combat_key(e: InputEvent) -> void:
 
 func _fill_defaults(from: int) -> void:
 	for i in range(from, Game.party.size()):
-		if Game.party[i].hits > 0 and not orders.has(i):
+		if combat.can_act(i) and not orders.has(i):
 			orders[i] = combat.default_order(i)
 
 
@@ -762,7 +787,12 @@ func _resolve() -> void:
 			ports[a.i].highlight = false
 	if not is_inside_tree():
 		return
-	combat.end_round()
+	var after := combat.end_round()
+	for l in after:
+		say(l)
+	if not after.is_empty():
+		_refresh_party()
+		await _pause(0.75)
 	var result := combat.outcome()
 	if result == "":
 		_new_round()
@@ -775,6 +805,11 @@ func _end_combat(result: String) -> void:
 	var c := combat
 	var tag := combat_tag
 	combat_tag = ""
+	var size_before := Game.party.size()
+	if result == "lost" and c.dead.has(c.host_index()):
+		combat = null
+		await _game_over(Game.party[c.host_index()])
+		return
 	match result:
 		"won":
 			if tag != "" and tag != "warden":
@@ -787,7 +822,13 @@ func _end_combat(result: String) -> void:
 			await Game.main.message("\n".join(lines))
 		"fled":
 			say("You get away. Your hearts are still pounding.")
+			var lines := c.after_fight()
+			for l in lines:
+				say(l)
 			combat = null
+			if not lines.is_empty():
+				_refresh_party()
+				await Game.main.message("\n".join(lines))
 			if tag != "" and tag != "warden" and came_from != Game.pos:
 				Game.pos = came_from   # the placed monsters still hold their ground
 				last_pos = Game.pos
@@ -798,7 +839,17 @@ func _end_combat(result: String) -> void:
 				LehanQuests.apply("q:m_warden=met")
 			say("The last of the party falls...")
 			await _pause(0.6)
-			await Game.main.message("The party has fallen.\nYou wake up at the inn in %s, bruised and robbed of half your coins." % Game.city.name)
+			var mourned := []
+			var bodies := []
+			for i in c.dead:
+				bodies.append(Game.party[i])
+			for b in bodies:
+				Game.bury(b)
+				mourned.append(b.name)
+			var t := "The party has fallen.\nYou wake up at the inn in %s, bruised and robbed of half your coins." % Game.city.name
+			if not mourned.is_empty():
+				t += "\n%s did not wake." % " and ".join(mourned)
+			await Game.main.message(t)
 			Game.party_defeated()
 			Game.main.goto("inn")
 			return
@@ -812,5 +863,16 @@ func _end_combat(result: String) -> void:
 	_refresh_party()
 	_explore_ui()
 	_hint()
+	if Game.party.size() != size_before:
+		Game.main.goto("dungeon", {"resume": true})   # someone died: rebuild the party panel
+		return
 	if result == "fled" and tag == "warden" and LehanQuests.get_q("m_warden") == "":
 		_scene("The Warden", MinesQuest.warden_after())
+
+
+## The host has died: the spirit is torn loose, and the game is over. Load a save, or start again.
+func _game_over(host: Dictionary) -> void:
+	say("%s is dead." % host.name)
+	await _pause(0.8)
+	await Game.main.message("%s is dead.\n\nThe body you lived in grows cold, and the spirit is torn loose into the dark.\n\nThe game is over. Load a saved game, or begin again." % host.name)
+	Game.main.goto("title")

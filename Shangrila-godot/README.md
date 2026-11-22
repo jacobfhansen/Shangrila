@@ -291,13 +291,26 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   not pay: a fight at a character's own power (best fighting ability + Toughness, + 1 for every 2 raises bought in other abilities) gives 1% of
   their next raise, each monster level above doubles it, each below halves it, and three below
   gives nothing. Hiding the whole fight gives nothing, falling halves it. Most experience comes
-  from the story. Fallen characters come around with 1 hit point. If the whole party falls,
-  they wake up at the inn, robbed of half their silver.
+  from the story.
+- **Wounds and death:** at 0 hits a character falls, badly wounded, and is out of the fight. Hits
+  go on below 0; past 3 + Toughness below 0 they die. Monsters still strike the fallen in the
+  front rank now and then. There is no raising the dead: a dead companion leaves the party and
+  the others take their gear and silver. If the host dies, the game is over (load a save). After
+  a fight the badly wounded come around with 1 hit; if everyone who stayed falls, they wake up at
+  the inn, robbed of half their silver. The Warden knocks people down but never kills, and the
+  prologue's road ambush kills no one.
+- **Daring to stay:** each round under pressure (own hits low, friends down, dead or fled, foes
+  outnumbering or outclassing the party) every companion but the host checks d10 + Nerve against
+  3 + pressure. A first failure and they waver (amber portrait, "Wavering"), a second and they
+  flee (greyed out, back after the fight, no experience or loot). Nerve comes from the class,
+  the traits (Brave, Cowardly, Loyal while a friend is down) and the raises bought. **Rally** (R)
+  uses d10 + Talk to steady a wavering friend (+2 Nerve for the fight) or call back one who fled
+  (they return the next round and do get experience). See `scripts/combat.gd`.
 
 ## Controls in the mines
 
 W/↑ forward, S/↓ back, A/← and D/→ turn, Q/E step sideways, Space use or search, M map, J quests.
-In combat: A Attack, P Parry, S Spells, U Use, E Equip, T Turn, F Flee, H Hide, X Pass,
+In combat: A Attack, P Parry, S Spells, U Use, E Equip, T Turn, R Rally, F Flee, H Hide, X Pass,
 D Defaults, Esc back, Space hurry.
 
 Everywhere: Esc closes what is open and goes back: a dialog (as Cancel or OK), the map, the

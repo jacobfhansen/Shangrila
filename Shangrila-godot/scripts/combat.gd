@@ -83,6 +83,16 @@ var seen := {}           # party index -> true: was out in the open at the end o
 var fell := {}           # party index -> true: went down at some point
 var dark := true         # the mines are dark (Aeldroes hide better); the road is not
 var level := 1           # the fight's level, for experience
+## Death and daring to stay (IDEAS.md, "Death, wounds and saves" and "Daring to stay"). The road
+## ambush in the prologue turns both off.
+var lethal := true       # hits go below 0: down (severely wounded) to -(3 + Toughness), then dead
+var will := true         # companions check their nerve each round and may waver and flee
+var dead := {}           # party index -> true
+var waver := {}          # party index -> true: failed a nerve check, one more and they run
+var gone := {}           # party index -> true: fled the fight (greyed out, back when it ends)
+var returning := {}      # party index -> true: rallied back, fights again from the next round
+var rallied := {}        # party index -> true: steadied by a friend, +2 Nerve for the fight
+var came_back := {}      # party index -> true: fled and was rallied back (gets experience)
 
 
 ## `fixed` sets the monsters instead of rolling them: [{"key": "brigand", "n": 3}, ...].
@@ -176,18 +186,34 @@ func undead_groups() -> Array:
 	return alive_groups().filter(func(gi): return is_undead(gi))
 
 
+## Still in the fight and on their feet: not down, dead or fled.
+func can_act(i: int) -> bool:
+	return Game.party[i].hits > 0 and not dead.has(i) and not gone.has(i)
+
+
 func party_alive() -> bool:
-	for c in Game.party:
-		if c.hits > 0:
+	for i in Game.party.size():
+		if can_act(i):
 			return true
 	return false
 
 
-## "" while the fight goes on, otherwise "won", "lost" or "fled".
+## The spirit's host, by index (-1 before there is one).
+func host_index() -> int:
+	return Game.party.find(LehanQuests.host_char()) if Game.story.get("host", "") != "" else -1
+
+
+## How far below 0 hits a character can go before they die: 3 + Toughness.
+static func death_limit(c: Dictionary) -> int:
+	return 3 + Game.ability(c, "toughness")
+
+
+## "" while the fight goes on, otherwise "won", "lost" (everyone who stayed is down, or the
+## host is dead) or "fled".
 func outcome() -> String:
 	if fled:
 		return "fled"
-	if not party_alive():
+	if dead.has(host_index()) or not party_alive():
 		return "lost"
 	if alive_groups().is_empty():
 		return "won"
@@ -263,7 +289,17 @@ func available(i: int) -> Dictionary:
 		"flee": true,
 		"hide": not hidden.has(i),
 		"pass": true,
+		"rally": not rally_targets(i).is_empty(),
 	}
+
+
+## Friends `i` could rally: wavering, or fled (and not already on their way back).
+func rally_targets(i: int) -> Array:
+	var out := []
+	for j in Game.party.size():
+		if j != i and (waver.has(j) or (gone.has(j) and not returning.has(j))):
+			out.append(j)
+	return out
 
 
 ## "enemy", "ally" or "" - what an action has to be aimed at.
@@ -273,6 +309,8 @@ func target_kind(i: int, act: String) -> String:
 			return "enemy"
 		"spells":
 			return Game.spell_for(Game.party[i]).get("target", "")
+		"rally":
+			return "ally"
 	return ""
 
 
@@ -281,6 +319,8 @@ func most_wounded() -> int:
 	var worst := 1.0
 	for i in Game.party.size():
 		var c: Dictionary = Game.party[i]
+		if dead.has(i) or gone.has(i):
+			continue
 		var f := float(c.hits) / maxf(1.0, c.max_hits)
 		if f < worst:
 			worst = f
@@ -346,7 +386,7 @@ static func order_text(o: Dictionary, combat: Combat) -> String:
 
 
 func target_kind_of(o: Dictionary) -> String:
-	if o.get("act", "") == "spells":
+	if o.get("act", "") in ["spells", "rally"]:
 		return "ally" if o.has("ally") else "enemy"
 	return "enemy"
 
@@ -363,7 +403,7 @@ func begin_round(orders: Dictionary) -> Array:
 	var list := []
 	for i in Game.party.size():
 		var c: Dictionary = Game.party[i]
-		if c.hits > 0 and orders.has(i):
+		if can_act(i) and orders.has(i):
 			var slow := 3 if c.race == Game.THUUG else 0
 			list.append({"side": "p", "i": i, "init": Game.my_random(1, 20) + Game.ability(c, "perception") * 2 - slow})
 	for gi in groups.size():
@@ -373,9 +413,11 @@ func begin_round(orders: Dictionary) -> Array:
 	return list
 
 
-func end_round() -> void:
+## Ends the round: who was seen, the spirit's help wears off, hiding runs out, those rallied
+## back rejoin, and the companions check whether they dare to stay. Returns the log lines.
+func end_round() -> Array:
 	for i in Game.party.size():
-		if Game.party[i].hits > 0 and not hidden.has(i):
+		if can_act(i) and not hidden.has(i):
 			seen[i] = true
 	blessed.clear()
 	warded.clear()
@@ -383,6 +425,148 @@ func end_round() -> void:
 		hidden[i] -= 1
 		if hidden[i] <= 0:
 			hidden.erase(i)
+	var lines := []
+	for i in returning.keys():
+		returning.erase(i)
+		gone.erase(i)
+		came_back[i] = true
+		lines.append("%s comes back into the fight." % Game.party[i].name)
+	if will and outcome() == "":
+		lines.append_array(nerve_checks())
+	return lines
+
+
+# ---------------------------------------------------------------- daring to stay
+
+## A companion's Nerve: class, traits, experience (+1 per 5 raises bought, at most +2), and +2
+## once a friend has rallied them.
+func nerve(i: int) -> int:
+	var c: Dictionary = Game.party[i]
+	var n := 0
+	if c.cls in [Game.WARRIOR, Game.PALADIN, Game.MONK]:
+		n += 2
+	elif c.cls in [Game.CLERIC, Game.RANGER]:
+		n += 1
+	var traits: Array = c.get("traits", [])
+	if "Brave" in traits:
+		n += 2
+	if "Cowardly" in traits:
+		n -= 2
+	if "Loyal" in traits and _friends_down(i) > 0:
+		n += 2
+	n += mini(2, Game.raises_bought(c) / 5)
+	if rallied.has(i):
+		n += 2
+	return n
+
+
+func _friends_down(i: int) -> int:
+	var n := 0
+	for j in Game.party.size():
+		if j != i and (dead.has(j) or Game.party[j].hits <= 0):
+			n += 1
+	return n
+
+
+## How bad it looks to companion `i`, counted again each round (see "Daring to stay").
+func pressure(i: int) -> int:
+	var c: Dictionary = Game.party[i]
+	var p := 0
+	if c.hits * 4 < c.max_hits:
+		p += 2
+	elif c.hits * 2 < c.max_hits:
+		p += 1
+	var host := host_index()
+	var standing := 0
+	var power := 0
+	for j in Game.party.size():
+		if can_act(j):
+			standing += 1
+			power += Game.power(Game.party[j])
+		if j == i:
+			continue
+		if dead.has(j):
+			p += 2
+		elif Game.party[j].hits <= 0:
+			p += 2 if j == host else (1 if fell.has(j) else 0)
+		elif gone.has(j):
+			p += 1
+	var foes := 0
+	var total := 0
+	for g in groups:
+		total += g.members.size()
+		foes += g.members.filter(func(m): return m.hp > 0).size()
+	if standing > 0:
+		if foes >= standing * 2:
+			p += 2
+		elif foes > standing:
+			p += 1
+		var above := level - power / standing
+		if above >= 3:
+			p += 2
+		elif above >= 1:
+			p += 1
+	if foes * 2 < total:
+		p -= 1
+	return p
+
+
+## Each companion (never the host) on their feet checks their nerve when the pressure is 2 or
+## more: d10 + Nerve against 3 + pressure, no automatic failure. A first failure and they waver,
+## a second in a row and they flee; a pass steadies them again.
+func nerve_checks() -> Array:
+	var lines := []
+	var host := host_index()
+	for i in Game.party.size():
+		if i == host or not can_act(i):
+			continue
+		var c: Dictionary = Game.party[i]
+		var p := pressure(i)
+		if p < 2:
+			if waver.has(i):
+				waver.erase(i)
+				lines.append("%s steadies." % c.name)
+			continue
+		var ok := Game.my_random(1, 10) + nerve(i) >= 3 + p
+		if ok:
+			if waver.has(i):
+				waver.erase(i)
+				lines.append("%s steadies and stays." % c.name)
+		elif waver.has(i):
+			waver.erase(i)
+			gone[i] = true
+			hidden.erase(i)
+			c["fled"] = int(c.get("fled", 0)) + 1
+			lines.append("%s breaks and runs!" % c.name)
+		else:
+			waver[i] = true
+			var signs := ["%s looks back over a shoulder at the way out.", "%s's hands are shaking.",
+				"%s takes a step back.", "%s is breathing hard, eyes darting."]
+			lines.append(signs.pick_random() % c.name)
+	return lines
+
+
+## Rally (takes the rallier's turn): d10 + Talk against 3 + the friend's pressure, +2 to call
+## back one who has fled.
+func _rally(i: int, t: int) -> Array:
+	var c: Dictionary = Game.party[i]
+	if t < 0 or t >= Game.party.size() or t == i:
+		return ["%s shouts encouragement to no one in particular." % c.name]
+	var tc: Dictionary = Game.party[t]
+	if not waver.has(t) and not gone.has(t):
+		return ["%s claps %s on the shoulder." % [c.name, tc.name]]
+	var back := gone.has(t)
+	var target := 3 + pressure(t) + (2 if back else 0)
+	if Game.my_random(1, 10) + Game.ability(c, "talk") < target:
+		if back:
+			return ["%s calls after %s, but %s doesn't turn." % [c.name, tc.name, tc.name.split(" ")[0]]]
+		return ["%s tries to steady %s, but it doesn't help." % [c.name, tc.name]]
+	rallied[t] = true
+	if back:
+		returning[t] = true
+		return ["%s shouts after %s. %s stops, turns, and comes back!" % [c.name, tc.name, tc.name.split(" ")[0]]]
+	waver.erase(t)
+	return ["%s steadies %s: \"Stay with me!\"" % [c.name, tc.name]]
 
 
 ## Performs one actor's turn and returns the log lines.
@@ -392,7 +576,7 @@ func act(a: Dictionary, orders: Dictionary) -> Array:
 	if a.side == "m":
 		return _monster(a.g, a.m)
 	var c: Dictionary = Game.party[a.i]
-	if c.hits <= 0:
+	if not can_act(a.i):
 		return []
 	var o: Dictionary = orders[a.i]
 	match o.act:
@@ -404,6 +588,7 @@ func act(a: Dictionary, orders: Dictionary) -> Array:
 		"turn": return _turn(a.i, o.get("target", -1))
 		"flee": return _flee(a.i)
 		"hide": return _hide(a.i)
+		"rally": return _rally(a.i, o.get("target", -1))
 	return ["%s waits." % c.name]
 
 
@@ -492,6 +677,8 @@ func _cast(i: int, o: Dictionary) -> Array:
 			return ["%s casts Slumber - %s fall%s asleep." % [c.name, count_name(def, n), "s" if n == 1 else ""]]
 		"Mend":
 			var t: int = o.get("target", i)
+			if dead.has(t) or gone.has(t):
+				t = i
 			var tc: Dictionary = Game.party[t]
 			var was_down: bool = tc.hits <= 0
 			var heal := Game.my_random(2, 6) + Game.ability(c, "magic") / 2
@@ -576,16 +763,26 @@ func _monster(gi: int, m: Dictionary) -> Array:
 	if m.sleep > 0:
 		m.sleep -= 1
 		return ["A %s wakes up." % def.name] if m.sleep == 0 else []
-	var cand := []
+	# The first three in the fight form the front rank and take most of the blows. Someone lying
+	# down in the front rank can still be struck (a third as often), and die of it.
+	var line_up := []
 	for i in Game.party.size():
-		if Game.party[i].hits > 0 and not hidden.has(i):
-			cand.append(i)
+		if not dead.has(i) and not gone.has(i) and not hidden.has(i):
+			line_up.append(i)
+	var cand := line_up.filter(func(i): return Game.party[i].hits > 0)
 	if cand.is_empty():
 		return ["The %s looks around, but finds no one." % def.name]
-	# The first three party members form the front rank and take most of the blows.
-	var front := cand.slice(0, 3)
+	var front: Array = line_up.slice(0, 3)
 	var t: int = front.pick_random() if Game.my_random(1, 100) <= 75 else cand.pick_random()
+	if Game.party[t].hits <= 0 and (not lethal or Game.my_random(1, 3) > 1):
+		t = cand.pick_random()
 	var c: Dictionary = Game.party[t]
+	if c.hits <= 0:
+		var hit := Game.my_random(def.dmg[0], def.dmg[1])
+		c.hits -= hit
+		var art0 := "An" if "AEIOU".contains(def.name[0]) else "A"
+		var l0 := "%s %s %s %s, lying on the ground, for %d." % [art0, def.name, def.verb, c.name, hit]
+		return [l0 + _check_dead(t)]
 	var art := "An" if "AEIOU".contains(def.name[0]) else "A"
 	if not roll(def.atk, defence(t)):
 		if parry.has(t):
@@ -595,12 +792,23 @@ func _monster(gi: int, m: Dictionary) -> Array:
 		warded.erase(t)
 		return ["%s %s %s %s, but the blow turns aside as if caught by an unseen hand." % [art, def.name, def.verb, c.name]]
 	var dmg := Game.my_random(def.dmg[0], def.dmg[1])
-	c.hits = maxi(0, c.hits - dmg)
+	c.hits = c.hits - dmg if lethal else maxi(0, c.hits - dmg)
 	var line := "%s %s %s %s for %d." % [art, def.name, def.verb, c.name, dmg]
-	if c.hits == 0:
-		line += " %s falls!" % c.name
+	if c.hits <= 0:
 		fell[t] = true
+		waver.erase(t)
+		var d := _check_dead(t)
+		line += d if d != "" else " %s falls, badly wounded!" % c.name
 	return [line]
+
+
+## " X is dead." if `t` has gone past their limit below 0 hits (and marks them dead), else "".
+func _check_dead(t: int) -> String:
+	var c: Dictionary = Game.party[t]
+	if lethal and c.hits < -death_limit(c) and not dead.has(t):
+		dead[t] = true
+		return " %s is dead." % c.name
+	return ""
 
 
 # ---------------------------------------------------------------- after the fight
@@ -616,7 +824,7 @@ func hid_all_fight(i: int) -> bool:
 func xp_for(i: int) -> float:
 	var c: Dictionary = Game.party[i]
 	var diff := level - Game.power(c)
-	if diff <= -3 or hid_all_fight(i):
+	if diff <= -3 or hid_all_fight(i) or gone.has(i) or dead.has(i):
 		return 0.0
 	var x := Game.raise_unit(c) * 0.01 * pow(2.0, diff)
 	if fell.has(i) or c.hits <= 0:
@@ -633,21 +841,24 @@ func rewards() -> Array:
 				coins += Game.my_random(g.def.coins[0], g.def.coins[1])
 	var gains := []
 	for i in Game.party.size():
+		if dead.has(i):
+			continue
 		var c: Dictionary = Game.party[i]
 		var x := Game.round_random(xp_for(i))
 		Game.gain_xp(c, x)
 		var note := ""
-		if level - Game.power(c) <= -3:
+		if gone.has(i):
+			note = " (fled)"
+		elif level - Game.power(c) <= -3:
 			note = " (too easy)"
 		elif hid_all_fight(i):
 			note = " (hid)"
 		gains.append("%s %d%s" % [c.name.split(" ")[0], x, note])
-	var up := Game.party.filter(func(c): return c.hits > 0)
-	var lines := []
-	for c in Game.party:
-		if c.hits <= 0:
-			c.hits = 1
-			lines.append("%s comes around, badly bruised." % c.name)
+	var up := []
+	for i in Game.party.size():
+		if can_act(i):
+			up.append(Game.party[i])
+	var lines := after_fight()
 	lines.push_front("Experience: " + ", ".join(gains) + ".")
 	if up.is_empty():
 		return lines
@@ -663,4 +874,29 @@ func rewards() -> Array:
 				c.items[s] = id
 				lines.append("%s finds %s." % [c.name, "some Arrows" if id == 13 else "a " + Game.item(id).name])
 				break
+	return lines
+
+
+## After any fight that wasn't lost: the badly wounded come around with 1 hit, those who fled come
+## back, and the dead are mourned (their gear and silver go to the others; see Game.bury).
+## Returns the log lines. Call once, at the end.
+func after_fight() -> Array:
+	var lines := []
+	for i in Game.party.size():
+		var c: Dictionary = Game.party[i]
+		if dead.has(i):
+			continue
+		if c.hits <= 0:
+			c.hits = 1
+			lines.append("%s comes around, badly wounded." % c.name)
+		if gone.has(i):
+			lines.append("%s comes back, not meeting anyone's eyes." % c.name)
+	var bodies := []
+	for i in dead:
+		bodies.append(Game.party[i])
+	for c in bodies:
+		lines.append_array(Game.bury(c))
+	dead.clear()
+	gone.clear()
+	waver.clear()
 	return lines

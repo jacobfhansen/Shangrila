@@ -18,7 +18,12 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--tour="):
 			Game.SAVE_PATH = "user://tour_save.json"   # never touch the player's own save
-			add_child(load("res://scripts/dev_tour.gd").new())
+			var tour: GDScript = load("res://scripts/dev_tour.gd")
+			if tour == null or not tour.can_instantiate():
+				printerr("The tour script does not load (see the errors above).")
+				get_tree().quit(1)
+				return
+			add_child(tour.new())
 		elif a.begins_with("--start="):
 			start = a.substr(8)
 		elif a.begins_with("--host="):

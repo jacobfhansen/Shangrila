@@ -1069,7 +1069,50 @@ func _mines_part() -> void:
 	await _drive(m.current, [0], "43b_report")
 	print("mines: report -> roster ", Game.roster.map(func(c): return c.name), " journal ", Journal.status("mines"),
 		" seal told ", LehanQuests.get_q("m_seal_told"), " fails ", LehanQuests.fails("mines"))
+	await _mines_will()
 	print("mines part done")
+
+
+## Daring to stay and death, on the dungeon screen: a companion wavering, one fled, one dead, the
+## Rally button; then a fight lost with the host dead ends the game.
+func _mines_will() -> void:
+	var m: Node = Game.main
+	Game.location = "mines"
+	Game.mine_level = 1
+	Game.pos = MinesArea.START + Vector2i(2, 0)
+	Game.facing = 1
+	m.goto("dungeon", {"resume": true})
+	await get_tree().create_timer(0.8).timeout
+	var dg: Node = m.current
+	var c := Combat.new(0, [{"key": "sworn_knight", "n": 1}, {"key": "oathbound", "n": 3}])
+	dg.start_combat(c)
+	await get_tree().create_timer(0.5).timeout
+	var host := c.host_index()
+	var others := []
+	for i in Game.party.size():
+		if i != host:
+			others.append(i)
+	c.waver[others[0]] = true
+	c.gone[others[1]] = true
+	Game.party[others[2]].hits = -2
+	c.fell[others[2]] = true
+	dg._refresh_party()
+	dg._show_command()
+	await get_tree().create_timer(0.4).timeout
+	await _shot("44a_will_states")
+	print("will: rally targets for ", Game.party[dg.cur].name, ": ", c.rally_targets(dg.cur).map(func(i): return Game.party[i].name),
+		" rally enabled ", not dg.act_buttons["rally"].disabled, " pressure ", others.map(func(i): return c.pressure(i)),
+		" nerve ", others.map(func(i): return c.nerve(i)))
+	# The host dies: the game is over.
+	Game.party[host].hits = -20
+	c.dead[host] = true
+	dg._end_combat("lost")
+	await get_tree().create_timer(0.8).timeout
+	await _shot("44b_game_over")
+	if m.modal_open:
+		m._modal_done.emit(true)
+	await get_tree().create_timer(0.6).timeout
+	print("will: after the host died: ", m.current.get_script().resource_path.get_file())
 	get_tree().quit()
 
 
