@@ -231,6 +231,8 @@ func refresh() -> void:
 			"Haggle for better prices today, buying and selling. %s talks (Talk %d): %d%% chance of 10%% off, %d%% of 20%%. Once a day." % [
 				who.name.split(" ")[0], Game.ability(who, "talk"), Game.chance(who, "talk", Game.NORMAL),
 				Game.chance(who, "talk", Game.HARD)]
+	haggle_btn.tooltip_text = Ui.tip(haggle_btn.tooltip_text)
+	mode_btn.tooltip_text = Ui.tip(mode_btn.tooltip_text)
 
 
 func _on_mode() -> void:

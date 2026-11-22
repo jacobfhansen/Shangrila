@@ -1400,3 +1400,85 @@ can be talked to. It is the home of the hooks for the Lehan quests.
 
 - **Open question:** what else should be in the square (market sounds, time of day, a
   pickpocket who tests Perception)?
+
+### The Drowned Shrine: the marsh remnant (agreed; step 1 of 4 built)
+The Jailer's Record found in the mines says the second piece of the spirit was "drowned at the
+old shrine on the marsh-folk's causeway, where the water never clears". The world map already has
+the Drowned Shrine, three days from Lehan. This is the next chapter: the road, the Thuug marsh
+village, the overgrown shrine grounds and the temple below, and the second remnant.
+
+**Decided**
+- **The road (three days):** the food rule from "World map and travel" is built here: a
+  character whose Endurance runs out on the road is *weakened*, and if it goes on, loses hits.
+  One or two road scenes on the way.
+- **A causeway village, walkable in 3D** like Lehan's streets: a small Thuug stilt village on the
+  causeway, the hub for the shrine as Lehan is for the mines. Orrun guards the causeway, Ubba
+  remembers the old stories, a trader sells and buys. A place to rest and resupply.
+- **The shrine grounds, the first level, are outdoors:** open sky instead of a ceiling,
+  vine-covered walls of old stone, a wet and muddy floor with standing water.
+- **A door leads down** into a classical temple level of fitted stone. It can be opened in
+  several ways (see the proposals below), so every host can get through their own way.
+- **One temple level** under the grounds, with the remnant at its heart.
+- **A test, not a fight, at the heart:** the remnant is reached through a trial, not by beating
+  a guardian.
+- **The remnant brings R2 Insight:** once merged, the spirit sees its followers' hidden traits
+  and moods directly (today they are hidden, and only shown through what people say).
+
+**Proposals (to settle before building)**
+- **The road scenes:** a stuck cart of salt traders on the causeway road (help: Toughness, or
+  pay; a small reward and news of the village), and a night camp where something takes the food
+  unless a watch is kept (Perception).
+- **Food:** bread and dried fish to buy in Lehan (the inn) and in the village; Survival forages
+  a little on the road. Weakened: −1 on every check and in fights until fed. Starving: lose 1–3
+  hits a day, never below 1 on the road.
+- **The village (Ommuk's people):** about 8 × 8 squares of boardwalks over water and stilt
+  houses. Orrun at the causeway gate asks why strangers want the old shrine; Ubba tells of the
+  cruel ruler from the hills and the "sleeping thing in the drowned house"; a trader (food, rope,
+  herbs; buys ore and pelts); Ommuk is recognised and can speak for the party.
+- **The shrine grounds:** ruined walls and a sunken courtyard, reeds, pools that have to be
+  waded or crossed by stepping stones, fallen statues. Daylight and mist. Monsters of the marsh:
+  **Bog Leeches** (swarms), **Reed Stalkers** (long-legged ambushers), **Marsh Lights** (lure
+  one character away unless held back, ties into Nerve), and a **Mire Toad** as the big one.
+- **The ways through the door:**
+  1. **The three sigils:** three carved stones lie scattered around the grounds (found with
+     Perception, some under water); set them into the door in the order the walls tell (Lore).
+  2. **The marsh-folk's blessing:** Ubba knows the old opening chant, and teaches it if the
+     party helps the village (for example clearing the leeches from the fish pens), or if
+     Ommuk or a Pious host asks (Talk).
+  3. **Force:** wedge and lever it open (Toughness, Hard), or work the old lock (Thievery). It
+     opens, but loudly: the temple below is warned, and its first room is harder.
+- **The temple:** dressed stone, water knee-deep in the low halls, carvings of the ruler's
+  reign (Lore reads them: a first memory hint). The drowned dead of the old priests walk here,
+  slow and pale (**the Drowned**), and the sect's old wards appear again.
+- **The test at the heart:** a flooded inner hall. The remnant lies in a basin where "the water
+  never clears". To reach it the party must cross the hall by stepping only on the stones that
+  tell the ruler's story in the right order. The wall carvings (Lore), Ubba's song (from the
+  village) or the host's faint memory (the spirit remembers a little) each show the way. A
+  wrong step: the water rises, someone is hurt and the party is washed back to try again.
+  At the basin the remnant shows a memory of the spirit's reign (the first piece of "The
+  spirit's forgotten past" from a remnant), then merges.
+- **After the merge:** Insight. Traits show on the character sheet and in the dialogue window's
+  portraits; moods (wavering, a grudge) show as small icons. The spirit's sheet shows two
+  remnants merged.
+- **The sect:** no confrontation yet. Signs that someone was here recently (fresh tracks, a
+  broken ward), to build up to them.
+
+**Build order:** 1. food and the road scenes (built); 2. the village; 3. the shrine grounds and the
+door; 4. the temple, the test and Insight.
+
+**As built (step 1)**
+- A day on the road costs 20 Endurance (was 8). Each evening everyone eats one ration from the
+  packs (bread, dried fish, cheese; their own first), and more if they would run out tomorrow.
+  The best at Survival may forage 10-20 Endurance for the hungriest. Out of Endurance: weakened
+  (−1 on checks and to hit, "Weakened" by the portrait), and starving on the road (1-3 hits a
+  day, never below 1).
+- The inn sells provisions (Bread 1 silver, Dried Fish 2), and the travel question says how
+  many days of food the packs hold (a ration a head a day).
+- The first trip to the marshes plays Wenna's stuck salt cart (day 1: push with Toughness for
+  fish and her word to Orrun, buy fish, or leave her) and the night camp (day 2: a watch with
+  Perception, hang the packs with Survival, or sleep and lose rations to a marsh otter).
+- Arriving at the Drowned Shrine still leaves the party on the world map: the village is step 2.
+
+**Open questions**
+- Is Orrun or Ubba recruitable after the shrine (CHARACTERS.md has them as Tier 2 followers)?
+- Where does the next remnant point (the memory at the basin can name the next place)?

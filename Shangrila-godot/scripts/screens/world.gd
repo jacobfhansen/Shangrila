@@ -37,7 +37,7 @@ func _ready() -> void:
 		b.flat = true
 		b.focus_mode = Control.FOCUS_NONE
 		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		b.tooltip_text = _tip(key)
+		b.tooltip_text = Ui.tip(_tip(key))
 		b.pressed.connect(_on_location.bind(key))
 		layer.add_child(b)
 		Ui.place(b, Rect2(at.x - 16, at.y - 16, 32, 32))
@@ -145,17 +145,57 @@ func _on_location(key: String) -> void:
 	if days < 0:
 		await Game.main.message("You know of no road from %s to %s." % [Game.LOCATIONS[Game.location].name, loc.name])
 		return
-	var q := "Travel to %s?\n%d day%s, %d Endurance each." % [
-		loc.name, days, "" if days == 1 else "s", Game.TRAVEL_COST * days]
+	var food := Game.food_days()
+	var q := "Travel to %s?\n%d day%s, %d Endurance each a day.\nFood in the packs: %s." % [
+		loc.name, days, "" if days == 1 else "s", Game.TRAVEL_COST, "none" if food < 0.5
+		else "about %d day%s" % [roundi(food), "" if roundi(food) == 1 else "s"]]
 	if not await Game.main.confirm(q, "Travel"):
 		return
 	if _road_pending(key):
 		_road_scene()
 		return
+	var scenes := {}
+	if key == "marsh_shrine" and not Game.story.get("marsh_road_done", false):
+		scenes = MarshRoad.SCENES
+		Game.story["marsh_road_done"] = true
+	await _travel_days(key, days, scenes)
+
+
+## The trip a day at a time (Game.road_day): the marker moves along the route, and a scene
+## can be played after a given day (MarshRoad). Then the summary, and in through the gate.
+func _travel_days(key: String, days: int, scenes: Dictionary) -> void:
 	_set_busy(true)
-	await _move_marker(Game.LOCATIONS[Game.location].at, loc.at, 0.0, 1.0, 1.4 * days)
-	await Game.main.message("\n".join(Game.travel(key, days)))
-	Game.main.goto(loc.screen)
+	var loc: Dictionary = Game.LOCATIONS[key]
+	var a: Vector2 = Game.LOCATIONS[Game.location].at
+	var lines := ["After %d day%s on the road the party reaches %s." % [days, "" if days == 1 else "s", loc.name]]
+	var box: DialogueBox = null
+	for d in days:
+		await _move_marker(a, loc.at, float(d) / days, float(d + 1) / days, 1.4)
+		if scenes.has(d + 1):
+			if box == null:
+				box = DialogueBox.new()
+				box.cast = MarshRoad.cast()
+				box.host = Game.story.get("host", "")
+				Ui.place(box, Rect2(20, 52, 600, 248))
+				add_child(box)
+				box.effect.connect(func(fx: String):
+					var l := MarshRoad.apply(fx)
+					if l != "":
+						box.log_line(l))
+			box.visible = true
+			info.text = "Day %d on the road." % (d + 1)
+			box.play(MarshRoad.scene(scenes[d + 1]))
+			await box.finished
+			box.show_buttons([["Go on", func(): box.finished.emit()]])
+			await box.finished
+			box.visible = false
+		for l in Game.road_day():
+			lines.append("Day %d: %s" % [d + 1, l] if days > 1 else l)
+	Game.location = key
+	if box != null:
+		box.queue_free()
+	await Game.main.message("\n".join(lines))
+	Game.main.goto(loc.screen if loc.screen != "" else "world")
 
 
 func _on_quests() -> void:

@@ -121,9 +121,9 @@ func _update_tip() -> void:
 		t += "\nWeight %d" % it.weight
 		if it.get("quest", false):
 			t += "\n★ Quest item: can't be thrown away or sold"
-		tooltip_text = t + ("\n" + hint if hint != "" else "")
+		tooltip_text = Ui.tip(t + ("\n" + hint if hint != "" else ""))
 	else:
-		tooltip_text = hint
+		tooltip_text = Ui.tip(hint)
 
 
 func _gui_input(e: InputEvent) -> void:

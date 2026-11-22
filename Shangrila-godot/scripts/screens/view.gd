@@ -152,9 +152,13 @@ func refresh() -> void:
 			" (favoured by the %s class)" % Game.CLASSES[c.cls] if fav else "", Game.ABILITY_INFO[k]]
 		if cost >= 0:
 			tip += "\nRaising it to %d costs %d experience." % [v + 1, cost]
-		row.hover.tooltip_text = tip
-		row.plus.tooltip_text = tip
+		row.hover.tooltip_text = Ui.tip(tip)
+		row.plus.tooltip_text = Ui.tip(tip)
 	stat_labels["hits"].text = "%d / %d" % [c.hits, Game.full_hits(c)]
+	if stat_labels.has("health"):
+		stat_labels["health"].tooltip_text = "Out of Endurance: weakened, −1 on every check and to hit, until %s eats" % c.name.split(" ")[0] \
+			if Game.weakened(c) else "Endurance: food. A day on the road uses %d; Sleep turns it into hits" % Game.TRAVEL_COST
+		stat_labels["health"].mouse_filter = Control.MOUSE_FILTER_PASS
 	stat_labels["hits"].tooltip_text = ""
 	if c.get("wounded", false):
 		stat_labels["hits"].text += "  wounded"
@@ -189,6 +193,8 @@ func refresh() -> void:
 	xl.tooltip_text = "Experience left to spend on abilities with the + buttons.%s" % (
 		" Enough for a raise: see the gold star on the portrait." if Game.can_raise(c) else "")
 	stat_labels["silver"].text = str(c.silver)
+	for l in [pl, tl, xl, stat_labels["hits"], stat_labels["health"]]:
+		l.tooltip_text = Ui.tip(l.tooltip_text)
 	for k in slots:
 		slots[k].item_id = c.items[k]
 		slots[k].count = Game.qty(c, k)

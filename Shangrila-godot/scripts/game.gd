@@ -139,7 +139,9 @@ const TOWNS := {
 ## Routes between locations, with the number of days on the road.
 const ROUTES := [["lehan", "mines", 1], ["shrine", "lehan", 1], ["lehan", "marsh_shrine", 3]]
 ## Endurance each character uses per day of travel (food is what refills it).
-const TRAVEL_COST := 8
+const TRAVEL_COST := 20      # Endurance a day on the road: three days take most of a full bar
+const RATIONS := [50, 51, 30]   # what is eaten on the road, in this order: bread, dried fish, cheese
+const FOOD_PRICES := {50: 1, 51: 2}   # provisions at the inn
 
 var main: Node            # set by main.gd, used for modal dialogs
 var items := {}           # id -> item dictionary (templates, never mutated)
@@ -263,6 +265,10 @@ func _make_items() -> void:
 	_it(49, "Jailer's Record", "page", "#d8c8a0", 2, 0, {"dims": true, "quest": true,
 		"text": "\"...the body we sealed below, and set the Warden at the gate. Iron and oath will hold it: no blade of ours can harm the Warden, nor any blade while the pieces of the tyrant still sleep apart. The second piece we took to the marsh-folk's causeway and drowned it at the old shrine, where the water never clears...\""},
 		"A brittle page from the jailers' armoury, in an old hand.")
+	_it(50, "Bread", "bread", "#c89050", 10, 1, {"dims": true, "food": true, "health": [25, 30]},
+		"A dark travel loaf. Keeps for a week, tastes of it.")
+	_it(51, "Dried Fish", "fish", "#b0a080", 8, 2, {"dims": true, "food": true, "health": [30, 40]},
+		"Salted and dried on the marsh racks. Chewy, filling.")
 
 
 func item(id: int) -> Dictionary:
@@ -299,13 +305,14 @@ func ability(c: Dictionary, key: String) -> int:
 
 
 ## A check: d10 + ability + bonus against a difficulty (EASY 6, NORMAL 9, HARD 12).
+## A weakened character (out of Endurance) has −1.
 func check(c: Dictionary, key: String, difficulty: int, bonus := 0) -> bool:
-	return my_random(1, 10) + ability(c, key) + bonus >= difficulty
+	return my_random(1, 10) + ability(c, key) + bonus - (1 if weakened(c) else 0) >= difficulty
 
 
 ## The chance of passing that check, in percent (10% for each face of the d10 that is enough).
 func chance(c: Dictionary, key: String, difficulty: int, bonus := 0) -> int:
-	var need := difficulty - ability(c, key) - bonus
+	var need := difficulty - ability(c, key) - bonus + (1 if weakened(c) else 0)
 	return clampi(11 - need, 0, 10) * 10
 
 
@@ -610,7 +617,12 @@ func weapon_ability(c: Dictionary, slot: int) -> String:
 ## What the character adds to a d10 when attacking with the weapon in a hand.
 func to_hit(c: Dictionary, slot: int) -> int:
 	var id: int = c.items[slot]
-	return ability(c, weapon_ability(c, slot)) + (item(id).attack if id != 0 else 0)
+	return ability(c, weapon_ability(c, slot)) + (item(id).attack if id != 0 else 0) - (1 if weakened(c) else 0)
+
+
+## Out of Endurance (the apple bar): −1 on every check and to hit, until they eat.
+func weakened(c: Dictionary) -> bool:
+	return c.has("health") and c.has("max_health") and c.max_health > 0 and c.health <= 0
 
 
 ## Damage range of the weapon in a hand, as text for the View Character screen.
@@ -1211,20 +1223,97 @@ func routes_from(from: String) -> Array:
 	return out
 
 
-## Travel to `dest`. Every character uses Endurance for each day on the road.
-## Returns lines describing the trip.
+## Travel to `dest`, a day at a time (road_day). Returns lines describing the trip.
 func travel(dest: String, days: int) -> Array:
 	var lines := ["After %d day%s on the road the party reaches %s." % [days, "" if days == 1 else "s", LOCATIONS[dest].name]]
-	var hungry := []
-	for c in party:
-		c.health = maxi(0, c.health - TRAVEL_COST * days)
-		if c.health == 0:
-			hungry.append(c.name)
-	if not hungry.is_empty():
-		lines.append("%s %s starving and need%s food." % [", ".join(hungry), "is" if hungry.size() == 1 else "are", "s" if hungry.size() == 1 else ""])
+	for d in days:
+		lines.append_array(road_day())
 	location = dest
-	lines.append_array(pass_days(days))
 	return lines
+
+
+## One day on the road: everyone uses TRAVEL_COST Endurance; the best at Survival may forage;
+## in the evening anyone running low eats from the packs (their own first); anyone still out of
+## Endurance is starving and loses 1-3 hits (never below 1 on the road). A day passes.
+func road_day() -> Array:
+	var lines := []
+	for c in party:
+		c.health = maxi(0, c.health - TRAVEL_COST)
+	var forager := _best_at("survival")
+	if not forager.is_empty() and ability(forager, "survival") > 0 and check(forager, "survival", NORMAL):
+		var hungriest: Dictionary = party[0]
+		for c in party:
+			if c.health * hungriest.max_health < hungriest.health * c.max_health:
+				hungriest = c
+		var got := my_random(10, 20)
+		hungriest.health = mini(hungriest.max_health, hungriest.health + got)
+		lines.append("%s forages roots and duck eggs along the way (+%d Endurance for %s)." % [
+			forager.name.split(" ")[0], got, "them" if hungriest == forager else hungriest.name.split(" ")[0]])
+	var ate := {}
+	var starving := []
+	for c in party:
+		# Supper: one ration if there is room for it, and more if still too low for tomorrow.
+		var meals := 0
+		while (meals == 0 and c.health < c.max_health - 15) or c.health < TRAVEL_COST:
+			var meal := _eat_ration(c)
+			if meal == "":
+				break
+			meals += 1
+			ate[meal] = int(ate.get(meal, 0)) + 1
+		if c.health <= 0:
+			var lost := mini(my_random(1, 3), c.hits - 1)
+			if lost > 0:
+				c.hits -= lost
+			starving.append(c.name.split(" ")[0])
+	if not ate.is_empty():
+		var parts := []
+		for k in ate:
+			parts.append("%d %s" % [ate[k], k])
+		lines.append("In the evening the party eats: %s." % ", ".join(parts))
+	if not starving.is_empty():
+		lines.append("%s %s nothing left to eat: weakened and starving." % [_and_list(starving),
+			"has" if starving.size() == 1 else "have"])
+	lines.append_array(pass_days(1))
+	return lines
+
+
+## Eats one ration (RATIONS order), from the character's own pack first, then a friend's.
+## Returns the food's name, or "" if there is none in the party.
+func _eat_ration(c: Dictionary) -> String:
+	for id in RATIONS:
+		for who in [c] + party:
+			for s in range(PACK_FIRST, PACK_LAST + 1):
+				if who.items[s] == id:
+					take_from(who, s)
+					var it := item(id)
+					c.health = mini(c.max_health, c.health + my_random(it.health[0], it.health[1]))
+					return it.name
+	return ""
+
+
+## Days of food the party carries: a ration a head each evening on the road.
+func food_days() -> float:
+	var total := 0
+	for c in party:
+		for s in range(PACK_FIRST, PACK_LAST + 1):
+			if c.items[s] in RATIONS:
+				total += qty(c, s)
+	return float(total) / maxi(1, party.size())
+
+
+## "A, B and C".
+static func _and_list(names: Array) -> String:
+	if names.size() <= 1:
+		return "".join(names)
+	return ", ".join(names.slice(0, -1)) + " and " + names[-1]
+
+
+func _best_at(key: String) -> Dictionary:
+	var best := {}
+	for c in party:
+		if best.is_empty() or ability(c, key) > ability(best, key):
+			best = c
+	return best
 
 
 # ---------------------------------------------------------------- towns

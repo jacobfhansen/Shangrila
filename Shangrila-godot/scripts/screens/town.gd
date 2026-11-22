@@ -61,7 +61,7 @@ func _build_places() -> void:
 		b.flat = true
 		b.focus_mode = Control.FOCUS_NONE
 		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		b.tooltip_text = "%s\n%s" % [pl.name, pl.desc]
+		b.tooltip_text = Ui.tip("%s\n%s" % [pl.name, pl.desc])
 		b.pressed.connect(_on_place.bind(key))
 		layer.add_child(b)
 		Ui.place(b, Rect2(at.x - 16, at.y - 16, 32, 32))

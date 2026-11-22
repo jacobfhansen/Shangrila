@@ -19,7 +19,9 @@ func _ready() -> void:
 	Ui.btn(self, "Save", Rect2(20, 54, 66, 28), _on_save, "Save the game")
 	Ui.btn(self, "Load", Rect2(90, 54, 66, 28), Game.main.load_menu, "Load a saved game (what isn't saved is lost)")
 	Ui.btn(self, "Quit", Rect2(160, 54, 66, 28), _on_quit, "Back to the main menu")
-	cmd.rest = Ui.btn(self, "Rest a night", Rect2(20, 88, 206, 28), _on_rest,
+	cmd.food = Ui.btn(self, "Provisions", Rect2(126, 88, 100, 28), _on_food,
+		"Bread and dried fish for the road: eaten by themselves on long trips")
+	cmd.rest = Ui.btn(self, "Rest a night", Rect2(20, 88, 100, 28), _on_rest,
 		"A night at the inn: hits and mana back (not past a bad wound). %d silver a head; a day passes" % Game.INN_NIGHT)
 
 	Ui.title(self, "The Inn", Vector2(250, 26), 30)
@@ -131,6 +133,7 @@ func refresh() -> void:
 	cmd.info.disabled = chosen < 0 and member < 0
 	cmd.kill.disabled = chosen < 0
 	cmd.rest.disabled = Game.party.is_empty()
+	cmd.food.disabled = Game.party.is_empty()
 	gold_label.text = "Party purse: %s     Day %d" % [Game.money_string(Game.party_silver()), Game.day]
 
 
@@ -242,6 +245,41 @@ func _on_dismiss() -> void:
 	Game.roster.append(c)
 	member = -1
 	refresh()
+
+
+## Provisions for the road: bread and dried fish, one or five at a time, until Cancel.
+func _on_food() -> void:
+	var opts := []
+	var buys := []
+	for id in Game.FOOD_PRICES:
+		var p: int = Game.FOOD_PRICES[id]
+		var nm: String = Game.item(id).name
+		opts.append("%s, %d silver" % [nm, p])
+		buys.append([id, 1])
+		opts.append("5 %s, %d silver" % [nm, p * 5])
+		buys.append([id, 5])
+	while true:
+		var food := Game.food_days()
+		var pick: int = await Game.main.choose("Food in the packs: %s. Purse: %d silver." % [
+			"%d day%s" % [roundi(food), "" if roundi(food) == 1 else "s"] if food >= 0.5 else "none", Game.party_silver()], opts)
+		if pick < 0:
+			break
+		var id: int = buys[pick][0]
+		var n: int = buys[pick][1]
+		var price: int = Game.FOOD_PRICES[id] * n
+		var copies: Array = Game.party.duplicate(true)
+		var fits := true
+		for k in n:
+			if Game.party_add(id, copies).is_empty():
+				fits = false
+		if not fits:
+			await Game.main.message("The packs are too full for that.")
+		elif not Game.pay(price):
+			await Game.main.message("The purse can't cover that.")
+		else:
+			for k in n:
+				Game.party_add(id)
+		refresh()
 
 
 ## A night at the inn for the party: hits and mana back (up to the limit of a bad wound), a day

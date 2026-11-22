@@ -168,6 +168,17 @@ func _draw() -> void:
 			_poly([Vector2(4, 24), Vector2(29, 24), Vector2(29, 28), Vector2(4, 28)], c.darkened(0.15))
 			for h in [Vector2(20, 19), Vector2(25, 21), Vector2(15, 22)]:
 				draw_circle(h, 1.4, c.darkened(0.35))
+		"bread":
+			draw_colored_polygon(_ell(Vector2(16, 19), 13, 8), c)
+			draw_colored_polygon(_ell(Vector2(16, 16), 11, 6), c.lightened(0.12))
+			for x in [9, 15, 21]:
+				draw_line(Vector2(x, 13), Vector2(x + 3, 19), c.darkened(0.35), 1.4)
+		"fish":
+			draw_colored_polygon(_ell(Vector2(14, 17), 10, 5), c)
+			_poly([Vector2(22, 17), Vector2(29, 11), Vector2(29, 23)], c.darkened(0.15))
+			draw_circle(Vector2(8, 16), 1.3, c.darkened(0.6))
+			for x in [12, 16, 20]:
+				draw_line(Vector2(x, 13), Vector2(x - 1, 21), c.darkened(0.25), 1.0)
 		"stonehead":
 			_poly([Vector2(9, 12), Vector2(11, 7), Vector2(13, 10), Vector2(16, 5), Vector2(19, 10), Vector2(21, 7),
 				Vector2(23, 12)], c.lightened(0.15))

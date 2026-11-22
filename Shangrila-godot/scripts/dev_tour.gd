@@ -1131,7 +1131,62 @@ func _mines_will() -> void:
 	print("will: after the host died: ", m.current.get_script().resource_path.get_file())
 	await _wounds_and_saves()
 	await _stacks_and_smith()
+	await _marsh_road()
 	get_tree().quit()
+
+
+## The first trip to the marshes: provisions at the inn, the food estimate, the salt cart and
+## the night camp, eating on the road, and what is left on arrival.
+func _marsh_road() -> void:
+	var m: Node = Game.main
+	Checkpoints.start("mines", "tikkat")
+	await get_tree().create_timer(1.0).timeout
+	Game.location = "lehan"
+	if not "marsh_shrine" in Game.known:
+		Game.known.append("marsh_shrine")
+	for c in Game.party:
+		c.health = c.max_health
+		c.silver += 10
+	m.goto("inn")
+	await get_tree().create_timer(0.6).timeout
+	m.current._on_food.call()
+	await get_tree().create_timer(0.4).timeout
+	await _shot("47a_provisions")
+	m._modal_done.emit(1)   # 5 bread
+	await get_tree().create_timer(0.3).timeout
+	m._modal_done.emit(3)   # 5 dried fish
+	await get_tree().create_timer(0.3).timeout
+	m._modal_done.emit(-1)
+	await get_tree().create_timer(0.3).timeout
+	print("road: food days ", snappedf(Game.food_days(), 0.1), " day ", Game.day)
+	m.goto("world")
+	await get_tree().create_timer(0.6).timeout
+	print("road: shrine tip:\n", Ui.tip(m.current._tip("marsh_shrine")))
+	m.current._on_location.call("marsh_shrine")
+	await get_tree().create_timer(0.4).timeout
+	await _shot("47b_travel_confirm")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(2.0).timeout
+	await _drive(m.current, [0], "47c_salt_cart")
+	await get_tree().create_timer(2.0).timeout
+	await _drive(m.current, [2], "47d_night_camp")
+	await get_tree().create_timer(2.5).timeout
+	await _shot("47e_arrival")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.6).timeout
+	print("road: at ", Game.location, " day ", Game.day, " food days left ", snappedf(Game.food_days(), 0.1), " endurance ",
+		Game.party.map(func(c): return c.health), " weakened ", Game.party.filter(func(c): return Game.weakened(c)).size(),
+		" wenna ", LehanQuests.get_q("marsh_wenna"), " screen ", m.current_name)
+	# Starving: no food at all, three days.
+	for c in Game.party:
+		for k in range(Game.PACK_FIRST, Game.PACK_LAST + 1):
+			if c.items[k] in Game.RATIONS:
+				Game.set_slot(c, k, 0, 0)
+		c.health = 30
+	var hits_before: Array = Game.party.map(func(c): return c.hits)
+	var lines := Game.travel("lehan", 3)
+	print("road: starving trip: ", lines.slice(1), " hits ", hits_before, " -> ", Game.party.map(func(c): return c.hits),
+		" check chance while weakened ", Game.chance(Game.party[0], "talk", Game.NORMAL))
 
 
 ## Stacks in the backpack, and the smith: selling, haggling, buying onto a stack.

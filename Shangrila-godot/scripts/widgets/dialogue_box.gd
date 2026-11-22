@@ -296,7 +296,7 @@ func _show_choice(st: Dictionary) -> void:
 			pic.look = who.look
 			b.add_child(pic)
 			Ui.place(pic, Rect2(4, 2, b.size.y - 4, b.size.y - 4))
-		b.tooltip_text = _check_tip(o.checks, o.get("tip", "")) if o.has("checks") else o.get("tip", "")
+		b.tooltip_text = Ui.tip(_check_tip(o.checks, o.get("tip", "")) if o.has("checks") else o.get("tip", ""))
 		b.pressed.connect(choose.bind(i))
 		b.position = Vector2(0, y)
 		y += b.size.y + 3

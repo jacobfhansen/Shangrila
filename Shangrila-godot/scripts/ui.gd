@@ -25,11 +25,27 @@ static func place(c: Control, r: Rect2) -> void:
 	c.size = r.size
 
 
+## Breaks a tooltip into lines of at most `width` characters at spaces (tooltips are drawn as
+## one line and would run off the window). Existing line breaks are kept.
+static func tip(text: String, width := 64) -> String:
+	var out := []
+	for para in text.split("\n"):
+		var line := ""
+		for word in para.split(" "):
+			if line != "" and line.length() + 1 + word.length() > width:
+				out.append(line)
+				line = word
+			else:
+				line = word if line == "" else line + " " + word
+		out.append(line)
+	return "\n".join(out)
+
+
 static func btn(parent: Node, text: String, r: Rect2, cb: Callable = Callable(), tip := "") -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE
-	b.tooltip_text = tip
+	b.tooltip_text = Ui.tip(tip)
 	b.clip_text = true
 	if cb.is_valid():
 		b.pressed.connect(cb)

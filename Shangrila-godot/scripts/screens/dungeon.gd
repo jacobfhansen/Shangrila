@@ -210,6 +210,8 @@ func _refresh_party() -> void:
 		var t := ""
 		if combat == null and c.get("wounded", false):
 			t = "Wounded"
+		if combat == null and Game.weakened(c):
+			t = (t + "\nWeakened").strip_edges()
 		if combat:
 			if combat.dead.has(i):
 				t = "Dead"
@@ -604,6 +606,7 @@ func _show_command() -> void:
 	var sp := Game.spell_for(Game.party[cur])
 	act_buttons["spells"].tooltip_text = ("%s (%d mana): %s (S)" % [sp.name, sp.cost, sp.desc]) if not sp.is_empty() \
 		else "%s knows no spells" % Game.party[cur].name
+	act_buttons["spells"].tooltip_text = Ui.tip(act_buttons["spells"].tooltip_text)
 	defaults_btn.disabled = false
 	tactics_btn.disabled = false
 	status_label.text = "%s: choose an action." % Game.party[cur].name
