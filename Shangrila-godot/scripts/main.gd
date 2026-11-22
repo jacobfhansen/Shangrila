@@ -88,7 +88,18 @@ func _make_theme() -> Theme:
 
 # ---------------------------------------------------------------- modal dialogs
 
-func _overlay() -> Control:
+## What Esc answers in the open dialog (null: Esc does nothing there, as in the name dialog).
+var _esc: Variant = null
+
+
+func _input(e: InputEvent) -> void:
+	if modal_open and _esc != null and e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_ESCAPE:
+		get_viewport().set_input_as_handled()
+		_modal_done.emit(_esc)
+
+
+func _overlay(esc: Variant = null) -> Control:
+	_esc = esc
 	modal_open = true
 	var ov := ColorRect.new()
 	ov.color = Color(0, 0, 0, 0.45)
@@ -102,6 +113,7 @@ func _overlay() -> Control:
 func _close(ov: Control) -> void:
 	ov.queue_free()
 	modal_open = false
+	_esc = null
 
 
 func _box(ov: Control, w: float, h: float) -> Control:
@@ -123,7 +135,7 @@ func _ink_label(p: Node, text: String, r: Rect2, fsize := 15) -> Label:
 
 ## "Do you really want to ...?"  Returns true for OK.
 func confirm(text: String, ok_text := "OK") -> bool:
-	var ov := _overlay()
+	var ov := _overlay(false)
 	var b := _box(ov, 260, 140)
 	_ink_label(b, text, Rect2(14, 12, 232, 70))
 	Ui.btn(b, "Cancel", Rect2(20, 96, 90, 28), func(): _modal_done.emit(false))
@@ -134,7 +146,7 @@ func confirm(text: String, ok_text := "OK") -> bool:
 
 
 func message(text: String) -> void:
-	var ov := _overlay()
+	var ov := _overlay(true)
 	var w := 280.0 if text.length() < 120 else 340.0
 	var f: Font = theme.default_font
 	var th := f.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, w - 28, 15).y
@@ -171,7 +183,7 @@ func ask_name() -> String:
 ## ViewItem - the item info card.
 func show_item(id: int) -> void:
 	var it := Game.item(id)
-	var ov := _overlay()
+	var ov := _overlay(true)
 	var b := _box(ov, 300, 260)
 	var ic := ItemIcon.new()
 	ic.item_id = id
@@ -204,7 +216,7 @@ func show_item(id: int) -> void:
 
 ## A list of choices (used for Use / Equip in combat). Returns the index, or -1 for Cancel.
 func choose(text: String, options: Array) -> int:
-	var ov := _overlay()
+	var ov := _overlay(-1)
 	var n := options.size()
 	var b := _box(ov, 260, 100 + n * 32)
 	_ink_label(b, text, Rect2(14, 8, 232, 40))
@@ -218,7 +230,7 @@ func choose(text: String, options: Array) -> int:
 
 ## Default action per character, used by the Defaults button and by auto-combat.
 func tactics() -> void:
-	var ov := _overlay()
+	var ov := _overlay(true)
 	var n := Game.party.size()
 	var b := _box(ov, 360, 108 + n * 40)
 	_plain(b, "Default actions", Rect2(0, 8, 360, 22), 17, HORIZONTAL_ALIGNMENT_CENTER)

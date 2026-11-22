@@ -214,3 +214,9 @@ func _on_haggle() -> void:
 		talk_label.text = "\"Haggle with whom? You are alone.\""
 	else:
 		talk_label.text = "%s tries to haggle (Talk %d).\n\n\"My prices are fair, friend. Take it or leave it.\"" % [who, best]
+
+
+func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_ESCAPE and not Game.main.modal_open:
+		get_viewport().set_input_as_handled()
+		Game.main.goto("streets", {"at": "smith"})

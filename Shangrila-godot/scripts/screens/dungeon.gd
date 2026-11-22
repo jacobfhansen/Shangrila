@@ -202,6 +202,7 @@ func _refresh_party() -> void:
 		var c: Dictionary = Game.party[i]
 		bars[i].who = c
 		ports[i].modulate = Color(0.45, 0.3, 0.3) if c.hits <= 0 else Color.WHITE
+		ports[i].star = Game.can_raise(c)
 		var t := ""
 		if combat:
 			if c.hits <= 0:
@@ -350,6 +351,11 @@ func _unhandled_key_input(e: InputEvent) -> void:
 			map_btn.button_pressed = not map_btn.button_pressed
 			_on_map()
 		KEY_J: QuestLog.open()
+		KEY_ESCAPE:
+			if not map_mode:
+				return
+			map_btn.button_pressed = false
+			_on_map()
 		_: return
 	get_viewport().set_input_as_handled()
 

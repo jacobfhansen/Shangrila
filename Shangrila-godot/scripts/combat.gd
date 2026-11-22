@@ -635,7 +635,7 @@ func rewards() -> Array:
 	for i in Game.party.size():
 		var c: Dictionary = Game.party[i]
 		var x := Game.round_random(xp_for(i))
-		c.xp += x
+		Game.gain_xp(c, x)
 		var note := ""
 		if level - Game.power(c) <= -3:
 			note = " (too easy)"

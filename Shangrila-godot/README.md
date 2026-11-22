@@ -38,7 +38,8 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
   values and the *favoured* abilities (gold names, cheaper to raise), and the race adds +1 and a
   quirk. Hit points come from race + 3 × Toughness, mana from Magic. Experience is spent with
   the **+** buttons on the character sheet (the inn's *Info*): raising to N costs N × 100, or
-  N × 150 if not favoured, and Humans pay 10% less. All money is silver. The rules are in
+  N × 150 if not favoured, and Humans pay 10% less. The sheet shows the experience earned in all and
+  what is unspent; a gold star on a portrait means that character can afford a raise. All money is silver. The rules are in
   `scripts/game.gd`; the full plan is "Simpler mechanics" in `IDEAS.md`.
 - The resource forks (all UI pictures, the item icons and the 47 portraits) were empty in the
   copy, so the UI is rebuilt in code. Item icons and most portraits are drawn procedurally.
@@ -299,6 +300,9 @@ W/↑ forward, S/↓ back, A/← and D/→ turn, Q/E step sideways, Space use or
 In combat: A Attack, P Parry, S Spells, U Use, E Equip, T Turn, F Flee, H Hide, X Pass,
 D Defaults, Esc back, Space hurry.
 
+Everywhere: Esc closes what is open and goes back: a dialog (as Cancel or OK), the map, the
+quest log, the character sheet (as Leave), the smith's shop.
+
 ## Developer aid
 
 **Checkpoints** for testing by hand: *Start at...* on the title screen, or
@@ -306,7 +310,10 @@ D Defaults, Esc back, Space hurry.
 prologue), `lehan` (at the gate, before the employer), `split` (the inn after the split),
 `market` (the market square, before the crier), `tunnels` (Skee's quest, in the old tunnels),
 `council` (after the crier, at the council
-house's door, the company still at the inn) and `mines` (job taken, company back together). The
+house's door, the company still at the inn), `mines` (job taken, company back together, at the
+entrance), `mines2` and `mines3` (the levels before played: their quest values, chests and gear,
+and the company one or two steps stronger, a raise in each one's best fighting ability and in
+Toughness per level, with half a raise of experience left to spend). The
 host is any of joss, maera, ommuk, ithrae, tikkat. The story before the checkpoint is filled in
 with simple choices (see `scripts/checkpoints.gd`).
 

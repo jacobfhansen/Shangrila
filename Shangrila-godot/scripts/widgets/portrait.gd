@@ -13,6 +13,19 @@ var highlight := false:
 	set(v):
 		highlight = v
 		queue_redraw()
+## A gold star in the corner: the character has enough experience to raise an ability.
+var star := false:
+	set(v):
+		star = v
+		if v and _star == null:
+			_star = _Star.new()
+			_star.set_anchors_preset(Control.PRESET_FULL_RECT)
+			_star.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			add_child(_star)
+		if _star:
+			_star.visible = v
+			move_child(_star, -1)
+var _star: Control
 
 const SKIN := [Color("#f0c8a0"), Color("#d8a878"), Color("#b07850"), Color("#7a5030"), Color("#e8d0b8"), Color("#c09070")]
 const HAIR := [Color("#201810"), Color("#5a3a1a"), Color("#a06a30"), Color("#d8c070"), Color("#8a8a8a"), Color("#e8e8e8"), Color("#902818")]
@@ -39,6 +52,8 @@ func _cast_portrait() -> void:
 		_race_pic = RacePortrait.new()
 		_race_pic.set_anchors_preset(Control.PRESET_FULL_RECT)
 		add_child(_race_pic)
+		if _star:
+			move_child(_star, -1)
 	_race_pic.race = who.race
 	_race_pic.look = who.look
 
@@ -118,3 +133,16 @@ func _draw_face() -> void:
 		2:
 			draw_colored_polygon(PackedVector2Array([Vector2(10, 17), Vector2(22, 17), Vector2(19, 27), Vector2(16, 29), Vector2(13, 27)]), hair)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+class _Star extends Control:
+	func _draw() -> void:
+		var r := clampf(size.x * 0.16, 5.0, 12.0)
+		var c := Vector2(size.x - r - 2, r + 2)
+		var pts := PackedVector2Array()
+		for i in 10:
+			var a := -PI / 2 + i * PI / 5
+			pts.append(c + Vector2(cos(a), sin(a)) * (r if i % 2 == 0 else r * 0.45))
+		draw_colored_polygon(pts, Color("#f4c430"))
+		pts.append(pts[0])
+		draw_polyline(pts, Color("#5a3a08"), 1.2, true)

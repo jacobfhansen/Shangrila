@@ -12,8 +12,19 @@ const LIST := [
 	["market", "The market square", "After the split, before the crier: the walkable square."],
 	["tunnels", "Under Lehan", "Skee's quest taken and the way down found: at the foot of the ladder in the old tunnels."],
 	["council", "The council house", "The crier has cried the mines job; the company is still at the inn. At the council's door."],
-	["mines", "The Mines", "The mines job is taken and the whole company is back together."],
+	["mines", "The Mines, level 1", "The mines job is taken and the whole company is back together, at the entrance."],
+	["mines2", "The Mines, level 2", "Level 1 done (its chests, fights and cart): everyone a step stronger, at the foot of the ladder."],
+	["mines3", "The Mines, level 3", "Levels 1 and 2 done (the miners out, the lift repaired): everyone two steps stronger, in steel."],
 ]
+
+## What each mines level's start counts as already done, on top of the levels before it.
+const MINES_DONE := {
+	2: ["m_reached_1=1", "m_cart=1", "m_points=1", "m_secret=1", "m_chest_1a=1", "m_chest_1b=1",
+		"m_chest_1d=1", "m_grp_1k=1", "m_grp_1r=1", "m_note_1n=1", "m_trap_1p=1"],
+	3: ["m_reached_2=1", "m_air=1", "m_breach=1", "m_key=1", "m_stores=1", "m_crank=1", "m_lift=1",
+		"m_chest_2g=1", "m_gate=shut", "m_water=drained", "m_survivors=out", "m_grp_2Y=1",
+		"m_grp_2D=1", "m_grp_2W=1", "m_note_2n=1", "m_vein_4_5=1"],
+}
 
 
 static func keys() -> Array:
@@ -59,7 +70,7 @@ static func start(key: String, host: String) -> void:
 			Game.discover_place("lehan", "council")
 			Game.discover_place("lehan", "smith")
 			Game.main.goto("streets", {"at": "council", "into": true})
-		"mines":
+		"mines", "mines2", "mines3":
 			Game.story["job_notice"] = true
 			Game.discover_place("lehan", "council")
 			var cs := CouncilData.state()
@@ -74,9 +85,74 @@ static func start(key: String, host: String) -> void:
 				Game.roster.erase(c)
 				Game.party.append(c)
 			Game.location = "mines"
-			Game.mine_level = 1
-			Game.pos = MinesArea.START
-			Game.facing = MinesArea.START_FACING
+			var lv: int = {"mines": 1, "mines2": 2, "mines3": 3}[key]
+			_mines_done(lv)
+			Game.mine_level = lv
+			if lv == 1:
+				Game.pos = MinesArea.START
+				Game.facing = MinesArea.START_FACING
+			else:
+				var at: Array = MinesArea.arrive_near(lv, "<")
+				Game.pos = at[0]
+				Game.facing = at[1]
 			Game.main.goto("dungeon")
 		_:
 			Game.main.goto("town")
+
+
+## The mines levels before `lv` played: their quest values, their gear and silver, and the company
+## grown with them, each step a raise in everyone's best fighting ability and in Toughness (what
+## the fights and the puzzles on a level are worth), plus a little experience left to spend.
+static func _mines_done(lv: int) -> void:
+	if lv < 2:
+		return
+	Game.story["mines_entered"] = true
+	for l in range(2, lv + 1):
+		for f in MINES_DONE[l]:
+			LehanQuests.apply("q:" + f)
+	# Level 1's chests: the lamp, the pick, a leather cap, a root, and 16 silver.
+	for id in [40, 38, 29]:
+		Game.give_item(id)
+	_wear(39, Game.SLOT_HEAD)
+	var silver := 16
+	if lv >= 3:
+		# The foreman's stores: a steel sword and cap for whoever fights best with a blade.
+		_wear(44, Game.SLOT_RHAND)
+		_wear(45, Game.SLOT_HEAD)
+		silver += 8
+	Game.add_silver(Game.party[0], silver)
+	for c in Game.party:
+		for step in lv - 1:
+			for k in [Game.best_fighting(c), "toughness"]:
+				Game.gain_xp(c, maxi(0, Game.raise_cost(c, k)))
+				Game.raise_ability(c, k)
+		Game.gain_xp(c, Game.raise_unit(c) / 2)
+		c.hits = c.max_hits
+		c.magic = c.max_magic
+
+
+## Puts an item on the party member it suits best: a weapon in the hand of the best blade, a cap
+## on the first head that is bare or wears something weaker. What it replaces goes in their pack.
+static func _wear(id: int, slot: int) -> void:
+	var it := Game.item(id)
+	var best: Dictionary = {}
+	for c in Game.party:
+		if slot == Game.SLOT_RHAND:
+			if Game.best_fighting(c) != "combat":
+				continue
+			if best.is_empty() or Game.ability(c, "combat") > Game.ability(best, "combat"):
+				best = c
+		else:
+			var now: int = c.items[slot]
+			if now == 0 or Game.item(now).defense < it.defense:
+				if best.is_empty() or best.items[slot] != 0 and now == 0:
+					best = c
+	if best.is_empty():
+		Game.give_item(id)
+		return
+	var old: int = best.items[slot]
+	best.items[slot] = id
+	if old != 0:
+		var s := Game.free_pack_slot(best)
+		if s >= 0:
+			best.items[s] = old

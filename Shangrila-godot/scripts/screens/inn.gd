@@ -95,6 +95,7 @@ func refresh() -> void:
 			mb.cls.text = "%s %s" % [Game.RACES[c.race], Game.CLASSES[c.cls]]
 			mb.portrait.index = c.icon
 			mb.portrait.highlight = i == member
+			mb.portrait.star = Game.can_raise(c)
 			mb.bars.who = c
 		else:
 			mb.name.text = "- empty -"

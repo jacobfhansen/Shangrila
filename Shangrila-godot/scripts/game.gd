@@ -281,7 +281,7 @@ func blank_character() -> Dictionary:
 	return {
 		"name": "", "icon": 2, "race": HUMAN, "cls": NO_CLASS,
 		"max_health": 0, "health": 0, "max_hits": 0, "hits": 0, "max_magic": 0, "magic": 0,
-		"abilities": ab, "max_encum": 0, "xp": 0, "tactic": "", "silver": 0, "items": it,
+		"abilities": ab, "max_encum": 0, "xp": 0, "xp_total": 0, "tactic": "", "silver": 0, "items": it,
 	}
 
 
@@ -348,6 +348,15 @@ func raise_cost(c: Dictionary, key: String) -> int:
 	return cost
 
 
+## True if the character has enough experience to raise some ability (the portraits' gold star).
+func can_raise(c: Dictionary) -> bool:
+	for k in ABILITIES:
+		var cost := raise_cost(c, k)
+		if cost >= 0 and c.xp >= cost:
+			return true
+	return false
+
+
 func raise_ability(c: Dictionary, key: String) -> bool:
 	var cost := raise_cost(c, key)
 	if cost < 0 or c.xp < cost:
@@ -390,12 +399,36 @@ func round_random(v: float) -> int:
 	return whole + (1 if rng.randf() < v - whole else 0)
 
 
+## Experience earned: `xp` is what is left to spend, `xp_total` all that was ever earned.
+func gain_xp(c: Dictionary, x: int) -> void:
+	c.xp += x
+	c["xp_total"] = int(c.get("xp_total", 0)) + x
+
+
+## For a save from before `xp_total` was kept: what is unspent plus what the raises bought since
+## the character was made cost (their starting abilities are the cast's, a recruit's, or the
+## class's and race's).
+func _estimate_xp_total(c: Dictionary) -> int:
+	var start := {}
+	for src in PrologueData.CAST.values() + LehanQuests.RECRUITS.values():
+		if src.name == c.name:
+			start = src.abilities
+	if start.is_empty():
+		start = start_abilities(c.cls, c.race)
+	var spent := 0
+	for k in ABILITIES:
+		for to in range(int(start.get(k, 0)) + 1, ability(c, k) + 1):
+			var cost := to * (100 if is_favoured(c, k) else 150)
+			spent += cost * 9 / 10 if c.race == HUMAN else cost
+	return c.xp + spent
+
+
 ## Story experience: everyone in the party gets `fraction` of a raise.
 func story_xp(fraction: float) -> int:
 	var total := 0
 	for c in party:
 		var x := roundi(raise_unit(c) * fraction)
-		c.xp += x
+		gain_xp(c, x)
 		total = maxi(total, x)
 	return total
 
@@ -838,6 +871,8 @@ func load_game() -> String:
 					equip_from_pack(c)
 	for c in roster + party:
 		update_derived(c)
+		if not c.has("xp_total"):
+			c["xp_total"] = _estimate_xp_total(c)
 	story = data.get("story", {})
 	visited = {}
 	mine_level = clampi(int(data.get("level", 1)), 1, MinesArea.MAPS.size())

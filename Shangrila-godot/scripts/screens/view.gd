@@ -81,10 +81,10 @@ func _ready() -> void:
 		plus.add_theme_font_size_override("font_size", 12)
 		ability_rows[k] = {"name": nl, "pips": pips, "plus": plus, "hover": hover}
 	var rows := [["Hits", "hits"], ["Health", "health"], ["Mana", "mana"], ["Encumbrance", "enc"],
-		["Armour", "ac"], ["To Hit  R / L", "hit"], ["Damage  R / L", "dam"], ["Experience", "xp"],
-		["Silver", "silver"]]
+		["Armour", "ac"], ["To Hit  R / L", "hit"], ["Damage  R / L", "dam"], ["Power", "power"],
+		["Experience earned", "xp_total"], ["Unspent", "xp"], ["Silver", "silver"]]
 	for i in rows.size():
-		var y := 304 + i * 18
+		var y := 302 + i * 15.3
 		Ui.label(self, rows[i][0], Vector2(18, y), 12, Ui.DIM)
 		stat_labels[rows[i][1]] = Ui.label(self, "", Vector2(124, y), 13, Ui.GOLD, 104, HORIZONTAL_ALIGNMENT_RIGHT)
 
@@ -159,25 +159,25 @@ func refresh() -> void:
 	stat_labels["ac"].text = str(Game.armor(c))
 	stat_labels["hit"].text = "%d / %d" % [Game.to_hit(c, Game.SLOT_RHAND), Game.to_hit(c, Game.SLOT_LHAND)]
 	stat_labels["dam"].text = "%s / %s" % [Game.damage_string(c, Game.SLOT_RHAND), Game.damage_string(c, Game.SLOT_LHAND)]
-	# Experience: what this character has / what their cheapest raise costs (there are no levels;
-	# experience is spent on abilities with the + buttons).
-	var next := -1
-	var next_key := ""
-	for k in ability_rows:
-		var cost := Game.raise_cost(c, k)
-		if cost >= 0 and (next < 0 or cost < next):
-			next = cost
-			next_key = k
+	var pl: Label = stat_labels["power"]
+	var best := Game.best_fighting(c)
+	pl.text = str(Game.power(c))
+	pl.mouse_filter = Control.MOUSE_FILTER_PASS
+	pl.tooltip_text = ("How strong a fighter %s is: best fighting ability (%s %d) + Toughness %d.\n"
+		+ "Fights against monsters above this pay more experience, those below pay less, and three or more levels below pay nothing.") % [
+		c.name.split(" ")[0], Game.ABILITY_NAMES[best], Game.ability(c, best), Game.ability(c, "toughness")]
+	# Experience: earned in all, and what is left to spend on abilities (the + buttons; a gold star
+	# on the portrait when it is enough for a raise).
+	var tl: Label = stat_labels["xp_total"]
+	tl.text = str(c.get("xp_total", c.xp))
+	tl.mouse_filter = Control.MOUSE_FILTER_PASS
+	tl.tooltip_text = "All the experience %s has earned, from fights and the story: %d spent on abilities, %d left to spend." % [
+		c.name.split(" ")[0], int(c.get("xp_total", c.xp)) - c.xp, c.xp]
 	var xl: Label = stat_labels["xp"]
+	xl.text = str(c.xp)
 	xl.mouse_filter = Control.MOUSE_FILTER_PASS
-	if next < 0:
-		xl.text = str(c.xp)
-		xl.tooltip_text = "Every ability is at the top."
-	else:
-		xl.text = "%d / %d" % [c.xp, next]
-		xl.tooltip_text = "%d experience. The cheapest raise, %s to %d, costs %d.%s" % [c.xp,
-			Game.ABILITY_NAMES[next_key], Game.ability(c, next_key) + 1, next,
-			" Click its + to spend it." if c.xp >= next else " %d more needed." % (next - c.xp)]
+	xl.tooltip_text = "Experience left to spend on abilities with the + buttons.%s" % (
+		" Enough for a raise: see the gold star on the portrait." if Game.can_raise(c) else "")
 	stat_labels["silver"].text = str(c.silver)
 	for k in slots:
 		slots[k].item_id = c.items[k]
@@ -194,6 +194,7 @@ func refresh() -> void:
 			e.name.text = who.name
 			e.portrait.index = who.icon
 			e.portrait.highlight = (strip_first + j) % n == index
+			e.portrait.star = Game.can_raise(who)
 			e.bars.who = who
 			e.name.add_theme_color_override("font_color", Ui.RED if (strip_first + j) % n == index else Ui.TEXT)
 
@@ -221,9 +222,14 @@ func _on_raise(key: String) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
-	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J and not Game.main.modal_open:
+	if not (e is InputEventKey and e.pressed and not e.echo) or Game.main.modal_open:
+		return
+	if e.keycode == KEY_J:
 		QuestLog.open()
 		get_viewport().set_input_as_handled()
+	elif e.keycode == KEY_ESCAPE:
+		get_viewport().set_input_as_handled()
+		_on_leave()
 
 
 func _on_leave() -> void:

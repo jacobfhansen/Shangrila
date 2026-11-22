@@ -420,6 +420,11 @@ func _new_game_route() -> void:
 		await _shot("30_checkpoint_" + cp)
 		print("checkpoint %s: screen %s, party %s, roster %d, known %s" % [cp, m.current.get_script().resource_path.get_file(),
 			Game.party.map(func(c): return c.name.split(" ")[0]), Game.roster.size(), Game.known])
+		if cp.begins_with("mines"):
+			print("  level %d at %s: " % [Game.mine_level, Game.pos], Game.party.map(func(c): return "%s %s=%d tough=%d hp=%d xp=%d R=%s H=%s" % [
+				c.name.split(" ")[0], Game.best_fighting(c), Game.ability(c, Game.best_fighting(c)), Game.ability(c, "toughness"),
+				c.max_hits, c.xp, Game.item(c.items[Game.SLOT_RHAND]).get("name", "-") if c.items[Game.SLOT_RHAND] else "-",
+				Game.item(c.items[Game.SLOT_HEAD]).get("name", "-") if c.items[Game.SLOT_HEAD] else "-"]))
 	if m.modal_open:
 		m._modal_done.emit(true)
 	await _council_visits()
@@ -927,6 +932,27 @@ func _mines_part() -> void:
 	m.current._on_leave()
 	await get_tree().create_timer(0.6).timeout
 	print("mines: sheet and back: ", m.current.name, " at ", Game.pos, " (was ", was, ")")
+	# Esc closes things: the map, the character sheet, a dialog.
+	var esc := func() -> void:
+		var k := InputEventKey.new()
+		k.keycode = KEY_ESCAPE
+		k.pressed = true
+		Input.parse_input_event(k)
+		await get_tree().create_timer(0.3).timeout
+	m.current.map_btn.button_pressed = true
+	m.current._on_map()
+	await get_tree().create_timer(0.3).timeout
+	await esc.call()
+	print("esc: map open after Esc: ", m.current.map_mode)
+	m.current._on_portrait_input(click, 0)
+	await get_tree().create_timer(0.6).timeout
+	await esc.call()
+	await get_tree().create_timer(0.4).timeout
+	print("esc: back from the sheet on ", m.current.get_script().resource_path.get_file())
+	m.choose.call("Esc test", ["One", "Two"])   # not awaited: Esc should close it
+	await get_tree().create_timer(0.3).timeout
+	await esc.call()
+	print("esc: dialog open after Esc: ", m.modal_open)
 	# Level 1: the kobolds, their chest, the camp chest, the points lever and the cart, the stash.
 	await _mine_step(1, Vector2i(5, 1), 3)
 	await _mine_fight("40d_kobolds")
