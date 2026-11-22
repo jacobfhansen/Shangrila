@@ -324,6 +324,7 @@ func make_character(nm: String, cls: int, race: int, icon: int, abilities := {})
 	for k in ABILITIES:
 		if not c.abilities.has(k):
 			c.abilities[k] = 0
+	c["start_abilities"] = c.abilities.duplicate()
 	c.silver = my_random(10, 20)
 	finish_character(c, nm)
 	c.hits = c.max_hits
@@ -382,9 +383,23 @@ func best_fighting(c: Dictionary) -> String:
 	return best
 
 
-## How strong a fighter the character is, to compare with a monster's level.
+## How far the character has come, to compare with a monster's level for experience: their best
+## fighting ability + Toughness, + 1 for every 2 raises bought in the other abilities since they
+## were made (so keeping Combat low to be paid more for fights doesn't pay; see IDEAS.md).
 func power(c: Dictionary) -> int:
-	return ability(c, best_fighting(c)) + ability(c, "toughness")
+	return ability(c, best_fighting(c)) + ability(c, "toughness") + other_raises(c) / 2
+
+
+## Raises bought since the character was made in abilities other than their best fighting one
+## and Toughness.
+func other_raises(c: Dictionary) -> int:
+	var start: Dictionary = c.get("start_abilities", {})
+	var best := best_fighting(c)
+	var n := 0
+	for k in ABILITIES:
+		if k != best and k != "toughness":
+			n += maxi(0, ability(c, k) - int(start.get(k, ability(c, k))))
+	return n
 
 
 ## One raise's worth of experience for this character (their next raise in their best fighting
@@ -405,16 +420,24 @@ func gain_xp(c: Dictionary, x: int) -> void:
 	c["xp_total"] = int(c.get("xp_total", 0)) + x
 
 
-## For a save from before `xp_total` was kept: what is unspent plus what the raises bought since
-## the character was made cost (their starting abilities are the cast's, a recruit's, or the
-## class's and race's).
-func _estimate_xp_total(c: Dictionary) -> int:
+## A character's abilities when made, for a save from before they were kept: the cast's, a
+## recruit's, or the class's and race's.
+func _guess_start_abilities(c: Dictionary) -> Dictionary:
 	var start := {}
 	for src in PrologueData.CAST.values() + LehanQuests.RECRUITS.values():
 		if src.name == c.name:
-			start = src.abilities
+			start = src.abilities.duplicate()
 	if start.is_empty():
 		start = start_abilities(c.cls, c.race)
+	for k in ABILITIES:
+		start[k] = mini(int(start.get(k, 0)), ability(c, k))
+	return start
+
+
+## For a save from before `xp_total` was kept: what is unspent plus what the raises bought since
+## the character was made cost.
+func _estimate_xp_total(c: Dictionary) -> int:
+	var start: Dictionary = c.get("start_abilities", _guess_start_abilities(c))
 	var spent := 0
 	for k in ABILITIES:
 		for to in range(int(start.get(k, 0)) + 1, ability(c, k) + 1):
@@ -871,6 +894,8 @@ func load_game() -> String:
 					equip_from_pack(c)
 	for c in roster + party:
 		update_derived(c)
+		if not c.has("start_abilities"):
+			c["start_abilities"] = _guess_start_abilities(c)
 		if not c.has("xp_total"):
 			c["xp_total"] = _estimate_xp_total(c)
 	story = data.get("story", {})

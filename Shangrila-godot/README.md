@@ -288,7 +288,7 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
 - Spells: mages (Fire Dart), enchanters (Slumber) and clerics (Mend) with at least 1 in Magic
   get a mana pool of 2 + 3 × Magic (the original kept max magic at 0).
 - Winning gives experience, silver and sometimes an item. Experience is scaled so grinding does
-  not pay: a fight at a character's own power (best fighting ability + Toughness) gives 1% of
+  not pay: a fight at a character's own power (best fighting ability + Toughness, + 1 for every 2 raises bought in other abilities) gives 1% of
   their next raise, each monster level above doubles it, each below halves it, and three below
   gives nothing. Hiding the whole fight gives nothing, falling halves it. Most experience comes
   from the story. Fallen characters come around with 1 hit point. If the whole party falls,

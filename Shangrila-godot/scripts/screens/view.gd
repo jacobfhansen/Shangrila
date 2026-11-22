@@ -163,9 +163,10 @@ func refresh() -> void:
 	var best := Game.best_fighting(c)
 	pl.text = str(Game.power(c))
 	pl.mouse_filter = Control.MOUSE_FILTER_PASS
-	pl.tooltip_text = ("How strong a fighter %s is: best fighting ability (%s %d) + Toughness %d.\n"
+	var other := Game.other_raises(c)
+	pl.tooltip_text = ("How far %s has come: best fighting ability (%s %d) + Toughness %d + 1 for every 2 other raises bought (%d so far).\n"
 		+ "Fights against monsters above this pay more experience, those below pay less, and three or more levels below pay nothing.") % [
-		c.name.split(" ")[0], Game.ABILITY_NAMES[best], Game.ability(c, best), Game.ability(c, "toughness")]
+		c.name.split(" ")[0], Game.ABILITY_NAMES[best], Game.ability(c, best), Game.ability(c, "toughness"), other]
 	# Experience: earned in all, and what is left to spend on abilities (the + buttons; a gold star
 	# on the portrait when it is enough for a raise).
 	var tl: Label = stat_labels["xp_total"]

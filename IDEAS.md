@@ -111,6 +111,11 @@ Most experience comes from the story; fights are a small trickle.
 - **Story experience** comes in big lumps: the Lehan meeting about a third of a raise, and
   finishing the mines job about half.
 - A character who hid for the whole fight gets nothing. One who fell gets half.
+- **Agreed, not built: all raises count.** Keeping Combat and Toughness low would make every
+  fight pay extra, to be spent on Thievery and the like. So for experience, Power also grows by
+  +1 for every 2 raises bought in other abilities since the character was made (starting values
+  don't count, so a thief isn't punished for starting with Stealth 2). The more someone has grown,
+  in anything, the less easy fights pay. The sheet's Power line shows this full value.
 - **Open question:** should Talk also gate some dialogue replies (like the trait tags do now)?
   And should the Perception check in Lehan (who notices Tikkat) use the new Perception directly?
 
