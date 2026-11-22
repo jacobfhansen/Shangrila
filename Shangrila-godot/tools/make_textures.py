@@ -799,6 +799,121 @@ def mines_textures():
     im.save(OUT / "ward_words.png")
 
 
+# ---------------------------------------------------------------- the marsh village (Thuug)
+
+def _reeds(w, h, seed, base=(150, 132, 84)):
+    """Woven reed walling: upright bundles with a weave of darker binding every so often."""
+    rng = np.random.default_rng(seed)
+    n = tile_noise(w, h, 6, seed, 3)
+    img = to_img(np.stack([base[i] * (0.8 + 0.3 * n) for i in range(3)], -1))
+    d = ImageDraw.Draw(img)
+    x = 0
+    while x < w:
+        bw = int(rng.integers(5, 10))
+        t = int(rng.integers(-22, 22))
+        d.rectangle([x, 0, x + bw - 1, h], fill=(base[0] + t, base[1] + t, base[2] + t // 2))
+        d.line([(x, 0), (x, h)], fill=(base[0] - 50, base[1] - 50, base[2] - 40), width=1)
+        x += bw
+    for y in range(20, h, 64):
+        for x in range(0, w, 12):
+            d.line([(x, y), (x + 12, y + 4)], fill=(78, 62, 38), width=3)
+    # Mud daubed low down, splashed and darker towards the water.
+    mud = tile_noise(w, h, 5, seed + 1, 4)
+    arr = np.array(img).astype(float)
+    ys = np.linspace(0, 1, h)[:, None]
+    m = np.clip((ys - 0.72) * 4 + (mud - 0.5) * 0.8, 0, 1)[..., None]
+    arr = arr * (1 - m) + np.array([74, 62, 44]) * m
+    return to_img(arr)
+
+
+def marsh_textures():
+    w = h = 256
+    img = _reeds(w, h, 900)
+    img.save(OUT / "reed_wall.png")
+    # A door: a hide curtain in a pole frame.
+    img = _reeds(w, h, 901)
+    d = ImageDraw.Draw(img)
+    pole = (82, 60, 36)
+    d.rectangle([74, 70, 182, h], fill=(122, 92, 60))
+    for x in range(78, 182, 9):
+        d.line([(x, 72), (x + 2, h)], fill=(104, 78, 50), width=2)
+    d.rectangle([66, 60, 78, h], fill=pole)
+    d.rectangle([178, 60, 190, h], fill=pole)
+    d.rectangle([60, 56, 196, 70], fill=pole)
+    img.save(OUT / "reed_door.png")
+    # The trader's: an open front with a counter, dried fish hanging on a line.
+    img = _reeds(w, h, 902)
+    d = ImageDraw.Draw(img)
+    d.rectangle([30, 70, 226, 170], fill=(40, 32, 22))
+    d.rectangle([22, 160, 234, 186], fill=(110, 82, 52))
+    d.line([(22, 160), (234, 160)], fill=(70, 50, 30), width=3)
+    d.line([(30, 84), (226, 84)], fill=(60, 44, 28), width=2)
+    for i in range(8):
+        x = 42 + i * 24
+        d.polygon([(x, 86), (x + 8, 86), (x + 10, 118), (x + 4, 130), (x - 2, 118)], fill=(176, 162, 120), outline=(110, 98, 70))
+    for i in range(5):
+        x = 50 + i * 36
+        d.ellipse([x, 140, x + 22, 158], fill=(150 - i * 10, 110, 70))
+    img.save(OUT / "trader_front.png")
+    # The guest hut: a door, a lamp, a carved fish over the lintel.
+    img = _reeds(w, h, 903)
+    d = ImageDraw.Draw(img)
+    d.rectangle([90, 80, 166, h], fill=(70, 50, 30))
+    d.rectangle([84, 70, 172, 82], fill=pole)
+    d.polygon([(100, 46), (150, 46), (162, 56), (150, 66), (100, 66), (90, 56)], fill=(180, 150, 90), outline=pole)
+    d.ellipse([186, 96, 206, 118], fill=(250, 210, 120), outline=pole, width=2)
+    d.line([(196, 70), (196, 96)], fill=pole, width=2)
+    img.save(OUT / "guest_front.png")
+    # The causeway gate: a palisade of sharpened stakes with a plank gate.
+    img = Image.new("RGB", (w, h), (90, 110, 120))
+    d = ImageDraw.Draw(img)
+    rng = np.random.default_rng(904)
+    for x in range(0, w, 22):
+        t = int(rng.integers(-16, 16))
+        top = 20 + int(rng.integers(0, 14))
+        d.polygon([(x, top + 14), (x + 11, top), (x + 21, top + 14), (x + 21, h), (x, h)], fill=(96 + t, 72 + t, 46 + t // 2))
+        d.line([(x, top + 14), (x, h)], fill=(56, 40, 24), width=2)
+    d.rectangle([70, 70, 186, h], fill=(110, 84, 54))
+    for y in range(80, h, 26):
+        d.line([(70, y), (186, y)], fill=(70, 52, 32), width=3)
+    d.line([(70, 70), (186, h)], fill=(70, 52, 32), width=6)
+    img.save(OUT / "causeway_gate.png")
+    # Thatch: layered reed ends.
+    n = tile_noise(w, h, 8, 905, 4)
+    rgb = np.stack([128 + n * 50, 108 + n * 44, 62 + n * 26], -1)
+    img = to_img(rgb)
+    d = ImageDraw.Draw(img)
+    for y in range(0, h, 18):
+        for x in range(0, w, 3):
+            ln = int(rng.integers(6, 16))
+            c = int(rng.integers(-30, 20))
+            d.line([(x, y), (x + 1, y + ln)], fill=(110 + c, 92 + c, 52 + c // 2), width=1)
+        d.line([(0, y), (w, y)], fill=(84, 68, 38), width=2)
+    img.save(OUT / "thatch.png")
+    # Boardwalk: weathered grey planks across the walk, with gaps of dark water between.
+    w2 = h2 = 128
+    n = tile_noise(w2, h2, 3, 906, 5)
+    grain = tile_noise(w2, h2, 24, 907, 2)
+    rgb = np.stack([112 + n * 40 + grain * 16, 104 + n * 36 + grain * 14, 88 + n * 28 + grain * 10], -1)
+    img = to_img(rgb)
+    d = ImageDraw.Draw(img)
+    for y in range(0, h2, 21):
+        d.rectangle([0, y, w2, y + 2], fill=(28, 34, 30))
+        for x in (int(rng.integers(10, 50)), int(rng.integers(70, 118))):
+            d.ellipse([x - 2, y + 9, x + 2, y + 13], fill=(60, 54, 46))
+    img.save(OUT / "boardwalk.png")
+    # Marsh water: dark, greenish-brown, with a little scum and a few lily pads.
+    n = tile_noise(w, h, 4, 908, 5)
+    scum = tile_noise(w, h, 12, 909, 3)
+    rgb = np.stack([34 + n * 30 + np.where(scum > 0.66, 30, 0), 46 + n * 34 + np.where(scum > 0.66, 38, 0), 38 + n * 24], -1)
+    img = to_img(rgb)
+    d = ImageDraw.Draw(img)
+    for _ in range(9):
+        x, y, r = int(rng.integers(10, 246)), int(rng.integers(10, 246)), int(rng.integers(6, 12))
+        d.pieslice([x - r, y - r, x + r, y + r], 30, 360, fill=(62, 104, 52))
+    img.save(OUT / "marsh_water.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -821,3 +936,4 @@ if __name__ == "__main__":
     carved_stone()
     print("wrote textures to", OUT)
     mines_textures()
+    marsh_textures()

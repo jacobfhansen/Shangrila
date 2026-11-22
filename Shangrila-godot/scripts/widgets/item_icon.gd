@@ -64,6 +64,10 @@ func _draw() -> void:
 				var d := Vector2.from_angle(TAU * a / 8.0)
 				draw_line(Vector2(20, 10) + d * 5, Vector2(20, 10) + d * 8, c.darkened(0.2), 2)
 			draw_circle(Vector2(20, 10), 6, c)
+		"spear":
+			draw_line(Vector2(6, 30), Vector2(23, 7), WOOD, 2.5)
+			_poly([Vector2(21, 9), Vector2(29, 1), Vector2(25, 11)], c)
+			draw_line(Vector2(19, 11), Vector2(23, 13), c.darkened(0.3), 2)
 		"staff":
 			draw_line(Vector2(7, 30), Vector2(24, 3), c, 3)
 			draw_circle(Vector2(24.5, 3), 2.5, c.lightened(0.2))

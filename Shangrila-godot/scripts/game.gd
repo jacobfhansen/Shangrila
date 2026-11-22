@@ -110,8 +110,8 @@ const LOCATIONS := {
 		"desc": "A walled town with an inn and a weapon smith."},
 	"mines": {"name": "The Mines", "kind": "dungeon", "at": Vector2(292, 200), "screen": "dungeon",
 		"desc": "Old mine workings in the hills above Lehan."},
-	"marsh_shrine": {"name": "The Drowned Shrine", "kind": "plot", "at": Vector2(424, 300), "screen": "",
-		"desc": "An old shrine on the causeways of the Thuug marshes, half sunk in black water. The jailers' record says they drowned something of the spirit's there. (The marshes are not in the game yet.)"},
+	"marsh_shrine": {"name": "The Drowned Shrine", "kind": "plot", "at": Vector2(424, 300), "screen": "village",
+		"desc": "Oggal, a Thuug stilt village on the causeways of the marshes, and beyond it an old shrine half sunk in black water. The jailers' record says they drowned something of the spirit's there."},
 }
 ## Town maps. Places appear on them as they are discovered; `start` are known on arrival.
 ## `at` is the position on the town image (600x370, made by tools/make_textures.py).
@@ -269,6 +269,10 @@ func _make_items() -> void:
 		"A dark travel loaf. Keeps for a week, tastes of it.")
 	_it(51, "Dried Fish", "fish", "#b0a080", 8, 2, {"dims": true, "food": true, "health": [30, 40]},
 		"Salted and dried on the marsh racks. Chewy, filling.")
+	_it(52, "Bog-Iron Spear", "spear", "#5a5a60", 55, 14, {"dmg": [2, 7], "weapon": true, "pole": true},
+		"Dark marsh iron on an ash shaft. Heavy, and it never quite rusts.")
+	_it(53, "Shell Shield", "shield", "#6a7a4a", 30, 10, {"armor": true, "defense": 2},
+		"Overlapping plates of river-turtle shell on a wicker frame. Light and tough.")
 
 
 func item(id: int) -> Dictionary:
@@ -704,6 +708,9 @@ func party_defeated(wounding := true) -> String:
 		facing = int(cp.facing)
 		location = "mines"
 		return "dungeon"
+	if cp.get("kind", "") == "village":
+		location = "marsh_shrine"
+		return "village"
 	mine_level = 1
 	pos = MinesArea.START
 	facing = MinesArea.START_FACING
@@ -716,6 +723,8 @@ func checkpoint_name() -> String:
 	var cp: Dictionary = story.get("checkpoint", {})
 	if cp.get("kind", "") == "camp":
 		return "by the camp's fire on level %d of the mines" % int(cp.level)
+	if cp.get("kind", "") == "village":
+		return "in the guest hut at Oggal"
 	return "at the inn in %s" % city.name
 
 
@@ -724,6 +733,8 @@ func checkpoint_name() -> String:
 func reach_checkpoint(screen: String) -> bool:
 	if screen == "dungeon":
 		story["checkpoint"] = {"kind": "camp", "level": mine_level, "pos": [pos.x, pos.y], "facing": facing}
+	elif screen == "village":
+		story["checkpoint"] = {"kind": "village"}
 	else:
 		story["checkpoint"] = {"kind": "inn"}
 	return save_game(screen, "auto")
@@ -1072,6 +1083,8 @@ func place_name(screen: String) -> String:
 			return "%s, the streets" % city.get("name", "Lehan")
 		"tunnels":
 			return "Under %s" % city.get("name", "Lehan")
+		"village":
+			return "Oggal, in the marshes"
 	return LOCATIONS.get(location, {}).get("name", location.capitalize())
 
 

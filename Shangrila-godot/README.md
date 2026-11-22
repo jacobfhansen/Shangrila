@@ -319,6 +319,10 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   weakened (−1 on checks and to hit) and, on the road, starving (loses hits, never below 1). The
   inn's *Provisions* sells bread and dried fish. The first trip to the Thuug marshes has two
   scenes on the road (`scripts/data/marsh_road.gd`).
+- **Oggal, the marsh village:** the Drowned Shrine on the world map leads into a Thuug stilt village,
+  walked like Lehan's streets (`scripts/screens/village.gd`): Orrun at the causeway gate, Ubba
+  and her story of the iron-crowned king, Grath-Ul the bored wrestler, Pim, Old Moss, Hett's
+  stall (the shop screen for the marsh) and the guest hut (rest, and the village's checkpoint).
 - **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
   the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
   3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the

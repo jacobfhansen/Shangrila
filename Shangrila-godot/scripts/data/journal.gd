@@ -12,6 +12,7 @@ const QUESTS := [
 	{"key": "lisbet", "name": "Lisbet's letter"},
 	{"key": "boddo", "name": "Boddo's debt"},
 	{"key": "skee", "name": "Skee's lights"},
+	{"key": "marsh", "name": "The Drowned Shrine"},
 ]
 const STATUS_NAMES := {"current": "Current", "offered": "Not taken yet", "done": "Done"}
 
@@ -38,7 +39,12 @@ static func scenes(quest: String) -> Array:
 
 ## "current", "offered" (heard of, not taken), "done", or "" (not known yet).
 static func status(key: String) -> String:
-	if key == "mines":
+	if key == "marsh":
+		if LehanQuests.get_q("marsh") == "done":
+			return "done"
+		if "marsh_shrine" in Game.known:
+			return "current"
+	elif key == "mines":
 		if LehanQuests.done("mines"):
 			return "done"
 		if CouncilData.accepted():

@@ -1135,6 +1135,58 @@ func _mines_will() -> void:
 	get_tree().quit()
 
 
+## Oggal: Orrun at the gate, the boardwalk, Ubba's story, Grath-Ul, Hett's stall, the guest hut.
+func _village() -> void:
+	var m: Node = Game.main
+	print("village: screen ", m.current_name)
+	await _drive(m.current, [0], "48a_orrun")
+	print("village: orrun ", LehanQuests.get_q("marsh_orrun"))
+	await _shot("48b_boardwalk")
+	for stop in [[Vector2i(5, 3), 1, [], "48c_ubba"], [Vector2i(7, 6), 0, [0], "48d_grath"]]:
+		var v: Node = m.current
+		v.area.pos = stop[0]
+		v.area.facing = stop[1]
+		v.view.snap()
+		v._after_move()
+		await get_tree().create_timer(0.4).timeout
+		v._use_ahead()
+		await get_tree().create_timer(1.5).timeout
+		await _shot(stop[3])
+		await _drive(m.current, stop[2])
+	print("village: ubba ", LehanQuests.get_q("marsh_ubba"), " leeches ", LehanQuests.get_q("marsh_leeches"), " grath ", LehanQuests.get_q("marsh_grath"))
+	var v2: Node = m.current
+	v2.area.pos = Vector2i(11, 7)
+	v2.area.facing = 0
+	v2.view.snap()
+	await get_tree().create_timer(0.5).timeout
+	await _shot("48e_village_view")
+	v2.area.pos = Vector2i(3, 5)
+	v2.area.facing = 0
+	v2.view.snap()
+	v2._use_ahead()
+	await get_tree().create_timer(0.8).timeout
+	m.current._on_talk()
+	await _shot("48f_hett")
+	m.current._on_mode()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("48g_hett_sell")
+	m.current._leave()
+	await get_tree().create_timer(1.0).timeout
+	var v3: Node = m.current
+	print("village: back from Hett at ", v3.area.pos, " facing ", v3.area.facing)
+	v3.area.pos = Vector2i(11, 4)
+	v3.area.facing = 0
+	v3.view.snap()
+	v3._use_ahead()
+	await get_tree().create_timer(0.5).timeout
+	await _shot("48h_guest_hut")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.4).timeout
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.4).timeout
+	print("village: checkpoint ", Game.story.get("checkpoint"), " auto ", Game.save_info("auto").get("where"), " day ", Game.day)
+
+
 ## The first trip to the marshes: provisions at the inn, the food estimate, the salt cart and
 ## the night camp, eating on the road, and what is left on arrival.
 func _marsh_road() -> void:
@@ -1173,7 +1225,8 @@ func _marsh_road() -> void:
 	await get_tree().create_timer(2.5).timeout
 	await _shot("47e_arrival")
 	m._modal_done.emit(true)
-	await get_tree().create_timer(0.6).timeout
+	await get_tree().create_timer(1.2).timeout
+	await _village()
 	print("road: at ", Game.location, " day ", Game.day, " food days left ", snappedf(Game.food_days(), 0.1), " endurance ",
 		Game.party.map(func(c): return c.health), " weakened ", Game.party.filter(func(c): return Game.weakened(c)).size(),
 		" wenna ", LehanQuests.get_q("marsh_wenna"), " screen ", m.current_name)

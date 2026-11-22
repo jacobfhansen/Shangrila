@@ -1401,7 +1401,7 @@ can be talked to. It is the home of the hooks for the Lehan quests.
 - **Open question:** what else should be in the square (market sounds, time of day, a
   pickpocket who tests Perception)?
 
-### The Drowned Shrine: the marsh remnant (agreed; step 1 of 4 built)
+### The Drowned Shrine: the marsh remnant (agreed; steps 1-2 of 4 built)
 The Jailer's Record found in the mines says the second piece of the spirit was "drowned at the
 old shrine on the marsh-folk's causeway, where the water never clears". The world map already has
 the Drowned Shrine, three days from Lehan. This is the next chapter: the road, the Thuug marsh
@@ -1463,7 +1463,7 @@ village, the overgrown shrine grounds and the temple below, and the second remna
 - **The sect:** no confrontation yet. Signs that someone was here recently (fresh tracks, a
   broken ward), to build up to them.
 
-**Build order:** 1. food and the road scenes (built); 2. the village; 3. the shrine grounds and the
+**Build order:** 1. food and the road scenes (built); 2. the village (built); 3. the shrine grounds and the
 door; 4. the temple, the test and Insight.
 
 **As built (step 1)**
@@ -1477,7 +1477,26 @@ door; 4. the temple, the test and Insight.
 - The first trip to the marshes plays Wenna's stuck salt cart (day 1: push with Toughness for
   fish and her word to Orrun, buy fish, or leave her) and the night camp (day 2: a watch with
   Perception, hang the packs with Survival, or sleep and lose rations to a marsh otter).
-- Arriving at the Drowned Shrine still leaves the party on the world map: the village is step 2.
+
+**As built (step 2)**
+- **Oggal**, the Thuug stilt village (`scripts/areas/marsh_village.gd`, `scripts/screens/village.gd`,
+  people in `scripts/data/marsh.gd`): boardwalks over black water, reed huts with thatched roofs,
+  reed beds and mist. Travelling to the Drowned Shrine on the world map now comes in here.
+- **Orrun** stops the party at the causeway gate the first time. Ommuk in the party, or Wenna's
+  word (from the road), gets them trusted at once; otherwise the truth (Talk, Easy) or a lie
+  (Talk, Hard). Everyone gets in; a failed talk leaves him wary. Trusted, he tells of the grey
+  strangers a month ago (the sect) and warns about the lights over the water.
+- **Ubba** tells of the king crowned in iron who made the marsh-folk build his house on the water
+  (the spirit remembers), and of the door that answers to the old chant, for friends of Oggal:
+  clear the leeches from Old Moss's fish pens first (`marsh_leeches=asked`; done in step 3).
+- **Grath-Ul** wants a wrestle (Toughness, Hard); **Pim** has gossip; **Old Moss** points to the
+  pens in the shrine grounds.
+- **Hett's stall** is the shop screen with `{"shop": "marsh"}`: dried fish, herbs, rope, arrows,
+  a Bog-Iron Spear and a Shell Shield; Hett buys anything with a price. Haggle is per shop.
+- **The guest hut** is the village's checkpoint (saved on going in) and a night's rest (1 silver
+  a head). A wipe out in the marsh wakes the party there.
+- The quest log has "The Drowned Shrine". The causeway east ("P") is a message for now: the
+  shrine grounds are step 3.
 
 **Open questions**
 - Is Orrun or Ubba recruitable after the shrine (CHARACTERS.md has them as Tier 2 followers)?

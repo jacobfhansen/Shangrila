@@ -30,6 +30,8 @@ const AFTER := [
 ]
 
 var shop: Dictionary
+var shop_key := "smith"    # "smith" (Lehan, Game.city.shop) or "marsh" (Hett's stall, MarshData.TRADER)
+var back: Array            # [screen, args] for Leave
 var selling := false
 var basket: Array = []     # [{id, n}]
 var basket_slots := []
@@ -46,15 +48,24 @@ var talk_i := 0
 
 
 func _ready() -> void:
-	shop = Game.city.shop
+	shop_key = get_meta("args", {}).get("shop", "smith")
+	shop = MarshData.TRADER if shop_key == "marsh" else Game.city.shop
+	back = shop.get("back", ["streets", {"at": "smith"}])
 	Ui.stone_background(self)
-	Ui.btn(self, "Leave", Rect2(12, 20, 50, 30), func(): Game.main.goto("streets", {"at": "smith"}), "Back out into the street")
+	Ui.btn(self, "Leave", Rect2(12, 20, 50, 30), _leave, "Back outside")
 	haggle_btn = Ui.btn(self, "Haggle", Rect2(66, 20, 56, 30), _on_haggle, "")
 	Ui.btn(self, "Talk", Rect2(126, 20, 44, 30), _on_talk, "Talk to the smith: news and advice")
 	mode_btn = Ui.btn(self, "Sell", Rect2(12, 372, 156, 30), _on_mode, "")
 
 	Ui.frame(self, Rect2(16, 62, 148, 121), Color(0, 0, 0, 0.6), Color("#a07a40"), 2)
-	Ui.image(self, "The_Enemy", Rect2(20, 66, 140, 113))
+	if shop_key == "marsh":
+		var por := RacePortrait.new()
+		por.race = MarshData.HETT.race
+		por.look = MarshData.HETT.look
+		add_child(por)
+		Ui.place(por, Rect2(46, 66, 88, 113))
+	else:
+		Ui.image(self, "The_Enemy", Rect2(20, 66, 140, 113))
 	Ui.title(self, shop.name, Vector2(16, 188), 17, 148, HORIZONTAL_ALIGNMENT_CENTER)
 	var p := Ui.parchment(self, Rect2(12, 216, 156, 150))
 	talk_label = Label.new()
@@ -111,14 +122,27 @@ func _ready() -> void:
 
 ## Today's haggled deal: 0, HAGGLE_GOOD or HAGGLE_GREAT (-1: tried today and failed).
 func _deal() -> float:
-	var h: Dictionary = Game.story.get("haggle", {})
+	var h: Dictionary = Game.story.get(_haggle_key(), {})
 	if int(h.get("day", -1)) != Game.day:
 		return 0.0
 	return maxf(0.0, float(h.get("deal", 0.0)))
 
 
 func _haggled_today() -> bool:
-	return int(Game.story.get("haggle", {}).get("day", -1)) == Game.day
+	return int(Game.story.get(_haggle_key(), {}).get("day", -1)) == Game.day
+
+
+func _haggle_key() -> String:
+	return "haggle" if shop_key == "smith" else "haggle_" + shop_key
+
+
+func _leave() -> void:
+	Game.main.goto(back[0], back[1])
+
+
+## "the smith" / "Hett", for the texts.
+func _who() -> String:
+	return "Hett" if shop_key == "marsh" else "the smith"
 
 
 func _price(id: int) -> int:
@@ -131,11 +155,14 @@ func _sell_price(id: int) -> int:
 	return maxi(1, floori(Game.item(id).price * share * (1.0 + _deal())))
 
 
-## A smith deals in weapons, bows and arrows, quivers, armour and shields, and the ore.
-static func buys(id: int) -> bool:
+## A smith deals in weapons, bows and arrows, quivers, armour and shields, and the ore; a trader
+## ("buys": "anything") in anything with a price.
+func buys(id: int) -> bool:
 	var it := Game.item(id)
 	if it.is_empty() or it.get("quest", false) or it.price <= 0:
 		return false
+	if shop.get("buys", "") == "anything":
+		return true
 	return id == MinesQuest.ORE_ID or id == 38 or it.weapon or it.gun or it.misil or it.quiver \
 		or (it.armor and it.defense > 0)
 
@@ -175,9 +202,9 @@ func _build_shelves() -> void:
 	var list: Array = []
 	if selling:
 		list = _sellable()
-		Ui.label(shelf, "What the smith will buy from your packs", Vector2(176, 296), 11, Ui.DIM, 330, HORIZONTAL_ALIGNMENT_CENTER)
+		Ui.label(shelf, "What %s will buy from your packs" % _who(), Vector2(176, 296), 11, Ui.DIM, 330, HORIZONTAL_ALIGNMENT_CENTER)
 		if list.is_empty():
-			Ui.label(shelf, "Nothing in your packs that a smith deals in.\n(Worn and held things stay where they are: take them off first.)",
+			Ui.label(shelf, "Nothing in your packs that " + _who() + " deals in.\n(Worn and held things stay where they are: take them off first.)",
 				Vector2(190, 120), 12, Ui.TEXT, 300, HORIZONTAL_ALIGNMENT_CENTER).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	else:
 		for id in shop.stock:
@@ -219,7 +246,7 @@ func refresh() -> void:
 		party_boxes[i].text = "%d silver" % c.silver
 	mode_btn.text = "Buy" if selling else "Sell"
 	mode_btn.tooltip_text = "Back to the smith's wares" if selling \
-		else "Sell weapons, armour, arrows and ore from your packs"
+		else ("Sell things from your packs" if shop.get("buys", "") == "anything" else "Sell weapons, armour, arrows and ore from your packs")
 	var who := LehanQuests.best("talk")
 	if _haggled_today():
 		haggle_btn.disabled = true
@@ -321,7 +348,7 @@ func _on_sell_click(_s: Slot, id: int) -> void:
 	if n == 0:
 		return
 	var nm: String = Game.item(id).name
-	if id == MinesQuest.ORE_ID:
+	if id == MinesQuest.ORE_ID and shop_key == "smith":
 		talk_label.text = "The smith weighs the ore in a big hand and whistles.\n\n\"Good stuff. %d silver.\"" % paid
 	else:
 		talk_label.text = "\"%s. I can use that.\"\n\n(Sold %s for %d silver.)" % [
@@ -333,6 +360,10 @@ func _on_sell_click(_s: Slot, id: int) -> void:
 # ---------------------------------------------------------------- talk
 
 func _on_talk() -> void:
+	if shop_key == "marsh":
+		talk_label.text = MarshData.TRADER_TALK[talk_i % MarshData.TRADER_TALK.size()]
+		talk_i += 1
+		return
 	var lines: Array = FLAVOUR.duplicate()
 	if LehanQuests.get_q("mines") == "done" or not Game.holder_of(49).is_empty():
 		lines = AFTER + lines
@@ -352,7 +383,7 @@ func _on_haggle() -> void:
 	var deal := -1.0
 	if Game.check(who, "talk", Game.HARD):
 		deal = HAGGLE_GREAT
-		talk_label.text = "%s talks iron and fire with the smith until he laughs and throws up his hands.\n\n\"Fine! Twenty off, today, for you.\"" % first
+		talk_label.text = "%s talks prices with %s until both are laughing, and the hands go up.\n\n\"Fine! Twenty off, today, for you.\"" % [first, _who()]
 	elif Game.check(who, "talk", Game.NORMAL):
 		deal = HAGGLE_GOOD
 		talk_label.text = "%s haggles hard.\n\n\"All right, all right. Ten off today, and I'll pay a little better too.\"" % first
@@ -366,4 +397,4 @@ func _on_haggle() -> void:
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_ESCAPE and not Game.main.modal_open:
 		get_viewport().set_input_as_handled()
-		Game.main.goto("streets", {"at": "smith"})
+		_leave()

@@ -47,7 +47,7 @@ func _ready() -> void:
 
 	back = args.get("back", "inn")
 	back_args = args.get("back_args", {})
-	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, {"inn": "Back to the inn", "dungeon": "Back to the mines", "tunnels": "Back to the tunnels"}.get(back, "Back to the streets"))
+	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, {"inn": "Back to the inn", "dungeon": "Back to the mines", "tunnels": "Back to the tunnels", "village": "Back to Oggal"}.get(back, "Back to the streets"))
 	Ui.btn(self, "Quests", Rect2(16, 56, 70, 28), QuestLog.open, "The quest log: every quest and what was said (J)")
 	# Character strip (ViewCha 110-118).
 	for j in STRIP:
