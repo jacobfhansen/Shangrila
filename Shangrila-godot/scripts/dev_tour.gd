@@ -1130,7 +1130,77 @@ func _mines_will() -> void:
 	await get_tree().create_timer(0.6).timeout
 	print("will: after the host died: ", m.current.get_script().resource_path.get_file())
 	await _wounds_and_saves()
+	await _stacks_and_smith()
 	get_tree().quit()
+
+
+## Stacks in the backpack, and the smith: selling, haggling, buying onto a stack.
+func _stacks_and_smith() -> void:
+	var m: Node = Game.main
+	Checkpoints.start("mines", "joss")
+	await get_tree().create_timer(1.0).timeout
+	var joss: Dictionary = Game.party[0]
+	for k in 3:
+		Game.pack_add(joss, 29)
+	for k in 2:
+		Game.pack_add(joss, 31)
+	for k in 4:
+		Game.pack_add(joss, MinesQuest.ORE_ID)
+	print("stacks: roots ", Game.count_of(joss, 29), " knives ", Game.count_of(joss, 31), " ore ", Game.count_of(joss, MinesQuest.ORE_ID),
+		" encumbrance ", Game.encumbrance(joss))
+	m.goto("view", {"party": true, "index": 0, "back": "dungeon", "back_args": {"resume": true}})
+	await get_tree().create_timer(0.6).timeout
+	await _shot("46a_stacks")
+	var v: Node = m.current
+	var knife_slot := -1
+	for k in range(Game.PACK_FIRST, Game.PACK_LAST + 1):
+		if joss.items[k] == 31:
+			knife_slot = k
+	var other: Dictionary = Game.party[1]
+	var before := Game.count_of(other, 31)
+	v.drop(v.strip[1].slot, {"item": 31, "src": knife_slot, "from": "pack"})
+	print("stacks: gave knives: joss ", Game.count_of(joss, 31), " ", other.name, " ", before, " -> ", Game.count_of(other, 31))
+	# Onto an equip slot only one moves.
+	var root_slot := -1
+	for k in range(Game.PACK_FIRST, Game.PACK_LAST + 1):
+		if joss.items[k] == 29:
+			root_slot = k
+	print("stacks: can stack root onto root slot ", v.can_drop(v.slots[root_slot], {"item": 29, "src": Game.SLOT_LFINGER, "from": "equip"}))
+	# An old save's loose items are gathered into stacks.
+	var t := Game.blank_character()
+	t.erase("counts")
+	t.items[10] = 29
+	t.items[12] = 29
+	t.items[15] = 29
+	Game.stack_pack(t)
+	print("stacks: old save gathered: slot10 ", Game.qty(t, 10), " slot12 ", t.items[12])
+	# The smith.
+	Game.location = "lehan"
+	m.goto("shop")
+	await get_tree().create_timer(0.6).timeout
+	var sh: Node = m.current
+	sh._on_talk()
+	await _shot("46b_smith_talk")
+	sh._on_mode()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("46c_smith_sell")
+	var silver := Game.party_silver()
+	sh._on_sell_click(null, MinesQuest.ORE_ID)
+	print("stacks: sold one ore: ore left ", Game.count_of(joss, MinesQuest.ORE_ID), " silver +", Game.party_silver() - silver)
+	sh._on_haggle()
+	print("stacks: haggle ", Game.story.get("haggle"), " buy price longsword ", sh._price(3), " sell price ore ", sh._sell_price(MinesQuest.ORE_ID))
+	sh._on_mode()
+	sh.basket = [{"id": 13, "n": 3}]
+	var arrows_before := 0
+	for c in Game.party:
+		arrows_before += Game.count_of(c, 13)
+	sh._on_pay.call()
+	await get_tree().create_timer(0.3).timeout
+	var arrows := 0
+	for c in Game.party:
+		arrows += Game.count_of(c, 13)
+	print("stacks: bought 3 arrows: ", arrows_before, " -> ", arrows)
+	await _shot("46d_smith_bought")
 
 
 ## Step 2 of wounds and death: the camp checkpoint, a severe wound, a wipe waking at the camp,

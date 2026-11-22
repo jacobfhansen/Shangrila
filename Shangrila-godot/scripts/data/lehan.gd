@@ -305,9 +305,8 @@ static func settle(host: String) -> void:
 	st["shares"] = shares
 	if st.get("proof", "") == "kept":
 		var om := member("ommuk")
-		var slot := Game.free_pack_slot(om) if not om.is_empty() else -1
-		if slot >= 0:
-			om.items[slot] = 33
+		if not om.is_empty():
+			Game.pack_add(om, 33)
 	for k in shares:
 		var c := member(k)
 		if not c.is_empty():

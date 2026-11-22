@@ -624,7 +624,7 @@ func _on_action(act: String) -> void:
 	match act:
 		"use", "equip":
 			var slots := combat.food_slots(c) if act == "use" else combat.weapon_slots(c)
-			var names := slots.map(func(s): return Game.item(c.items[s]).name)
+			var names := slots.map(func(s): return Game.item(c.items[s]).name + (" (%d)" % Game.qty(c, s) if Game.qty(c, s) > 1 else ""))
 			var q := "What should %s eat or drink?" % c.name if act == "use" else "Which weapon should %s ready?" % c.name
 			var pick: int = await Game.main.choose(q, names)
 			if pick < 0 or combat == null:

@@ -17,6 +17,8 @@ var item_id := 0:
 		item_id = v
 		if icon:
 			icon.item_id = v
+		if _badge:
+			_badge.queue_redraw()
 		_update_tip()
 		queue_redraw()
 
@@ -24,6 +26,15 @@ var hint := "":
 	set(v):
 		hint = v
 		_update_tip()
+
+## How many are stacked here (backpack slots): shown in the lower right corner above 1.
+var count := 1:
+	set(v):
+		count = v
+		if _badge:
+			_badge.queue_redraw()
+		_update_tip()
+var _badge: Control
 
 ## Faint text shown while the slot is empty (e.g. "Head").
 var caption := "":
@@ -67,6 +78,29 @@ func _ready() -> void:
 	icon.position = Vector2(2, 2)
 	icon.size = size - Vector2(4, 4)
 	icon.item_id = item_id
+	var badge := _Count.new()
+	badge.slot = self
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(badge)
+	_badge = badge
+
+
+## The stack count, in the lower right corner over the icon.
+class _Count:
+	extends Control
+	var slot: Slot
+
+	func _draw() -> void:
+		if slot == null or slot.item_id == 0 or slot.count <= 1:
+			return
+		var f := get_theme_default_font()
+		var t := str(slot.count)
+		var fs := 11
+		var w := f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+		var at := Vector2(size.x - w - 3, size.y - 3)
+		draw_rect(Rect2(at.x - 2, at.y - 10, w + 4, 12), Color(0, 0, 0, 0.65))
+		draw_string(f, at, t, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(1, 0.92, 0.7))
 
 
 func _notification(what: int) -> void:
@@ -82,7 +116,7 @@ func set_border(col: Color, w := 1) -> void:
 func _update_tip() -> void:
 	if item_id != 0:
 		var it := Game.item(item_id)
-		var t: String = it.name
+		var t: String = it.name if count <= 1 else "%s (%d)" % [it.name, count]
 		if it.defense: t += "\nDefense %d" % it.defense
 		t += "\nWeight %d" % it.weight
 		if it.get("quest", false):

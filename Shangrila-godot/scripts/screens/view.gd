@@ -191,6 +191,7 @@ func refresh() -> void:
 	stat_labels["silver"].text = str(c.silver)
 	for k in slots:
 		slots[k].item_id = c.items[k]
+		slots[k].count = Game.qty(c, k)
 	# Strip of up to six characters, starting at strip_first, wrapping around.
 	var n := list.size()
 	for j in STRIP:
@@ -255,7 +256,10 @@ func can_drop(s: Slot, data: Dictionary) -> bool:
 	var id: int = data.item
 	match s.kind:
 		"equip", "pack":
-			return s.slot_id != data.src and s.item_id == 0 and Game.fits(id, s.slot_id)
+			if s.slot_id == data.src or not Game.fits(id, s.slot_id):
+				return false
+			# Onto an empty slot, or onto a stack of the same thing in the pack (never in worn slots).
+			return s.item_id == 0 or (s.kind == "pack" and s.item_id == id and Game.stacks(id))
 		"eye", "trash":
 			return true
 		"mouth":
@@ -271,30 +275,49 @@ func drop(s: Slot, data: Dictionary) -> void:
 	var src: int = data.src
 	match s.kind:
 		"equip", "pack":
-			c.items[s.slot_id] = id
-			c.items[src] = 0
-			log_label.text = "%s: %s moved." % [c.name, Game.item(id).name]
+			var n := Game.qty(c, src)
+			if s.kind == "equip":
+				n = 1   # a worn or held slot takes one off the stack
+			if s.item_id == id:
+				Game.take_from(c, src, n)
+				c.counts[s.slot_id] = Game.qty(c, s.slot_id) + n
+			else:
+				Game.take_from(c, src, n)
+				Game.set_slot(c, s.slot_id, id, n)
+			log_label.text = "%s: %s moved." % [c.name, _named(id, n)]
 		"eye":
 			await Game.main.show_item(id)
 		"mouth":
 			log_label.text = Game.eat(c, id)
-			c.items[src] = 0
+			Game.take_from(c, src)
 		"trash":
+			var n := Game.qty(c, src)
 			if Game.is_quest_item(id):
 				log_label.text = "%s is a quest item (★): it can't be thrown away." % Game.item(id).name
-			elif await Game.main.confirm("Do you really want to throw away the %s?" % Game.item(id).name, "Throw away"):
-				c.items[src] = 0
-				log_label.text = "%s threw away the %s." % [c.name, Game.item(id).name]
+			elif await Game.main.confirm("Do you really want to throw away %s?" % _named(id, n, true), "Throw away"):
+				Game.take_from(c, src, n)
+				log_label.text = "%s threw away %s." % [c.name, _named(id, n, true)]
 		"member":
 			var other: Dictionary = list[_strip_char(s.slot_id)]
-			var free := Game.free_pack_slot(other)
-			if free < 0:
+			var n := Game.qty(c, src)
+			var given := 0
+			while given < n and Game.pack_add(other, id):
+				given += 1
+			Game.take_from(c, src, given)
+			if given == 0:
 				log_label.text = "%s has no room in the backpack." % other.name
 			else:
-				other.items[free] = id
-				c.items[src] = 0
-				log_label.text = "%s gave the %s to %s." % [c.name, Game.item(id).name, other.name]
+				log_label.text = "%s gave %s to %s%s." % [c.name, _named(id, given, true), other.name,
+					"" if given == n else " (no room for more)"]
 	refresh()
+
+
+## "the Bread" / "3 Bread", for the log.
+func _named(id: int, n: int, article := false) -> String:
+	var nm: String = Game.item(id).name
+	if n > 1:
+		return "%d %s" % [n, nm]
+	return ("the " + nm) if article else nm
 
 
 ## Ten pips for an ability's value: filled up to the value, the rest hollow.

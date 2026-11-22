@@ -697,7 +697,7 @@ func _use(i: int, o: Dictionary) -> Array:
 	var slot: int = o.get("slot", 0)
 	if slot == 0 or c.items[slot] != o.get("item", -1):
 		return ["%s fumbles in the backpack and finds nothing." % c.name]
-	c.items[slot] = 0
+	Game.take_from(c, slot)
 	return [Game.eat(c, o.item)]
 
 
@@ -707,8 +707,12 @@ func _equip(i: int, o: Dictionary) -> Array:
 	if slot == 0 or c.items[slot] != o.get("item", -1):
 		return ["%s fumbles in the backpack and finds nothing." % c.name]
 	var old: int = c.items[Game.SLOT_RHAND]
-	c.items[Game.SLOT_RHAND] = c.items[slot]
-	c.items[slot] = old
+	if old != 0 and Game.qty(c, slot) > 1 and Game.pack_slot_for(c, old) < 0:
+		return ["%s has no room in the backpack for the %s." % [c.name, Game.item(old).name]]
+	Game.take_from(c, slot)   # one from the stack: a hand holds one
+	Game.set_slot(c, Game.SLOT_RHAND, o.item)
+	if old != 0:
+		Game.pack_add(c, old)
 	return ["%s readies the %s." % [c.name, Game.item(o.item).name]]
 
 
@@ -869,9 +873,7 @@ func rewards() -> Array:
 	if Game.my_random(1, 100) <= 30:
 		var id: int = LOOT.pick_random()
 		for c in up:
-			var s := Game.free_pack_slot(c)
-			if s >= 0:
-				c.items[s] = id
+			if Game.pack_add(c, id):
 				lines.append("%s finds %s." % [c.name, "some Arrows" if id == 13 else "a " + Game.item(id).name])
 				break
 	return lines

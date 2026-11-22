@@ -290,6 +290,7 @@ func blank_character() -> Dictionary:
 		"name": "", "icon": 2, "race": HUMAN, "cls": NO_CLASS,
 		"max_health": 0, "health": 0, "max_hits": 0, "hits": 0, "max_magic": 0, "magic": 0,
 		"abilities": ab, "max_encum": 0, "xp": 0, "xp_total": 0, "tactic": "", "silver": 0, "items": it,
+		"counts": it.duplicate(),
 	}
 
 
@@ -423,15 +424,12 @@ func bury(c: Dictionary) -> Array:
 		var id: int = c.items[s]
 		if id == 0:
 			continue
-		var taken := false
+		var n := qty(c, s)
 		for o in party:
-			var fs := free_pack_slot(o)
-			if fs >= 0:
-				o.items[fs] = id
-				taken = true
-				break
-		if not taken:
-			left.append(item(id).name)
+			while n > 0 and pack_add(o, id):
+				n -= 1
+		if n > 0:
+			left.append(item(id).name if n == 1 else "%d %s" % [n, item(id).name])
 	var each: int = c.silver / party.size()
 	for o in party:
 		add_silver(o, each)
@@ -541,7 +539,7 @@ func set_class(c: Dictionary, k: int) -> void:
 	c.cls = k
 	var list: Array = CLASS_ITEMS[k]
 	for i in 6:
-		c.items[PACK_FIRST + i] = list[i]
+		set_slot(c, PACK_FIRST + i, list[i])
 	equip_from_pack(c)
 
 
@@ -567,8 +565,8 @@ func equip_from_pack(c: Dictionary) -> void:
 			elif it.misil and c.items[SLOT_QUIVER] == 0:
 				dst = SLOT_QUIVER
 		if dst >= 0:
-			c.items[dst] = id
-			c.items[s] = 0
+			set_slot(c, dst, id)
+			take_from(c, s)
 
 
 func finish_character(c: Dictionary, nm: String) -> void:
@@ -580,7 +578,7 @@ func encumbrance(c: Dictionary) -> int:
 	var e := 0
 	for i in range(1, 31):
 		if c.items[i] != 0:
-			e += item(c.items[i]).weight
+			e += item(c.items[i]).weight * qty(c, i)
 	return e + c.silver / 10
 
 
@@ -796,14 +794,12 @@ func give_item(id: int, first: Dictionary = {}) -> Dictionary:
 	var order: Array = [first] if not first.is_empty() else []
 	order.append_array(party)
 	for c in order:
-		var s := free_pack_slot(c)
-		if s >= 0:
-			c.items[s] = id
+		if pack_add(c, id):
 			return c
 	var c: Dictionary = order[0]
 	for s in range(PACK_LAST, PACK_FIRST - 1, -1):
 		if not is_quest_item(c.items[s]):
-			c.items[s] = id
+			set_slot(c, s, id)
 			return c
 	return {}
 
@@ -813,7 +809,7 @@ func take_item(id: int) -> void:
 	for c in party + roster:
 		for s in c.items.size():
 			if c.items[s] == id:
-				c.items[s] = 0
+				take_from(c, s)
 				return
 
 
@@ -843,8 +839,110 @@ func hand_over_quest_items(c: Dictionary) -> bool:
 					s = k
 					break
 		if s >= 0:
-			to.items[s] = id
+			set_slot(to, s, id)
 	return true
+
+
+# ---------------------------------------------------------------- stacks
+## A pack slot can hold a stack of the same item (anything but quest items, which are one of a
+## kind): `c.counts[s]` is how many. Worn and held slots always hold one.
+
+func _counts(c: Dictionary) -> Array:
+	if not c.has("counts") or c.counts.size() < c.items.size():
+		var a: Array = c.get("counts", [])
+		a.resize(c.items.size())
+		for i in a.size():
+			if a[i] == null:
+				a[i] = 0
+		c["counts"] = a
+	return c.counts
+
+
+## How many are in a slot (0 if it is empty).
+func qty(c: Dictionary, s: int) -> int:
+	if c.items[s] == 0:
+		return 0
+	return maxi(1, int(_counts(c)[s]))
+
+
+## Puts `n` of an item in a slot (0 empties it).
+func set_slot(c: Dictionary, s: int, id: int, n := 1) -> void:
+	c.items[s] = id
+	_counts(c)[s] = n if id != 0 else 0
+
+
+## Takes `n` out of a slot; the last one empties it.
+func take_from(c: Dictionary, s: int, n := 1) -> void:
+	var left := qty(c, s) - n
+	if left <= 0:
+		set_slot(c, s, 0, 0)
+	else:
+		_counts(c)[s] = left
+
+
+func stacks(id: int) -> bool:
+	return id != 0 and not is_quest_item(id)
+
+
+## Where one more of an item would go in the pack: onto a stack of it, or a free slot (-1: full).
+func pack_slot_for(c: Dictionary, id: int) -> int:
+	if stacks(id):
+		for i in range(PACK_FIRST, PACK_LAST + 1):
+			if c.items[i] == id:
+				return i
+	return free_pack_slot(c)
+
+
+## Puts `n` of an item into the pack (stacked if it can be). False if there is no room.
+func pack_add(c: Dictionary, id: int, n := 1) -> bool:
+	var s := pack_slot_for(c, id)
+	if s < 0:
+		return false
+	if c.items[s] == id:
+		_counts(c)[s] = qty(c, s) + n
+	else:
+		set_slot(c, s, id, n if stacks(id) else 1)
+	return true
+
+
+## One of an item for the party: onto someone's stack of it if there is one, else into the first
+## free slot. Returns who took it ({} if every pack is full). `members` defaults to the party.
+func party_add(id: int, members: Array = []) -> Dictionary:
+	var who: Array = members if not members.is_empty() else party
+	if stacks(id):
+		for c in who:
+			for s in range(PACK_FIRST, PACK_LAST + 1):
+				if c.items[s] == id:
+					pack_add(c, id)
+					return c
+	for c in who:
+		if pack_add(c, id):
+			return c
+	return {}
+
+
+## How many of an item a character carries, worn and packed.
+func count_of(c: Dictionary, id: int) -> int:
+	var n := 0
+	for s in c.items.size():
+		if c.items[s] == id:
+			n += qty(c, s)
+	return n
+
+
+## Gathers the same items in the pack into stacks (older saves kept one item per slot).
+func stack_pack(c: Dictionary) -> void:
+	for s in range(PACK_FIRST, PACK_LAST + 1):
+		var id: int = c.items[s]
+		if not stacks(id):
+			continue
+		for t in range(s + 1, PACK_LAST + 1):
+			if c.items[t] == id:
+				_counts(c)[s] = qty(c, s) + qty(c, t)
+				set_slot(c, t, 0, 0)
+	for s in c.items.size():
+		if c.items[s] == 0:
+			_counts(c)[s] = 0
 
 
 func free_pack_slot(c: Dictionary) -> int:
@@ -1062,11 +1160,10 @@ func load_game(slot: Variant = 1) -> String:
 		# Thieves used to start without a weapon: give them their clasp knife.
 		for c in roster + party:
 			if c.cls == THIEF and not 31 in c.items:
-				var s := free_pack_slot(c)
-				if s >= 0:
-					c.items[s] = 31
+				if pack_add(c, 31):
 					equip_from_pack(c)
 	for c in roster + party:
+		stack_pack(c)
 		update_derived(c)
 		if not c.has("start_abilities"):
 			c["start_abilities"] = _guess_start_abilities(c)

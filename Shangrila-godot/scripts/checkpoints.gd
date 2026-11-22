@@ -151,8 +151,6 @@ static func _wear(id: int, slot: int) -> void:
 		Game.give_item(id)
 		return
 	var old: int = best.items[slot]
-	best.items[slot] = id
+	Game.set_slot(best, slot, id)
 	if old != 0:
-		var s := Game.free_pack_slot(best)
-		if s >= 0:
-			best.items[s] = old
+		Game.pack_add(best, old)

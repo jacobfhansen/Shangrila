@@ -17,9 +17,16 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
 - **Inn:** a roster of 23 characters, a party of 6, plus Muster / Dismiss / Info / Kill / scroll.
 - **View Character:** drag and drop between the body slots and the 18-slot backpack. Drop an item
   on Info to examine it, on Eat to eat it, on Trash to throw it away, or on another character's
-  portrait to give it to them.
+  portrait to give it to them. The same items **stack** in a backpack slot, with the count in the
+  lower right corner (quest items never stack, and worn or held slots hold one). Dragging moves
+  the whole stack, except onto a body slot (one) or Eat (one); stacks merge when dropped on each
+  other, and older saves have their loose items gathered into stacks.
 - **Shop:** the Lehan weapon smith stock (including the three duplicate longswords), plus the
-  basket and money display. Prices are now in silver.
+  basket and money display. Prices are now in silver. *Sell* shows what the smith buys from the
+  packs (weapons, bows, arrows, quivers, armour and shields, the ore): half the price, the ore
+  all of it; click sells one, Shift-click the lot. *Haggle* (once a day) has the best talker roll
+  Talk: 10% better prices both ways against Normal, 20% against Hard. *Talk* gives news and hints
+  that fit the story: the missing miners, then advice for the mines, then the marsh-folk.
 - **Mines:** movement (turn, step, strafe), the compass and map mode with a pulsating party
   marker. The view is now real 3D instead of the original's pre-drawn strips. The original's
   66-square map was replaced by three new levels (see "The mines" below).
@@ -47,8 +54,7 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
   (`user://save_1.json` .. `save_3.json`), and *Load* on the title screen lists them with the
   automatic checkpoint save (`save_auto.json`): each shows its place, day and party (♥ fine,
   ✚ badly wounded, † dead). An old `shangrila_save.json` becomes slot 1.
-- Pay, Talk and Haggle in the shop had buttons but no logic. Pay now buys the basket, while Talk
-  and Haggle only produce flavour text.
+- Pay, Talk and Haggle in the shop had buttons but no logic. Now all three work (see Shop above).
 - Combat was never written (only the nine buttons existed), so it is new. See below.
   Examine only prints a message. Sleep now heals: it turns endurance (the apple bar) into
   hit points and restores mana, but monsters may interrupt.

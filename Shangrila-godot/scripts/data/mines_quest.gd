@@ -113,9 +113,7 @@ static func apply(fx: String) -> void:
 	if fx.begins_with("item:"):
 		var id := int(fx.substr(5))
 		for c in Game.party:
-			var s := Game.free_pack_slot(c)
-			if s >= 0:
-				c.items[s] = id
+			if Game.pack_add(c, id):
 				break
 	elif fx.begins_with("known:"):
 		var place := fx.substr(6)

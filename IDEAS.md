@@ -132,7 +132,10 @@ monsters would match the home-made races.
 Winning fights gives experience, but it does nothing yet (the 1997 original had no levels).
 Settled by "Simpler mechanics": experience is spent to raise abilities, and there are no levels.
 
-### Shop: Talk and Haggle
+### Shop: Talk and Haggle (built)
+**Built:** Haggle rolls the best Talk once a day (10% or 20% better prices, buying and selling),
+Talk gives news and hints that follow the story, and Sell buys weapons, armour, arrows and ore.
+
 In the weapon smith, Talk and Haggle only print flavour text. Haggle could use the Haggle skill to
 lower prices, and Talk could give rumours and hints about the mines.
 
