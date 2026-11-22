@@ -163,6 +163,9 @@ func _next() -> void:
 	if st.has("dyn"):
 		st = st.dyn.call()
 		steps[idx] = st
+	if st.has("s") and st.s != host and _who(st.s).name in Game.story.get("dead", []):
+		_next()   # a companion who has died: their line is gone with them
+		return
 	if st.has("fx"):
 		prompt.text = ""
 		effect.emit(st.fx)

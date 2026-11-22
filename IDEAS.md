@@ -1290,7 +1290,7 @@ streets' textures, so you can tell at a glance how deep you are:
   - level 3: the jailers' old arms (an old blade, a ward-etched shield) that hit the guardians
     harder, but feel cold to the host.
 
-### Death, wounds and saves (step 1 built: in fights)
+### Death, wounds and saves (built)
 How the classic party RPGs mostly did it (Wizardry, The Bard's Tale, Might and Magic, Ultima, the
 Gold Box games), with a middle step before death.
 - **Severely wounded at 0 hits:** a character who drops to 0 hits is out of the fight and has to
@@ -1349,6 +1349,23 @@ Gold Box games), with a middle step before death.
 - Fleeing is counted on the character (`fled`), for the later "Shared deeds".
 - Simulated: against a fresh party, two Delvers or four kobolds never shake anyone; the
   Gloomweaver Mother's brood makes someone flee in most fights, as does a Sworn Knight's group.
+
+**As built (step 2)**
+- **A bad wound** is what a character keeps who is still down when a deadly fight ends: they come
+  around with 1 hit, and their hits can't rise above half until they've rested at the inn. They
+  can still walk and fight, just weaker; a Mend during the fight prevents it. (Being carried, out
+  of every fight, stays the in-fight state of the fallen.)
+- **Days:** travel days, each night's Sleep in the mines, and a night at the inn move the count on.
+- **The inn:** Dismiss on a badly wounded companion leaves them to rest for 2 days (6 silver, paid
+  up front; if the purse can't cover it they wait without healing). Muster too soon: "Not yet. One
+  more day." *Rest a night* costs 1 silver a head, brings hits and mana back and passes a day.
+- **Checkpoints:** stepping onto a camp in the mines, or entering the inn, saves the game in the
+  automatic slot and makes it the place to wake after a wipe. A wipe wounds everyone badly (not
+  in the Warden's fight) and costs half the silver.
+- **Saves:** three slots plus the automatic one; the load list shows place, day and party
+  (♥ fine, ✚ badly wounded, † dead). The title screen's Resume became Load.
+- **The dead stay silent:** a dead companion's lines are left out of scenes, and the lines given
+  to "whoever isn't the host" pick a living companion.
 
 ### A walkable market square
 **Started:** the square is in the game, and Lehan's streets with it (`scripts/areas/lehan_streets.gd`):

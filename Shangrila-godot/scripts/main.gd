@@ -17,7 +17,7 @@ func _ready() -> void:
 	var host := ""
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--tour="):
-			Game.SAVE_PATH = "user://tour_save.json"   # never touch the player's own save
+			Game.SAVE_PREFIX = "user://tour_save"   # never touch the player's own saves
 			var tour: GDScript = load("res://scripts/dev_tour.gd")
 			if tour == null or not tour.can_instantiate():
 				printerr("The tour script does not load (see the errors above).")
@@ -185,27 +185,50 @@ func ask_name() -> String:
 	return r
 
 
-## ViewItem - the item info card.
+## ViewItem - the item info card. A quest item with writing on it (a letter, a record) gets a
+## taller card: the writing in its own scrolling panel, the weight and the quest note below it.
 func show_item(id: int) -> void:
 	var it := Game.item(id)
+	var writing: bool = it.get("quest", false) and it.has("text")
 	var ov := _overlay(true)
-	var b := _box(ov, 300, 260)
+	var h := 380.0 if writing else 260.0
+	var b := _box(ov, 320 if writing else 300, h)
+	var w := 320.0 if writing else 300.0
 	var ic := ItemIcon.new()
 	ic.item_id = id
 	b.add_child(ic)
 	Ui.place(ic, Rect2(14, 14, 40, 40))
-	var name_l := _ink_label(b, it.name, Rect2(62, 16, 220, 34), 21)
+	var name_l := _ink_label(b, it.name, Rect2(62, 16, w - 80, 34), 21)
 	name_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	var d := _ink_label(b, it.desc, Rect2(20, 62, 260, 54), 14)
+	var d := _ink_label(b, it.desc, Rect2(20, 60, w - 40, 50), 14)
 	d.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	if writing:
+		# The writing, on a slightly darker sheet, scrolling if it is long.
+		var sheet := ColorRect.new()
+		sheet.color = Color(0.45, 0.32, 0.15, 0.18)
+		b.add_child(sheet)
+		Ui.place(sheet, Rect2(16, 114, w - 32, 168))
+		var sc := ScrollContainer.new()
+		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		b.add_child(sc)
+		Ui.place(sc, Rect2(22, 118, w - 40, 160))
+		var tx := Label.new()
+		tx.text = it.text
+		tx.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		tx.custom_minimum_size = Vector2(w - 56, 0)
+		tx.add_theme_color_override("font_color", Ui.INK)
+		tx.add_theme_font_size_override("font_size", 14)
+		sc.add_child(tx)
+		_plain(b, "Weight: %d" % it.weight, Rect2(24, 290, 200, 18), 13)
+		_plain(b, "★ Quest item: can't be thrown away or sold", Rect2(24, 310, w - 40, 18), 13)
+		Ui.btn(b, "OK", Rect2(w - 100, 338, 80, 28), func(): _modal_done.emit(true))
+		await _modal_done
+		_close(ov)
+		return
 	var dmg: String = "-" if it.dmg[1] == 0 else "%d-%d" % [it.dmg[0], it.dmg[1]]
 	var lines := [["Weight", it.weight], ["Defense", it.defense], ["Attack", it.attack], ["Damage", dmg]]
 	if it.get("quest", false):
-		# A quest item: what is written on it (if anything) instead of the fighting values.
 		lines = [["Weight", it.weight]]
-		if it.has("text"):
-			var tx := _ink_label(b, it.text, Rect2(20, 142, 260, 54), 13)
-			tx.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	for i in lines.size():
 		var l := _ink_label(b, "%s:" % lines[i][0], Rect2(24, 124 + i * 18, 80, 18), 13)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -231,6 +254,68 @@ func choose(text: String, options: Array) -> int:
 	var r: int = await _modal_done
 	_close(ov)
 	return r
+
+
+## The list of saves: the checkpoint save and the player's slots, each with its place, day and
+## party (♥ fine, ✚ badly wounded, † dead). Saving (the automatic slot can't be picked) or loading
+## (empty slots can't be picked). Returns the slot, or null for Cancel.
+func slot_list(saving: bool) -> Variant:
+	var slots: Array = Game.save_slots()
+	var ov := _overlay(-1)
+	var b := _box(ov, 400, 104 + slots.size() * 50)
+	_plain(b, "Save the game" if saving else "Load a game", Rect2(0, 10, 400, 22), 17, HORIZONTAL_ALIGNMENT_CENTER)
+	for i in slots.size():
+		var slot: Variant = slots[i]
+		var info := Game.save_info(slot)
+		var y := 40 + i * 50
+		var btn := Ui.btn(b, "", Rect2(16, y, 368, 46), func(): _modal_done.emit(i))
+		btn.disabled = (saving and str(slot) == "auto") or (not saving and info.is_empty())
+		var head := "Checkpoint (automatic)" if str(slot) == "auto" else "Slot %d" % slot
+		if info.is_empty():
+			head += ":  empty"
+		else:
+			head += ":  %s,  day %d" % [info.where, info.day]
+		var col := Ui.INK if btn.disabled else Ui.TEXT
+		_plain(btn, head, Rect2(10, 4, 350, 18), 13).add_theme_color_override("font_color", col)
+		var marks := {"fine": "♥", "wounded": "✚", "dead": "†"}
+		var who: Array = info.get("party", []).map(func(w): return "%s %s" % [w[0], marks.get(w[1], "")])
+		_plain(btn, "   ".join(who), Rect2(10, 23, 350, 18), 12).add_theme_color_override("font_color",
+			col if btn.disabled else Ui.GOLD)
+		if saving and str(slot) == "auto":
+			btn.tooltip_text = "Saved by itself at each camp in the mines and at the inn"
+	Ui.btn(b, "Cancel", Rect2(155, 52 + slots.size() * 50, 90, 28), func(): _modal_done.emit(-1))
+	var r: int = await _modal_done
+	_close(ov)
+	return null if r < 0 else slots[r]
+
+
+## Save button: pick a slot (asking before writing over a save), then save. Returns true if saved.
+func save_menu(screen: String) -> bool:
+	while true:
+		var slot: Variant = await slot_list(true)
+		if slot == null:
+			return false
+		if not Game.save_info(slot).is_empty() and not await confirm("Save over the game in slot %d?" % slot, "Save"):
+			continue
+		if Game.save_game(screen, slot):
+			await message("The game has been saved in slot %d." % slot)
+			return true
+		await message("The game could not be saved.")
+		return false
+	return false
+
+
+## Load: pick a save and go to where it was made. Returns false if cancelled or unreadable.
+func load_menu() -> bool:
+	var slot: Variant = await slot_list(false)
+	if slot == null:
+		return false
+	var screen := Game.load_game(slot)
+	if screen == "":
+		await message("The saved game could not be read.")
+		return false
+	goto(screen)
+	return true
 
 
 ## Default action per character, used by the Defaults button and by auto-combat.

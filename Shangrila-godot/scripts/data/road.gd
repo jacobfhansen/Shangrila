@@ -13,7 +13,7 @@ const AMBUSH := [{"key": "brigand", "n": 3}]
 
 static func _pick(prefer: Array, host: String) -> String:
 	for k in prefer:
-		if k != host:
+		if k != host and not PrologueData.CAST[k].name in Game.story.get("dead", []):
 			return k
 	return prefer[0]
 

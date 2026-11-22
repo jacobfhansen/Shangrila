@@ -155,20 +155,22 @@ func _ready() -> void:
 		act_buttons[ACTS[i]] = b
 
 	# Bottom-left buttons (DungeonWin 1-8, 39).
-	var bl := [["Close", 10, 40, _on_close, "Leave the mines (from the entrance)"],
-		["Save", 52, 36, _on_save, "Save the game"],
-		["Examine", 90, 54, _on_examine, "Use what is ahead, or search the walls around you (Space)"],
-		["Sleep", 146, 40, _on_sleep, "Rest: turns endurance into hit points and restores mana (safe at a camp)"],
-		["Quests", 188, 46, QuestLog.open, "The quest log: every quest and what was said (J)"]]
+	var bl := [["Close", 10, 36, _on_close, "Leave the mines (from the entrance)"],
+		["Save", 48, 32, _on_save, "Save the game"],
+		["Load", 82, 32, _on_load, "Load a saved game (what isn't saved is lost)"],
+		["Examine", 116, 48, _on_examine, "Use what is ahead, or search the walls around you (Space)"],
+		["Sleep", 166, 36, _on_sleep, "Rest: turns endurance into hit points and restores mana (safe at a camp)"],
+		["Quests", 204, 40, QuestLog.open, "The quest log: every quest and what was said (J)"]]
 	for e in bl:
 		var b := Ui.btn(self, e[0], Rect2(e[1], 430, e[2], 32), e[3], e[4])
-		b.add_theme_font_size_override("font_size", 11)
+		b.add_theme_font_size_override("font_size", 10)
 		masked_in_map.append(b)
-	map_btn = Ui.btn(self, "Map", Rect2(236, 430, 40, 32), _on_map, "Toggle the map (M)")
-	map_btn.add_theme_font_size_override("font_size", 11)
+	map_btn = Ui.btn(self, "Map", Rect2(246, 430, 30, 32), _on_map, "Toggle the map (M)")
+	map_btn.add_theme_font_size_override("font_size", 10)
 	map_btn.toggle_mode = true
 
 	_explore_ui()
+	_refresh_party()
 	var args: Dictionary = get_meta("args", {})
 	Game.visited[Vector3i(Game.pos.x, Game.pos.y, Game.mine_level)] = true
 	came_from = Game.pos
@@ -206,6 +208,8 @@ func _refresh_party() -> void:
 		ports[i].modulate = Color(0.45, 0.3, 0.3) if c.hits <= 0 else Color.WHITE
 		ports[i].star = combat == null and Game.can_raise(c)
 		var t := ""
+		if combat == null and c.get("wounded", false):
+			t = "Wounded"
 		if combat:
 			if combat.dead.has(i):
 				t = "Dead"
@@ -253,6 +257,8 @@ func _after_move() -> void:
 			return
 		"camp":
 			say("A camp. The party can rest here safely (Sleep).")
+			if Game.reach_checkpoint("dungeon"):
+				say("(Checkpoint: the game is saved, and you will wake here if the party falls.)")
 	if t.get("kind", "") != "camp" and Game.pos != MinesArea.START and steps_quiet > QUIET_STEPS \
 			and Game.my_random(1, 100) <= ENCOUNTER_CHANCE:
 		combat_tag = ""
@@ -392,10 +398,16 @@ func _on_close() -> void:
 
 
 func _on_save() -> void:
-	if Game.save_game("dungeon"):
+	if talking or combat:
+		return
+	if await Game.main.save_menu("dungeon"):
 		say("Game saved.")
-	else:
-		say("Could not save the game!")
+
+
+func _on_load() -> void:
+	if talking or combat:
+		return
+	await Game.main.load_menu()
 
 
 ## Uses what is ahead; with nothing there, searches the walls around for anything hidden.
@@ -443,6 +455,10 @@ func _on_sleep() -> void:
 			hungry.append(c.name)
 	_refresh_party()
 	say("The party rests by the camp's old fire. Wounds close and mana returns." if camp else "The party rests. Wounds close and mana returns.")
+	for l in Game.pass_days(1):
+		say(l)
+	if Game.party.any(func(c): return c.get("wounded", false)):
+		say("A night's sleep doesn't mend a bad wound. That takes days of rest at the inn.")
 	if not hungry.is_empty():
 		say("%s too hungry to heal fully - eat something." % (" and ".join(hungry) + (" is" if hungry.size() == 1 else " are")))
 
@@ -846,12 +862,14 @@ func _end_combat(result: String) -> void:
 			for b in bodies:
 				Game.bury(b)
 				mourned.append(b.name)
-			var t := "The party has fallen.\nYou wake up at the inn in %s, bruised and robbed of half your coins." % Game.city.name
+			var t := "The party has fallen.\nYou wake up %s, bruised and robbed of half your coins." % Game.checkpoint_name()
+			if c.lethal:
+				t += " Everyone is badly wounded."
 			if not mourned.is_empty():
 				t += "\n%s did not wake." % " and ".join(mourned)
 			await Game.main.message(t)
-			Game.party_defeated()
-			Game.main.goto("inn")
+			var screen := Game.party_defeated(c.lethal)
+			Game.main.goto(screen, {"resume": true} if screen == "dungeon" else {})
 			return
 	steps_quiet = 0
 	enemy_panel.visible = false

@@ -5,7 +5,7 @@
 #   tools/tour.sh mines      the mines job, from the entrance to the report
 # Vsync is off, so the game draws as fast as it can (a hidden window is no longer throttled to
 # about one frame a second), and time runs 5x faster, so the tour's waits, walks and typing
-# go by quicker. The tour writes its own save file (tour_save.json), never the player's.
+# go by quicker. The tour writes its own save files (tour_save_*.json), never the player's.
 # The log goes to tour.log next to the screenshots.
 set -u
 cd "$(dirname "$0")/.."

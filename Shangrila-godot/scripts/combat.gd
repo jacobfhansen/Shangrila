@@ -887,8 +887,12 @@ func after_fight() -> Array:
 		if dead.has(i):
 			continue
 		if c.hits <= 0:
+			if lethal:
+				Game.wound(c)
+				lines.append("%s comes around, badly wounded: rest at the inn to heal." % c.name)
+			else:
+				lines.append("%s comes around, bruised." % c.name)
 			c.hits = 1
-			lines.append("%s comes around, badly wounded." % c.name)
 		if gone.has(i):
 			lines.append("%s comes back, not meeting anyone's eyes." % c.name)
 	var bodies := []

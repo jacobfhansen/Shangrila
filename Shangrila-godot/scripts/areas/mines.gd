@@ -53,9 +53,9 @@ const MAPS := [
 		"#.....D#...#.....#",
 		"#.##.#.#.####.##.#",
 		"#..#.#...#S..W...#",
-		"##.#.#.#####w#.#L#",
-		"#o.#...#v.......##",
-		"#..###.####u#..X>#",
+		"##.#.#.####vw#u#L#",
+		"#o.#...##.......##",
+		"#..###.#####...X>#",
 		"##################",
 	],
 	[
@@ -103,7 +103,7 @@ const THINGS := [
 ]
 const SOLID := ["exit", "down", "up", "lift", "chest", "lever", "npc", "warden", "vein", "tomb", "pillar", "words"]
 const GATES := ["cart", "secret", "air", "door", "water", "ward"]
-const IN_ROCK := ["vein", "tomb", "pillar", "words"]   # built as walls, with their own look
+const IN_ROCK := ["vein", "tomb", "pillar", "words", "lever"]   # built as walls (levers mounted on them)
 
 var eye := 1.0
 var level: int:
@@ -260,6 +260,18 @@ func build(root: Node3D, cam: Camera3D) -> void:
 		"1": _mat("ward_chain", Color.WHITE), "2": _mat("ward_eye", Color.WHITE), "3": _mat("ward_seal", Color.WHITE),
 		"words": _mat("ward_words", Color.WHITE),
 	}
+	# Carvings touched in the right order glow a cold blue until the ward door opens (MinesQuest).
+	var lit: String = "" if LehanQuests.get_q("m_ward") == "open" else LehanQuests.get_q("m_wards")
+	for k in ["1", "2", "3"]:
+		var tex: String = ["ward_chain", "ward_eye", "ward_seal"][int(k) - 1]
+		var glow := _mat(tex, Color.WHITE)
+		glow.emission_enabled = true
+		glow.emission = Color(0.35, 0.65, 1.0)
+		glow.emission_energy_multiplier = 2.0
+		glow.emission_texture = _carving_glow(tex)
+		glow.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY   # only where the mask is lit
+		mats[k + "_lit"] = glow
+	var glows := []   # [face centre, out of the wall] for a light at each glowing carving
 	var surf := {}
 	for k in mats:
 		surf[k] = _st()
@@ -286,7 +298,11 @@ func build(root: Node3D, cam: Camera3D) -> void:
 				match kind_of(level, nch):
 					"vein": which = "wall" if cleared(level, nch, n) else "vein"
 					"tomb": which = "tomb"
-					"pillar": which = nch
+					"pillar":
+						which = nch
+						if nch in lit:
+							which = nch + "_lit"
+							glows.append([c + dv * h + Vector3(0, h, 0), -dv])
 					"words": which = "words"
 				if which == "wall" and level == 1 and (x * 7 + y * 3 + d) % 3 == 0:
 					which = "timber"
@@ -312,7 +328,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 				"lift": _lift(root, at, LehanQuests.get_q("m_lift") != "")
 				"camp": _camp(root, at)
 				"chest": _chest(root, at, done)
-				"lever": _lever(root, at, ch)
+				"lever": _lever(root, cell, ch)
 				"water": _water(root, at, done)
 				"warden": _warden(root, at)
 				"breach": _breach(root, at)
@@ -332,6 +348,13 @@ func build(root: Node3D, cam: Camera3D) -> void:
 						_bones(root, at, 1)
 
 	_icicles(root)
+	for g in glows:
+		var gl := OmniLight3D.new()
+		gl.light_color = Color(0.45, 0.7, 1.0)
+		gl.light_energy = 0.4
+		gl.omni_range = 2.5
+		gl.position = g[0] + g[1] * 1.3 + Vector3(0, -0.6, 0)
+		root.add_child(gl)
 
 	var torch := OmniLight3D.new()
 	torch.light_color = Color(1.0, 0.78, 0.5)
@@ -420,11 +443,61 @@ func _chest(root: Node3D, at: Vector3, open: bool) -> void:
 		_box(root, at + Vector3(0, 0.5, 0), Vector3(0.7, 0.12, 0.45), wood)
 
 
-func _lever(root: Node3D, at: Vector3, ch: String) -> void:
+## A lever (or, for the upper sluice gate, a wheel) set into the rock: mounted on the wall face
+## that looks into the passage, so it is used from the square in front, like a chest in a niche.
+func _lever(root: Node3D, cell: Vector2i, ch: String) -> void:
+	var face := -1
+	for d in 4:
+		if not _rocky(cell + Game.DIR_VEC[d]):
+			face = d
+			break
+	if face < 0:
+		return
+	var dv := Vector3(Game.DIR_VEC[face].x, 0, Game.DIR_VEC[face].y)   # out of the wall
+	var wall := Vector3(cell.x, 0, cell.y) * DungeonView.CELL + dv * (DungeonView.CELL / 2.0)
 	var iron := _plain(Color("#4a4a50"))
-	_box(root, at + Vector3(0, 0.5, 0), Vector3(0.25, 1.0, 0.25), _plain(Color("#5a4a3a")))
-	var pulled: bool = MinesQuest.lever_down(ch)
-	_box(root, at + Vector3(0, 1.1, 0), Vector3(0.06, 0.6, 0.06), iron, Vector3(0.7 if pulled else -0.7, 0, 0))
+	var wood := _plain(Color("#5a4a3a"))
+	var flat := _facing(Vector3.UP.cross(dv), dv)   # x along the wall, y up, z out
+	var down: bool = MinesQuest.lever_down(ch)
+	if level == 2 and ch == "u":
+		# The sluice wheel: a rim and spokes on an iron boss, and its chain running up the wall.
+		var hub := wall + dv * 0.18 + Vector3(0, 1.15, 0)
+		_boxb(root, wall + dv * 0.04 + Vector3(0, 1.15, 0), Vector3(0.32, 0.32, 0.08), wood, flat)
+		_boxb(root, wall + dv * 0.11 + Vector3(0, 1.15, 0), Vector3(0.1, 0.1, 0.16), iron, flat)
+		var along := Vector3.UP.cross(dv)
+		for i in 8:
+			var a := i * TAU / 8.0
+			var out := along * cos(a) + Vector3.UP * sin(a)
+			var tangent := along * -sin(a) + Vector3.UP * cos(a)
+			_boxb(root, hub + out * 0.38, Vector3(0.31, 0.06, 0.06), iron, _facing(tangent, dv))
+			_boxb(root, hub + out * 0.19, Vector3(0.38, 0.035, 0.035), iron, _facing(out, dv))
+		var chain := wall + dv * 0.06 + Vector3(0, 1.95, 0) + along * 0.3
+		_boxb(root, chain, Vector3(0.04, 1.2 if down else 1.0, 0.04), iron, flat)
+		return
+	# A lever: a plate bolted to the rock, and an iron handle up (not pulled) or down (pulled).
+	_boxb(root, wall + dv * 0.03 + Vector3(0, 1.05, 0), Vector3(0.22, 0.5, 0.06), wood, flat)
+	var dir := (Vector3.DOWN if down else Vector3.UP) * 0.9 + dv * 0.45   # handle leans out of the wall
+	dir = dir.normalized()
+	var pivot := wall + dv * 0.08 + Vector3(0, 1.05, 0)
+	_boxb(root, pivot + dir * 0.3, Vector3(0.6, 0.06, 0.06), iron, _facing(dir, Vector3.UP.cross(dv).cross(dir)))
+	_boxb(root, pivot + dir * 0.62, Vector3(0.11, 0.11, 0.11), _plain(Color("#2a2a2e")), flat)
+
+
+## A basis whose x axis runs along `x`, and whose z axis is as close to `z` as it can be.
+func _facing(x: Vector3, z: Vector3) -> Basis:
+	var xn := x.normalized()
+	var y := z.cross(xn).normalized()
+	return Basis(xn, y, xn.cross(y))
+
+
+func _boxb(root: Node3D, at: Vector3, sz: Vector3, m: Material, b: Basis) -> void:
+	var bm := BoxMesh.new()
+	bm.size = sz
+	var mi := MeshInstance3D.new()
+	mi.mesh = bm
+	mi.material_override = m
+	mi.transform = Transform3D(b, at)
+	root.add_child(mi)
 
 
 func _cart(root: Node3D, at: Vector3) -> void:
@@ -465,13 +538,18 @@ func _haze(root: Node3D, at: Vector3, col: Color) -> void:
 		_box(root, at + Vector3(0, 0.5 + i * 0.45, 0), Vector3(1.96, 0.42, 1.96), m)
 
 
+## The flooded passage: black water at floor level, where the passage dips under it. Gone once drained.
 func _water(root: Node3D, at: Vector3, drained: bool) -> void:
+	if drained:
+		return
 	var m := StandardMaterial3D.new()
-	m.albedo_color = Color(0.12, 0.2, 0.26, 0.85)
+	m.albedo_color = Color(0.16, 0.34, 0.46, 0.92)
+	m.emission_enabled = true
+	m.emission = Color(0.03, 0.08, 0.12)   # a faint sheen, so it reads as water in the dark
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.metallic = 0.3
 	m.roughness = 0.15
-	_box(root, at + Vector3(0, 0.04 if drained else 1.5, 0), Vector3(2.0, 0.04, 2.0), m)
+	_box(root, at + Vector3(0, 0.06, 0), Vector3(2.0, 0.04, 2.0), m)
 
 
 func _figure(root: Node3D, at: Vector3, who: Dictionary) -> void:
@@ -655,6 +733,27 @@ func _mat(tex: String, tint: Color) -> StandardMaterial3D:
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	m.roughness = 0.95
 	return m
+
+
+## A glow mask for a carving: the cut lines (darker than the stone around them) white, the rest
+## black, so only the carving itself lights up.
+static func _carving_glow(tex: String) -> Texture2D:
+	var img: Image = Ui.tex(tex).get_image()
+	if img.is_compressed():
+		img.decompress()
+	img.convert(Image.FORMAT_RGB8)
+	var mean := 0.0
+	for y in range(0, img.get_height(), 4):
+		for x in range(0, img.get_width(), 4):
+			mean += img.get_pixel(x, y).get_luminance()
+	mean /= ceilf(img.get_height() / 4.0) * ceilf(img.get_width() / 4.0)
+	var out := Image.create(img.get_width(), img.get_height(), false, Image.FORMAT_RGB8)
+	for y in img.get_height():
+		for x in img.get_width():
+			var v := clampf((mean - img.get_pixel(x, y).get_luminance() - 0.025) * 25.0, 0.0, 1.0)
+			out.set_pixel(x, y, Color(v, v, v))
+	out.generate_mipmaps()
+	return ImageTexture.create_from_image(out)
 
 
 func _plain(col: Color) -> StandardMaterial3D:

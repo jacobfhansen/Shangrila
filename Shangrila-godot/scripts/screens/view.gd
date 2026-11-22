@@ -22,6 +22,7 @@ const BODY_SLOTS := {
 var from_party := true
 var list: Array
 var index := 0
+const STRIP := 6       # characters shown in the strip at the top (the whole party)
 var strip_first := 0
 
 var slots := {}
@@ -41,7 +42,7 @@ func _ready() -> void:
 	from_party = args.get("party", true)
 	list = Game.party if from_party else Game.roster
 	index = args.get("index", 0)
-	strip_first = index
+	strip_first = index if list.size() > STRIP else 0
 	Ui.stone_background(self)
 
 	back = args.get("back", "inn")
@@ -49,9 +50,10 @@ func _ready() -> void:
 	Ui.btn(self, "Leave", Rect2(16, 20, 70, 30), _on_leave, {"inn": "Back to the inn", "dungeon": "Back to the mines", "tunnels": "Back to the tunnels"}.get(back, "Back to the streets"))
 	Ui.btn(self, "Quests", Rect2(16, 56, 70, 28), QuestLog.open, "The quest log: every quest and what was said (J)")
 	# Character strip (ViewCha 110-118).
-	for j in 3:
-		var x := 104 + j * 158
-		var n := Ui.label(self, "", Vector2(x, 12), 13, Ui.TEXT, 140)
+	for j in STRIP:
+		var x := 96 + j * 81
+		var n := Ui.label(self, "", Vector2(x, 12), 12, Ui.TEXT, 78)
+		n.clip_text = true
 		var s := Slot.make(self, Rect2(x, 32, 46, 46), j, "member", self)
 		s.clicked.connect(_on_strip_click)
 		var p := Portrait.new()
@@ -59,10 +61,12 @@ func _ready() -> void:
 		Ui.place(p, Rect2(1, 1, 44, 44))
 		var bars := StatusBars.new()
 		add_child(bars)
-		Ui.place(bars, Rect2(x + 54, 32, 60, 46))
+		Ui.place(bars, Rect2(x + 49, 32, 28, 46))
 		strip.append({"slot": s, "portrait": p, "name": n, "bars": bars})
-	Ui.btn(self, "◀", Rect2(584, 18, 42, 28), _on_strip_scroll.bind(-1), "Previous character")
-	Ui.btn(self, "▶", Rect2(584, 50, 42, 28), _on_strip_scroll.bind(1), "Next character")
+	var prev := Ui.btn(self, "◀", Rect2(584, 18, 42, 28), _on_strip_scroll.bind(-1), "Previous character")
+	var next := Ui.btn(self, "▶", Rect2(584, 50, 42, 28), _on_strip_scroll.bind(1), "Next character")
+	prev.visible = list.size() > STRIP   # the whole party fits; only the inn's list scrolls
+	next.visible = list.size() > STRIP
 
 	# Abilities (0-10, shown as pips) with a button to raise each one, then the derived values.
 	Ui.frame(self, Rect2(8, 92, 228, 378))
@@ -150,7 +154,12 @@ func refresh() -> void:
 			tip += "\nRaising it to %d costs %d experience." % [v + 1, cost]
 		row.hover.tooltip_text = tip
 		row.plus.tooltip_text = tip
-	stat_labels["hits"].text = "%d / %d" % [c.hits, c.max_hits]
+	stat_labels["hits"].text = "%d / %d" % [c.hits, Game.full_hits(c)]
+	stat_labels["hits"].tooltip_text = ""
+	if c.get("wounded", false):
+		stat_labels["hits"].text += "  wounded"
+		stat_labels["hits"].tooltip_text = "Badly wounded: hits can't rise above %d (half) until %s has rested %d days at the inn" % [c.max_hits, c.name.split(" ")[0], Game.REST_DAYS]
+		stat_labels["hits"].mouse_filter = Control.MOUSE_FILTER_PASS
 	stat_labels["health"].text = "%d / %d" % [c.health, c.max_health]
 	stat_labels["mana"].text = "%d / %d" % [c.magic, c.max_magic]
 	var enc := Game.encumbrance(c)
@@ -182,9 +191,9 @@ func refresh() -> void:
 	stat_labels["silver"].text = str(c.silver)
 	for k in slots:
 		slots[k].item_id = c.items[k]
-	# Strip of three characters, starting at strip_first, wrapping around.
+	# Strip of up to six characters, starting at strip_first, wrapping around.
 	var n := list.size()
-	for j in 3:
+	for j in STRIP:
 		var e: Dictionary = strip[j]
 		var shown := j < n
 		e.slot.visible = shown
@@ -192,7 +201,8 @@ func refresh() -> void:
 		e.name.visible = shown
 		if shown:
 			var who: Dictionary = list[(strip_first + j) % n]
-			e.name.text = who.name
+			e.name.text = who.name.split(" ")[0]
+			e.name.tooltip_text = who.name
 			e.portrait.index = who.icon
 			e.portrait.highlight = (strip_first + j) % n == index
 			e.portrait.star = Game.can_raise(who)

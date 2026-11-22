@@ -7,7 +7,7 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
 
 ## What was carried over from the original
 
-- **Screens and flow:** About picture, then main menu (New / Resume / Quit), Inn, View
+- **Screens and flow:** About picture, then main menu (New / Load / Quit), Inn, View
   Character, Weapon Smith and the Mines. The original's Create Character screen and painted
   city view are retired: characters are pre-made, and Lehan is now a town map (see below).
 - **Character rules:** the classes, their starting kits and encumbrance. (The original's rolled
@@ -43,7 +43,10 @@ Run it: open the folder in Godot 4.7 and press Play, or run `godot-4 --path .` f
   `scripts/game.gd`; the full plan is "Simpler mechanics" in `IDEAS.md`.
 - The resource forks (all UI pictures, the item icons and the 47 portraits) were empty in the
   copy, so the UI is rebuilt in code. Item icons and most portraits are drawn procedurally.
-- Save and Resume were stubs in the original. Here they save to `user://shangrila_save.json`.
+- Save and Resume were stubs in the original. Here *Save* picks one of three slots
+  (`user://save_1.json` .. `save_3.json`), and *Load* on the title screen lists them with the
+  automatic checkpoint save (`save_auto.json`): each shows its place, day and party (♥ fine,
+  ✚ badly wounded, † dead). An old `shangrila_save.json` becomes slot 1.
 - Pay, Talk and Haggle in the shop had buttons but no logic. Pay now buys the basket, while Talk
   and Haggle only produce flavour text.
 - Combat was never written (only the nine buttons existed), so it is new. See below.
@@ -238,8 +241,10 @@ like spider's legs; they are grown from each square's coordinates, so they never
    (the lamp shows the way, or Survival, or hold your breath); the breach, with the foreman and
    Tobin dead and the foreman's key; the locked stores (key, Thievery or force) with the lift
    crank, a steel sword and cap; ore veins to chip with a pick (the smith buys the ore); three
-   survivors cut off behind a Gloomweaver nest and a flooded passage. The sluices drain it if the
-   upper gate is shut first (a note says so).
+   survivors cut off behind a Gloomweaver nest; beside them, a flooded passage cuts off the lower
+   gallery with the breach and the way down. Its wheel and drain lever are on the near side: the
+   drain only works if the upper gate is shut first (a note says so). The foreman's key lies at
+   the breach, so before draining, the stores open only by Thievery or force.
 3. **The sealed galleries** (the jailers' fitted stone): the Oathbound, Oath-Archers and a Sworn
    Knight; a ward door opened by touching three carved pillars in the order an inscription gives
    (Lore reads it; or trial and error, with a jolt for each mistake); the jailers' armoury with an
@@ -296,9 +301,19 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   go on below 0; past 3 + Toughness below 0 they die. Monsters still strike the fallen in the
   front rank now and then. There is no raising the dead: a dead companion leaves the party and
   the others take their gear and silver. If the host dies, the game is over (load a save). After
-  a fight the badly wounded come around with 1 hit; if everyone who stayed falls, they wake up at
-  the inn, robbed of half their silver. The Warden knocks people down but never kills, and the
-  prologue's road ambush kills no one.
+  a deadly fight anyone still down comes around with 1 hit but **badly wounded**: their hits
+  can't rise above half ("Wounded" by the portrait, on the sheet and at the inn) until they have
+  rested at the inn, so a Cleric's Mend during the fight is worth a lot. If everyone who stayed
+  falls, they wake at the last checkpoint, badly wounded and robbed of half their silver. The
+  Warden knocks people down but never wounds badly or kills, and the prologue's road ambush
+  neither.
+- **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
+  the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
+  3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the
+  party is away. *Rest a night* (1 silver a head) gives the party its hits and mana back (not
+  past a bad wound) and lets a day pass. Each camp in the mines, and the inn, is a
+  **checkpoint**: reaching it saves the game in the automatic slot, and it is where the party
+  wakes after falling. Lines of companions who have died are left out of the scenes.
 - **Daring to stay:** each round under pressure (own hits low, friends down, dead or fled, foes
   outnumbering or outclassing the party) every companion but the host checks d10 + Nerve against
   3 + pressure. A first failure and they waver (amber portrait, "Wavering"), a second and they
@@ -336,6 +351,6 @@ rule checks (see `scripts/dev_tour.gd`). `tools/tour.sh quests` runs only the Le
 council, and `tools/tour.sh mines` the mines job from the entrance to the report. The whole tour
 takes under a minute: the script turns vsync off (so a hidden window isn't slowed to a frame a
 second) and runs time 5x faster (`TOUR_TIME_SCALE` changes it). The log is `.tour/tour.log`, and
-the tour writes its own save (`tour_save.json`), never the player's. By hand it is
+the tour writes its own saves (`tour_save_*.json`), never the player's. By hand it is
 `godot-4 --path . -- --tour=$PWD/.tour [--part=quests|mines]`. It also simulates 200 auto-fights
 at several depths and prints the win rate, which is handy when tuning monsters in `scripts/combat.gd`.

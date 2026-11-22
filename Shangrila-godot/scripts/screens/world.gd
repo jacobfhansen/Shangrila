@@ -45,11 +45,12 @@ func _ready() -> void:
 	var here: Dictionary = Game.LOCATIONS[Game.location]
 	var enter: String = "Look around" if here.screen == "" else "Enter " + here.name
 	buttons.append(Ui.btn(self, enter, Rect2(20, 436, 150, 32), _on_location.bind(Game.location), here.desc))
-	buttons.append(Ui.btn(self, "Quests", Rect2(390, 436, 70, 32), _on_quests, "The quest log: every quest and what was said (J)"))
-	buttons.append(Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Quests", Rect2(334, 436, 66, 32), _on_quests, "The quest log: every quest and what was said (J)"))
+	buttons.append(Ui.btn(self, "Save", Rect2(406, 436, 66, 32), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Load", Rect2(478, 436, 66, 32), Game.main.load_menu, "Load a saved game (what isn't saved is lost)"))
 	buttons.append(Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu"))
-	info = Ui.label(self, "", Vector2(180, 444), 12, Ui.TEXT, 204)
-	info.text = "Click a place on the map to travel there."
+	info = Ui.label(self, "", Vector2(180, 444), 12, Ui.TEXT, 150)
+	info.text = "Click a place to travel."
 	if get_meta("args", {}).get("road", false) and _road_pending("lehan"):
 		_road_scene.call_deferred()
 
@@ -169,7 +170,8 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _on_save() -> void:
-	info.text = "Game saved." if Game.save_game("world") else "The game could not be saved."
+	if await Game.main.save_menu("world"):
+		info.text = "Game saved."
 
 
 func _on_quit() -> void:

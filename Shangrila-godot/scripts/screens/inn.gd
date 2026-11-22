@@ -16,8 +16,11 @@ var cmd := {}
 func _ready() -> void:
 	Ui.stone_background(self)
 	Ui.btn(self, "Leave Inn", Rect2(20, 20, 206, 28), _on_leave, "Back out into the town")
-	Ui.btn(self, "Save", Rect2(20, 54, 100, 28), _on_save, "Save the game")
-	Ui.btn(self, "Quit", Rect2(126, 54, 100, 28), _on_quit, "Back to the main menu")
+	Ui.btn(self, "Save", Rect2(20, 54, 66, 28), _on_save, "Save the game")
+	Ui.btn(self, "Load", Rect2(90, 54, 66, 28), Game.main.load_menu, "Load a saved game (what isn't saved is lost)")
+	Ui.btn(self, "Quit", Rect2(160, 54, 66, 28), _on_quit, "Back to the main menu")
+	cmd.rest = Ui.btn(self, "Rest a night", Rect2(20, 88, 206, 28), _on_rest,
+		"A night at the inn: hits and mana back (not past a bad wound). %d silver a head; a day passes" % Game.INN_NIGHT)
 
 	Ui.title(self, "The Inn", Vector2(250, 26), 30)
 	Ui.label(self, "of " + Game.city.name, Vector2(254, 64), 14, Ui.DIM)
@@ -70,6 +73,7 @@ func _ready() -> void:
 		var c := Ui.label(b, "", Vector2(104, 4), 11, Ui.DIM, 72)
 		roster_rows.append({"btn": b, "name": n, "cls": c})
 	refresh()
+	Game.reach_checkpoint("inn")
 	if get_meta("args", {}).get("split", false):
 		_split_notice.call_deferred()
 
@@ -93,6 +97,8 @@ func refresh() -> void:
 			var c: Dictionary = Game.party[i]
 			mb.name.text = c.name
 			mb.cls.text = "%s %s" % [Game.RACES[c.race], Game.CLASSES[c.cls]]
+			if c.get("wounded", false):
+				mb.cls.text = "Badly wounded"
 			mb.portrait.index = c.icon
 			mb.portrait.highlight = i == member
 			mb.portrait.star = Game.can_raise(c)
@@ -108,6 +114,8 @@ func refresh() -> void:
 			var c: Dictionary = Game.roster[idx]
 			row.name.text = c.name
 			row.cls.text = Game.CLASSES[c.cls]
+			if Game.is_resting(c):
+				row.cls.text = "Resting, %d d" % Game.rest_left(c)
 			row.btn.disabled = false
 		else:
 			row.name.text = "<empty>"
@@ -122,7 +130,8 @@ func refresh() -> void:
 	cmd.dismiss.disabled = member < 0 or Game.roster.size() >= Game.MAX_ROSTER
 	cmd.info.disabled = chosen < 0 and member < 0
 	cmd.kill.disabled = chosen < 0
-	gold_label.text = "Party purse: " + Game.money_string(Game.party_silver())
+	cmd.rest.disabled = Game.party.is_empty()
+	gold_label.text = "Party purse: %s     Day %d" % [Game.money_string(Game.party_silver()), Game.day]
 
 
 func _on_member(i: int) -> void:
@@ -145,6 +154,11 @@ func _on_scroll(d: int) -> void:
 
 func _on_muster() -> void:
 	var c: Dictionary = Game.roster[chosen]
+	if Game.is_resting(c):
+		var n := Game.rest_left(c)
+		await Game.main.message("%s: \"Not yet. %s more day%s.\"\n\n(Resting at the inn. Rest a night, or come back later: days pass on the road and when you sleep.)" % [
+			c.name.split(" ")[0], ["", "One", "Two", "Three"][mini(n, 3)] if n <= 3 else str(n), "" if n == 1 else "s"])
+		return
 	if c.get("rejoin", "") != "":
 		if not await _rejoin_talk(c):
 			refresh()
@@ -202,13 +216,50 @@ func _rejoin_talk(c: Dictionary) -> bool:
 
 
 func _on_dismiss() -> void:
-	if not Game.hand_over_quest_items(Game.party[member]):
+	var c: Dictionary = Game.party[member]
+	var rest := false
+	if c.get("wounded", false):
+		var price := Game.REST_DAYS * Game.REST_PRICE
+		if Game.party_silver() < price:
+			await Game.main.message("%s is badly wounded and needs %d days' rest here, at %d silver a day. The purse can't cover it.\n\n(They can wait at the inn, but won't heal.)" % [c.name, Game.REST_DAYS, Game.REST_PRICE])
+		elif await Game.main.confirm("%s is badly wounded. Leave them at the inn to rest for %d days, for %d silver?" % [c.name.split(" ")[0], Game.REST_DAYS, price], "Rest"):
+			rest = true
+		else:
+			return
+	if not Game.hand_over_quest_items(c):
 		await Game.main.message("%s carries a quest item (★), and nobody else in the party could take it.\n\nMuster someone first." % Game.party[member].name)
 		return
-	Game.roster.append(Game.party[member])
-	Game.party.remove_at(member)
+	if rest:
+		# Paid from their own purse first, then the others'.
+		var price := Game.REST_DAYS * Game.REST_PRICE
+		var own := mini(c.silver, price)
+		c.silver -= own
+		Game.party.remove_at(member)
+		Game.pay(price - own)
+		Game.start_rest(c)
+	else:
+		Game.party.remove_at(member)
+	Game.roster.append(c)
 	member = -1
 	refresh()
+
+
+## A night at the inn for the party: hits and mana back (up to the limit of a bad wound), a day
+## passes, and anyone resting here may be fit again.
+func _on_rest() -> void:
+	var price := Game.INN_NIGHT * Game.party.size()
+	if not Game.pay(price):
+		await Game.main.message("A night costs %d silver for the party, and the purse can't cover it." % price)
+		return
+	for c in Game.party:
+		c.hits = c.max_hits
+		c.magic = c.max_magic
+	var lines := ["The party sleeps under a roof for once. (%d silver)" % price]
+	lines.append_array(Game.pass_days(1))
+	if Game.party.any(func(c): return c.get("wounded", false)):
+		lines.append("A bad wound needs days of proper rest: leave the wounded here (Dismiss).")
+	refresh()
+	await Game.main.message("\n".join(lines))
 
 
 func _on_info() -> void:
@@ -231,10 +282,7 @@ func _on_leave() -> void:
 
 
 func _on_save() -> void:
-	if Game.save_game("inn"):
-		await Game.main.message("The game has been saved.")
-	else:
-		await Game.main.message("Could not save the game.")
+	await Game.main.save_menu("inn")
 
 
 func _on_quit() -> void:

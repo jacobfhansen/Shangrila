@@ -309,7 +309,9 @@ func _run() -> void:
 	_mechanics()
 	Game.pos = MinesArea.START
 	Game.rng.seed = 7
-	dg.start_combat(Combat.new(12))
+	var tour_fight := Combat.new(12)
+	tour_fight.will = false   # nobody runs: the tour needs this fight won to go on
+	dg.start_combat(tour_fight)
 	await _shot("12_combat_command")
 	dg._on_action("attack")
 	await _shot("13_combat_target")
@@ -998,10 +1000,18 @@ func _mines_part() -> void:
 	await _mine_use(2, Vector2i(14, 3), 0, [])
 	await _mine_use(2, Vector2i(15, 1), 1, [], "41d_stores")
 	await _mine_use(2, Vector2i(3, 5), 1, [])
-	await _mine_use(2, Vector2i(9, 15), 3, [0])   # the drain first: it floods back
-	await _mine_use(2, Vector2i(11, 15), 2, [0])
-	await _mine_use(2, Vector2i(9, 15), 3, [0])
-	await _mine_at(2, Vector2i(12, 15), 0)
+	await _mine_at(2, Vector2i(12, 13), 2)
+	await _shot("41e0_flooded")
+	await _mine_at(2, Vector2i(11, 13), 2)
+	await _shot("41e1_drain_lever")
+	await _mine_at(2, Vector2i(14, 13), 2)
+	await _shot("41e2_sluice_wheel")
+	await _mine_at(2, Vector2i(13, 13), 3)
+	await _shot("41e3_niches_side")
+	await _mine_use(2, Vector2i(11, 13), 2, [0])   # the drain first: it floods back
+	await _mine_use(2, Vector2i(14, 13), 2, [0])
+	await _mine_use(2, Vector2i(11, 13), 2, [0])
+	await _mine_at(2, Vector2i(12, 13), 2)
 	await _shot("41e_drained")
 	await _mine_use(2, Vector2i(11, 13), 3, [0], "41f_survivors")
 	await _mine_step(2, Vector2i(5, 11), 1)
@@ -1024,6 +1034,12 @@ func _mines_part() -> void:
 	await _mine_use(3, Vector2i(6, 7), 2, [0])
 	await _mine_use(3, Vector2i(1, 7), 0, [0], "42b_pillar")
 	await _mine_use(3, Vector2i(5, 7), 0, [0])
+	await get_tree().create_timer(0.6).timeout
+	print("wards lit: ", LehanQuests.get_q("m_wards"))
+	await _mine_at(3, Vector2i(7, 7), 3)
+	await _shot("42b2_carvings_lit")
+	await _mine_at(3, Vector2i(5, 7), 0)
+	await _shot("42b3_carving_lit_close")
 	await _mine_use(3, Vector2i(3, 7), 0, [0])
 	await _mine_use(3, Vector2i(14, 5), 1, [], "42c_armoury")
 	await _mine_use(3, Vector2i(14, 5), 3, [])
@@ -1113,7 +1129,115 @@ func _mines_will() -> void:
 		m._modal_done.emit(true)
 	await get_tree().create_timer(0.6).timeout
 	print("will: after the host died: ", m.current.get_script().resource_path.get_file())
+	await _wounds_and_saves()
 	get_tree().quit()
+
+
+## Step 2 of wounds and death: the camp checkpoint, a severe wound, a wipe waking at the camp,
+## the save slots, resting at the inn, "Not yet", and the load list.
+func _wounds_and_saves() -> void:
+	var m: Node = Game.main
+	m.show_item.call(49)   # the jailer's record: its writing scrolls on its own
+	await get_tree().create_timer(0.4).timeout
+	await _shot("45_record_card")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.3).timeout
+	Checkpoints.start("mines", "joss")
+	await get_tree().create_timer(1.0).timeout
+	Game.day = 3
+	# The camp on level 1, and a square beside it to step from.
+	var camp := Vector2i(-1, -1)
+	var map: Array = MinesArea.MAPS[0]
+	for y in map.size():
+		for x in map[y].length():
+			if map[y][x] == "C":
+				camp = Vector2i(x, y)
+	var from := camp
+	var dir := 0
+	for d in 4:
+		var nb: Vector2i = camp - Game.DIR_VEC[d]
+		if MinesArea.walkable(1, nb):
+			from = nb
+			dir = d
+	await _mine_step(1, from, dir)
+	print("saves: camp ", camp, " at ", Game.pos, " checkpoint ", Game.story.get("checkpoint"), " auto ", Game.save_info("auto"))
+	# A severe wound after a deadly fight.
+	var c := Combat.new(3)
+	var hurt: Dictionary = Game.party[1]
+	var full: int = hurt.max_hits
+	hurt.hits = -2
+	print("saves: after_fight ", c.after_fight(), " max hits ", full, " -> ", hurt.max_hits, " wounded ", hurt.get("wounded"))
+	m.goto("dungeon", {"resume": true})
+	await get_tree().create_timer(0.8).timeout
+	await _shot("45a_wounded")
+	# The whole party falls: they wake at the camp.
+	var dg: Node = m.current
+	var c2 := Combat.new(3)
+	dg.start_combat(c2)
+	await get_tree().create_timer(0.4).timeout
+	for p in Game.party:
+		p.hits = -1
+	dg._end_combat("lost")
+	await get_tree().create_timer(1.2).timeout
+	await _shot("45b_wake_at_camp")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(1.0).timeout
+	print("saves: woke on ", m.current.get_script().resource_path.get_file(), " at ", Game.pos, " level ", Game.mine_level,
+		" wounded ", Game.party.filter(func(p): return p.get("wounded", false)).size(), "/", Game.party.size())
+	# Save in a slot (writing over slot 1 asks first).
+	Game.save_game("dungeon", 1)
+	m.save_menu.call("dungeon")
+	await get_tree().create_timer(0.5).timeout
+	await _shot("45c_save_slots")
+	m._modal_done.emit(1)
+	await get_tree().create_timer(0.4).timeout
+	await _shot("45d_save_over")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.4).timeout
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.4).timeout
+	print("saves: slot 1 ", Game.save_info(1))
+	# The inn: leave the wounded to rest, "Not yet", nights pass.
+	Game.location = "lehan"
+	Game.party[0].silver += 40
+	m.goto("inn")
+	await get_tree().create_timer(0.8).timeout
+	var inn: Node = m.current
+	print("saves: inn checkpoint ", Game.story.get("checkpoint"))
+	inn.member = 1
+	var resting: Dictionary = Game.party[1]
+	inn._on_dismiss.call()
+	await get_tree().create_timer(0.4).timeout
+	await _shot("45e_rest_confirm")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.4).timeout
+	inn.chosen = Game.roster.find(resting)
+	inn.refresh()
+	inn._on_muster.call()
+	await get_tree().create_timer(0.4).timeout
+	await _shot("45f_not_yet")
+	m._modal_done.emit(true)
+	for n in 2:
+		await get_tree().create_timer(0.3).timeout
+		inn._on_rest.call()
+		await get_tree().create_timer(0.4).timeout
+		if n == 1:
+			await _shot("45g_rested")
+		m._modal_done.emit(true)
+	await get_tree().create_timer(0.3).timeout
+	print("saves: day ", Game.day, " ", resting.name, " resting ", Game.is_resting(resting), " wounded ", resting.get("wounded", false),
+		" hits ", resting.hits, "/", resting.max_hits)
+	# A dead companion's lines are skipped.
+	Game.story["dead"] = [PrologueData.CAST["maera"].name]
+	print("saves: pick avoids the dead: ", LehanData._pick(["maera", "ithrae"], "joss"))
+	# The load list.
+	m.goto("title")
+	await get_tree().create_timer(0.6).timeout
+	m.load_menu.call()
+	await get_tree().create_timer(0.5).timeout
+	await _shot("45h_load_list")
+	m._modal_done.emit(-1)
+	await get_tree().create_timer(0.3).timeout
 
 
 ## Stands the party on a square of a level, facing a way, with the view rebuilt.

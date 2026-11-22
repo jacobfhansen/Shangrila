@@ -1,5 +1,5 @@
 extends Control
-## MainDlog - New / Resume / Quit.
+## MainDlog - New / Load / Quit.
 
 
 func _ready() -> void:
@@ -12,7 +12,7 @@ func _ready() -> void:
 		Ui.frame(self, Rect2(x - 4, 156, 148, 121), Color(0, 0, 0, 0.6), Color("#a07a40"), 2)
 		Ui.image(self, "The_Man" if i == 0 else "The_Enemy", Rect2(x, 160, 140, 113))
 	Ui.btn(self, "New", Rect2(260, 172, 120, 34), _on_new)
-	var res := Ui.btn(self, "Resume", Rect2(260, 224, 120, 34), _on_resume)
+	var res := Ui.btn(self, "Load", Rect2(260, 224, 120, 34), _on_resume, "Load a saved game")
 	res.disabled = not Game.has_save()
 	if res.disabled:
 		res.tooltip_text = "No saved game yet"
@@ -25,7 +25,7 @@ func _ready() -> void:
 
 
 func _on_new() -> void:
-	if Game.has_save() and not await Game.main.confirm("Start a new game?\nYour saved game stays on disk until you save again."):
+	if Game.has_save() and not await Game.main.confirm("Start a new game?\nYour saved games stay on disk until you save over them."):
 		return
 	Game.main.goto("prologue", {"new_game": true})
 
@@ -44,8 +44,4 @@ func _on_checkpoint() -> void:
 
 
 func _on_resume() -> void:
-	var screen := Game.load_game()
-	if screen == "":
-		await Game.main.message("The saved game could not be read.")
-		return
-	Game.main.goto(screen)
+	await Game.main.load_menu()

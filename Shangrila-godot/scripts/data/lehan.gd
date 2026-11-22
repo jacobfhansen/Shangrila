@@ -19,7 +19,7 @@ const MEETING_XP := 1.0 / 3.0   # of a raise, for everyone at the meeting
 
 static func _pick(prefer: Array, host: String) -> String:
 	for k in prefer:
-		if k != host:
+		if k != host and not PrologueData.CAST[k].name in Game.story.get("dead", []):
 			return k
 	return prefer[0]
 

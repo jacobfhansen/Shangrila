@@ -75,8 +75,9 @@ func _ready() -> void:
 	map_btn.toggle_mode = true
 	buttons.append(Ui.btn(self, "Party", Rect2(507, 290, 58, 30), _on_party, "Your characters: abilities, gear and silver (C)"))
 	buttons.append(Ui.btn(self, "Quests", Rect2(568, 290, 58, 30), _on_quests, "The quest log: every quest and what was said (J)"))
-	buttons.append(Ui.btn(self, "Save", Rect2(446, 326, 88, 30), _on_save, "Save the game"))
-	buttons.append(Ui.btn(self, "Quit", Rect2(538, 326, 88, 30), _on_quit, "Back to the main menu"))
+	buttons.append(Ui.btn(self, "Save", Rect2(446, 326, 58, 30), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Load", Rect2(507, 326, 58, 30), Game.main.load_menu, "Load a saved game (what isn't saved is lost)"))
+	buttons.append(Ui.btn(self, "Quit", Rect2(568, 326, 58, 30), _on_quit, "Back to the main menu"))
 	Ui.frame(self, Rect2(436, 364, 196, 62))
 	var help := Ui.label(self, "Walk up to people to talk, and into doors to go in. Map shows the town.",
 		Vector2(444, 368), 11, Ui.DIM, 182)
@@ -391,10 +392,7 @@ func _on_party() -> void:
 
 
 func _on_save() -> void:
-	if Game.save_game("streets"):
-		await Game.main.message("The game has been saved.")
-	else:
-		await Game.main.message("Could not save the game.")
+	await Game.main.save_menu("streets")
 
 
 func _on_quit() -> void:

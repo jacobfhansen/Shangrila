@@ -25,11 +25,16 @@ func _ready() -> void:
 	_build_places()
 
 	buttons.append(Ui.btn(self, "Leave town", Rect2(20, 436, 110, 32), _on_place.bind("gate"), "Out through the gate, onto the world map"))
-	buttons.append(Ui.btn(self, "Quests", Rect2(390, 436, 70, 32), _on_quests, "The quest log: every quest and what was said (J)"))
-	buttons.append(Ui.btn(self, "Save", Rect2(470, 436, 70, 32), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Quests", Rect2(334, 436, 66, 32), _on_quests, "The quest log: every quest and what was said (J)"))
+	buttons.append(Ui.btn(self, "Save", Rect2(406, 436, 66, 32), _on_save, "Save the game"))
+	buttons.append(Ui.btn(self, "Load", Rect2(478, 436, 66, 32), Game.main.load_menu, "Load a saved game (what isn't saved is lost)"))
 	buttons.append(Ui.btn(self, "Quit", Rect2(550, 436, 70, 32), _on_quit, "Back to the main menu"))
 	var who := "Party: " + (", ".join(Game.party.map(func(c): return c.name)) if Game.party.size() > 0 else "nobody")
-	info = Ui.label(self, who, Vector2(140, 444), 12, Ui.TEXT, 240)
+	info = Ui.label(self, who, Vector2(140, 444), 12, Ui.TEXT, 190)
+	info.clip_text = false
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.position.y = 438
+	info.add_theme_font_size_override("font_size", 11)
 	if _arrival_pending():
 		Game.main.goto.call_deferred("streets")   # the arrival is played in the streets
 
@@ -117,7 +122,8 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _on_save() -> void:
-	info.text = "Game saved." if Game.save_game("town") else "The game could not be saved."
+	if await Game.main.save_menu("town"):
+		info.text = "Game saved."
 
 
 func _on_quit() -> void:

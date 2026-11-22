@@ -2,7 +2,12 @@ extends Node
 ## Global game state and rules. Started as a port of Shangrila.p / ShangrilaUtils.p (1997); the
 ## character rules are now the simpler ones in IDEAS.md: ten abilities from 0 to 10, silver only.
 
-var SAVE_PATH := "user://shangrila_save.json"   # the dev tour uses its own (see main.gd)
+var SAVE_PREFIX := "user://save"   # + "_1.json" .. "_3.json", "_auto.json"; the dev tour uses its own (main.gd)
+const OLD_SAVE := "user://shangrila_save.json"   # the single save before slots: becomes slot 1
+const SAVE_SLOTS := 3
+const REST_DAYS := 2       # a badly wounded companion rests this many days at the inn
+const REST_PRICE := 3      # silver a day
+const INN_NIGHT := 1       # silver a head for the party's night at the inn
 
 const RACES := ["Human", "Thuug", "Aeldroe", "Nisk"]
 enum { HUMAN, THUUG, AELDROE, NISK }
@@ -150,6 +155,7 @@ var location := "lehan"   # key in LOCATIONS: where the party is on the world ma
 var known: Array = ["lehan", "mines"]   # discovered locations
 var story := {}           # story state, e.g. {"host": "ithrae", "prologue_reply": 0}
 var town_known := {}      # town key -> [discovered place keys]
+var day := 1              # the day count: travel, nights' sleep and rest days move it on
 
 var rng := RandomNumberGenerator.new()
 
@@ -159,6 +165,8 @@ func _ready() -> void:
 	_make_items()
 	_make_world()
 	new_game()
+	if FileAccess.file_exists(OLD_SAVE) and not FileAccess.file_exists(slot_path(1)):
+		DirAccess.rename_absolute(OLD_SAVE, slot_path(1))
 
 
 func my_random(lo: int, hi: int) -> int:
@@ -498,9 +506,17 @@ func story_xp(fraction: float) -> int:
 	return total
 
 
+## Hits when not badly wounded (max_hits is halved while wounded): what the bars and the sheet
+## measure against, so a wounded character never looks fully healed.
+func full_hits(c: Dictionary) -> int:
+	return RACE_HITS[c.race] + 3 * ability(c, "toughness")
+
+
 ## Hit points, mana and carrying limit, from race and abilities.
 func update_derived(c: Dictionary) -> void:
-	c.max_hits = RACE_HITS[c.race] + 3 * ability(c, "toughness")
+	c.max_hits = full_hits(c)
+	if c.get("wounded", false):
+		c.max_hits = ceili(c.max_hits / 2.0)   # badly wounded: until rested at the inn
 	c.max_health = 70 + 10 * ability(c, "toughness")
 	c.max_encum = 1200 + 150 * ability(c, "toughness")
 	c.max_magic = 2 + 3 * ability(c, "magic") if not spell_for(c).is_empty() and ability(c, "magic") > 0 else 0
@@ -663,15 +679,81 @@ func mines_entered() -> bool:
 	return story.get("mines_entered", false)
 
 
-## The whole party fell: they wake up at the inn, robbed of half their coins.
-func party_defeated() -> void:
+## The whole party fell: they wake at the last checkpoint (a camp in the mines, or the inn),
+## robbed of half their coins and, after a deadly fight, badly wounded. Returns the screen.
+func party_defeated(wounding := true) -> String:
 	for c in party:
+		if wounding:
+			wound(c)
 		c.hits = 1
 		add_silver(c, -c.silver / 2)
+	var cp: Dictionary = story.get("checkpoint", {})
+	if cp.get("kind", "") == "camp":
+		mine_level = int(cp.level)
+		pos = Vector2i(int(cp.pos[0]), int(cp.pos[1]))
+		facing = int(cp.facing)
+		location = "mines"
+		return "dungeon"
 	mine_level = 1
 	pos = MinesArea.START
 	facing = MinesArea.START_FACING
 	location = "lehan"
+	return "inn"
+
+
+## The words for where the party wakes after a wipe.
+func checkpoint_name() -> String:
+	var cp: Dictionary = story.get("checkpoint", {})
+	if cp.get("kind", "") == "camp":
+		return "by the camp's fire on level %d of the mines" % int(cp.level)
+	return "at the inn in %s" % city.name
+
+
+## Reaching a checkpoint (a camp in the mines, the inn in town): the party wakes here after a wipe,
+## and the game is saved in the automatic slot.
+func reach_checkpoint(screen: String) -> bool:
+	if screen == "dungeon":
+		story["checkpoint"] = {"kind": "camp", "level": mine_level, "pos": [pos.x, pos.y], "facing": facing}
+	else:
+		story["checkpoint"] = {"kind": "inn"}
+	return save_game(screen, "auto")
+
+
+# ---------------------------------------------------------------- wounds and days
+
+## A severe wound (fell in a deadly fight and wasn't brought back up): hits can't rise above half
+## until the character has rested at the inn (REST_DAYS days, REST_PRICE silver a day).
+func wound(c: Dictionary) -> void:
+	c["wounded"] = true
+	update_derived(c)
+
+
+func is_resting(c: Dictionary) -> bool:
+	return int(c.get("rest_until", 0)) > 0
+
+
+## Days left before a resting companion is fit again.
+func rest_left(c: Dictionary) -> int:
+	return maxi(0, int(c.get("rest_until", 0)) - day)
+
+
+## Leaves a badly wounded companion at the inn to rest.
+func start_rest(c: Dictionary) -> void:
+	c["rest_until"] = day + REST_DAYS
+
+
+## Days pass (travel, a night's sleep, waiting at the inn). Companions resting at the inn heal.
+func pass_days(n: int) -> Array:
+	day += n
+	var lines := []
+	for c in roster:
+		if is_resting(c) and rest_left(c) == 0:
+			c.erase("rest_until")
+			c.erase("wounded")
+			update_derived(c)
+			c.hits = c.max_hits
+			lines.append("%s has rested and is fit again." % c.name)
+	return lines
 
 
 ## DoesItFit: can item from slot `src` be placed in slot `dst`?
@@ -826,6 +908,7 @@ func new_game() -> void:
 	known = ["lehan", "mines"]
 	story = {}
 	town_known = {}
+	day = 1
 
 
 ## After the prologue: the Harrow Company becomes the party, with the host first. They stand
@@ -847,20 +930,69 @@ func start_company(host: String, reply: int) -> void:
 	story = {"host": host, "prologue_reply": reply}
 
 
+## The file for a save slot: 1 .. SAVE_SLOTS, or "auto" for the checkpoint saves.
+func slot_path(slot: Variant) -> String:
+	return "%s_%s.json" % [SAVE_PREFIX, str(slot)]
+
+
+## All slots, the automatic one first.
+func save_slots() -> Array:
+	var a: Array = ["auto"]
+	for i in SAVE_SLOTS:
+		a.append(i + 1)
+	return a
+
+
 func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+	for s in save_slots():
+		if FileAccess.file_exists(slot_path(s)):
+			return true
+	return false
 
 
-func save_game(screen: String) -> bool:
+## Where the party is, for the load list.
+func place_name(screen: String) -> String:
+	match screen:
+		"dungeon":
+			var at_camp := MinesArea.kind_of(mine_level, MinesArea.char_at(mine_level, pos)) == "camp"
+			return "Mines level %d%s" % [mine_level, ", camp" if at_camp else ""]
+		"inn":
+			return "%s, the inn" % city.get("name", "Lehan")
+		"streets":
+			return "%s, the streets" % city.get("name", "Lehan")
+		"tunnels":
+			return "Under %s" % city.get("name", "Lehan")
+	return LOCATIONS.get(location, {}).get("name", location.capitalize())
+
+
+## What the load list shows of a save: {where, day, party: [[name, state]]}, state "fine",
+## "wounded" or "dead"; empty when there is no save in the slot.
+func save_info(slot: Variant) -> Dictionary:
+	var path := slot_path(slot)
+	if not FileAccess.file_exists(path):
+		return {}
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not data is Dictionary:
+		return {"where": "(unreadable)", "day": 0, "party": []}
+	var who := []
+	for c in data.get("party", []):
+		who.append([str(c.get("name", "?")).split(" ")[0], "wounded" if c.get("wounded", false) else "fine"])
+	for nm in data.get("story", {}).get("dead", []):
+		who.append([str(nm).split(" ")[0], "dead"])
+	return {"where": data.get("where", str(data.get("screen", "?")).capitalize()), "day": int(data.get("day", 0)), "party": who}
+
+
+func save_game(screen: String, slot: Variant = 1) -> bool:
 	var v := []
 	for k in visited:
 		v.append([k.x, k.y, k.z])
 	var data := {
-		"version": 6, "screen": screen, "roster": roster, "party": party,
+		"version": 7, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "level": mine_level, "pos": [pos.x, pos.y], "facing": facing,
 		"location": location, "known": known, "story": story, "town_known": town_known,
+		"day": day, "where": place_name(screen),
 	}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var f := FileAccess.open(slot_path(slot), FileAccess.WRITE)
 	if f == null:
 		return false
 	f.store_string(JSON.stringify(data, "\t"))
@@ -906,10 +1038,10 @@ func _convert_v3(c: Dictionary) -> void:
 
 
 ## Returns the screen name to resume on, or "" on failure.
-func load_game() -> String:
-	if not has_save():
+func load_game(slot: Variant = 1) -> String:
+	if not FileAccess.file_exists(slot_path(slot)):
 		return ""
-	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(slot_path(slot)))
 	if not data is Dictionary:
 		return ""
 	data = _ints(data)
@@ -941,6 +1073,7 @@ func load_game() -> String:
 		if not c.has("xp_total"):
 			c["xp_total"] = _estimate_xp_total(c)
 	story = data.get("story", {})
+	day = int(data.get("day", 1))
 	visited = {}
 	mine_level = clampi(int(data.get("level", 1)), 1, MinesArea.MAPS.size())
 	pos = MinesArea.START
@@ -993,6 +1126,7 @@ func travel(dest: String, days: int) -> Array:
 	if not hungry.is_empty():
 		lines.append("%s %s starving and need%s food." % [", ".join(hungry), "is" if hungry.size() == 1 else "are", "s" if hungry.size() == 1 else ""])
 	location = dest
+	lines.append_array(pass_days(days))
 	return lines
 
 
