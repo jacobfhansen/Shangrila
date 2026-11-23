@@ -1544,4 +1544,71 @@ door (built); 4. the temple, the test and Insight (built).
 
 **Open questions**
 - Is Orrun or Ubba recruitable after the shrine (CHARACTERS.md has them as Tier 2 followers)?
-- Where does the next remnant point (the memory at the basin can name the next place)?
+- Where does the next remnant point? (Proposed: north, see "The story onward".)
+
+### The story onward: Aubermont in the north, then the Aeldroe valley (agreed, not built)
+With two remnants merged, the game opens up beyond Lehan's corner of the map. Lehan is a small
+town; the world needs real cities. Next comes a great human city up north, and after it, as
+the chapter where the truth about the spirit gets darker, a hidden Aeldroe city.
+
+**Decided**
+- **The city is Aubermont.**
+- **Order:** the northern city is the next chapter; the Aeldroe city is the one after.
+- **The northern city is the sect's home, and the chapter is a heist.** The old founding families
+  live there, and among them the jailers' heirs. The sect has already found the third remnant and
+  keeps it locked in a noble house's vault. Getting it takes intrigue rather than a dungeon:
+  learning who belongs to the sect, then getting into the vault by one of several ways.
+- **The northern city is walked in districts:** several street maps like Lehan's, joined by
+  gates, so it feels far bigger than Lehan without one enormous map.
+- **The Aeldroe city is hidden, and holds the beloved's tomb:** a secret valley city of pale
+  stone and light, closed to outsiders. Getting in needs Ithrae (or Miraen's help). The elders,
+  Liraeth among them, would recognise the spirit at once, so the host must hide what it is. A
+  remnant lies at the tomb of the woman the king loved: the big test of redemption or relapse.
+
+**Proposals (to settle before building)**
+- **The way north:** the grey thread and the boot prints at the broken ward, Orrun's grey
+  strangers, and the Holm seal from the mines all point to one family in the north. The second
+  remnant's memory adds a sense of the third: "north, behind iron, in a house that knows my
+  name." The city appears on the world map, about four days from Lehan by the north road (food
+  matters again), with a road scene or two.
+- **The districts:**
+  1. **The river gate and market:** inns, shops, the crowds, rumours. The first district.
+  2. **The old town:** narrow streets, temples, a great library (Aldric Thorne, scholar), the
+     poor, Odo Brakk burying the dead.
+  3. **The hill:** the noble houses behind walls and guards. The sect's house is here.
+  4. **Below:** cellars and old drains, run by Sasska's Nisk smugglers. A way under the hill.
+- **The sect's house:** an old family, respected, generous to the temples. Its head is the
+  client from the roadside shrine job. They are not in the city at first (out hunting remnants),
+  so the house is run by a steward and guarded.
+- **Learning who they are:** rumours at the market, records at the library, a servant who talks,
+  the Holm seal matched to a crest. Each district gives a piece.
+- **The ways into the vault** (every host can find one):
+  1. **Stealth:** over the wall at night, lockpicking (Thievery, Stealth).
+  2. **An invitation:** a feast at the house; get in with forged papers (Lore) or charm a guest
+     (Talk), then slip away during the evening.
+  3. **A bribe or a servant:** pay off or win over someone inside (silver, Talk, a task).
+  4. **From below:** Sasska's smugglers know an old drain under the hill, for a price or a favour.
+  5. **Force:** fight in. Possible, but the city watch hunts the party afterwards.
+- **Aldric Thorne** offers to help: he knows the house, the vault, the guards. He is secretly
+  the sect's agent. Without Insight he seems Loyal; **with R2 Insight the spirit sees he is
+  Deceitful**, so the power just gained pays off at once. Taking his help anyway sets up his
+  betrayal at a key moment.
+- **The third remnant's power:** R1 **free travel** (jump between followers in different towns),
+  which a world with several cities now needs.
+- **Followers to place in the city:** Edrin Calloway (the minstrel with the lover's melody, a
+  sharp moment once the spirit knows its past), Ysolde Marrin, Brannoc Hale, Tamsin Rook, Piet
+  Dunmore, Odo Brakk, Sasska; Aldric Thorne as above.
+- **The Aeldroe city, briefly** (worked out when its chapter comes): Ithrae's homecoming and her
+  brother Saelith; Veylin at the border; Miraen chasing "the secret"; Thaelis tending the
+  faded; Liraeth, who must not see the spirit for what it is; the beloved's tomb and its
+  remnant (R4 dream-sending is a candidate).
+
+**Build order (proposed):** 1. the trail north and the world map (the city appears, the road
+north); 2. the first district (gate and market); 3. the old town and the library (Aldric); 4.
+the hill and the sect's house; 5. below (the smugglers); 6. the heist and the third remnant.
+
+**Open questions**
+- The sect family's name.
+- Does the sect leader appear in person this chapter (a near miss), or only after the heist?
+- What happens after the heist: does the sect know who robbed them, and hunt the party?
+- How long should the chapter be compared with the mines and the shrine?
