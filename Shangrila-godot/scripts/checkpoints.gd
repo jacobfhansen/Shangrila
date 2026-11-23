@@ -17,6 +17,7 @@ const LIST := [
 	["mines3", "The Mines, level 3", "Levels 1 and 2 done (the miners out, the lift repaired): everyone two steps stronger, in steel."],
 	["marsh", "Oggal, the marsh village", "The mines' levels played and the jailers' record found: arriving at the Thuug village on the causeway."],
 	["north", "The north road", "The marsh remnant merged (Insight): at Lehan, with Aubermont on the map and food for the road."],
+	["aubermont", "Aubermont, the river gate", "The north road travelled: inside the city's river gate, on the first visit."],
 	["temple", "The drowned temple", "Oggal's people met and the shrine grounds done (the pens cleared, the door opened with the chant): at the foot of the steps."],
 ]
 
@@ -42,6 +43,25 @@ static func _marsh(host: String) -> void:
 	for k in 4:
 		Game.party_add(51)
 	Game.location = "marsh_shrine"
+
+
+## After the marsh: the remnant merged (Insight), at Lehan with Aubermont on the map and bread.
+static func _north(host: String) -> void:
+	_marsh(host)
+	Game.story["marsh_arrived"] = true
+	for k in ["marsh_orrun=trust", "marsh_ubba=told", "marsh_leeches=done", "marsh_chant=1", "s_reached_1=1",
+			"s_reached_2=1", "s_door=open", "s_path=known", "s_step=4", "s_remnant=merged", "marsh=done"]:
+		LehanQuests.apply("q:" + k)
+	Game.story["remnants"] = 2
+	Game.story["insight"] = true
+	if not "aubermont" in Game.known:
+		Game.known.append("aubermont")
+	for c in Game.party:
+		Game.gain_xp(c, Game.raise_unit(c) * 2)
+	for k in 12:
+		Game.party_add(50)
+	Game.to_mines()
+	Game.location = "lehan"
 
 
 static func keys() -> Array:
@@ -91,21 +111,15 @@ static func start(key: String, host: String) -> void:
 			_marsh(host)
 			Game.main.goto("village")
 		"north":
-			_marsh(host)
-			Game.story["marsh_arrived"] = true
-			for k in ["marsh_orrun=trust", "marsh_ubba=told", "marsh_leeches=done", "marsh_chant=1", "s_reached_1=1",
-					"s_reached_2=1", "s_door=open", "s_path=known", "s_step=4", "s_remnant=merged", "marsh=done"]:
-				LehanQuests.apply("q:" + k)
-			Game.story["remnants"] = 2
-			Game.story["insight"] = true
-			Game.known.append("aubermont")
-			for c in Game.party:
-				Game.gain_xp(c, Game.raise_unit(c) * 2)
-			for k in 12:
-				Game.party_add(50)
-			Game.to_mines()
-			Game.location = "lehan"
+			_north(host)
 			Game.main.goto("world")
+		"aubermont":
+			_north(host)
+			Game.story["north_road_done"] = true
+			Game.story["aubermont_seen"] = true
+			Game.day += 4
+			Game.location = "aubermont"
+			Game.main.goto("city")
 		"temple":
 			_marsh(host)
 			Game.story["marsh_arrived"] = true

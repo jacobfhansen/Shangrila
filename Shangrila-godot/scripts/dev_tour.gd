@@ -1314,10 +1314,89 @@ func _north_road() -> void:
 	await get_tree().create_timer(0.6).timeout
 	await _shot("51d_aubermont")
 	m._modal_done.emit(true)
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	print("north: at ", Game.location, " screen ", m.current_name, " day ", Game.day, " toll ", LehanQuests.get_q("north_toll"),
-		" odo ", LehanQuests.get_q("north_odo"), " journal ", Journal.status("aubermont"), " scenes ", Journal.scenes("aubermont").size())
-	await _shot("51e_world_aubermont")
+		" odo ", LehanQuests.get_q("north_odo"), " journal ", Journal.status("aubermont"))
+	await _city()
+
+
+## Aubermont's river gate district: the arrival, the streets, the townsfolk, the Founders, Corvin's
+## shop and the Lamplighter.
+func _city() -> void:
+	var m: Node = Game.main
+	await _drive(m.current, [], "")
+	await _shot("52a_river_gate")
+	var views := [[Vector2i(7, 13), 0, "52b_street_up"], [Vector2i(10, 11), 0, "52c_to_square"],
+		[Vector2i(13, 6), 3, "52d_square"], [Vector2i(2, 6), 1, "52e_west_street"], [Vector2i(17, 6), 3, "52f_inn_street"],
+		[Vector2i(10, 3), 2, "52g_from_hill"]]
+	for v in views:
+		var c: Node = m.current
+		c.area.pos = v[0]
+		c.area.facing = v[1]
+		c.view.snap()
+		c._after_move()
+		await get_tree().create_timer(0.5).timeout
+		await _shot(v[2])
+	for stop in [[Vector2i(8, 7), 2, [], "52h_nan"], [Vector2i(10, 3), 3, [], ""], [Vector2i(10, 4), 2, [], ""],
+			[Vector2i(11, 6), 2, [], "52i_edrin"], [Vector2i(18, 6), 2, [0], "52j_wick"], [Vector2i(9, 6), 1, [0], "52k_founders"]]:
+		var c: Node = m.current
+		c.area.pos = stop[0]
+		c.area.facing = stop[1]
+		c.view.snap()
+		c._after_move()
+		await get_tree().create_timer(0.4).timeout
+		c._use_ahead()
+		await get_tree().create_timer(1.5).timeout
+		await _drive(m.current, stop[2], stop[3])
+	var cm: Node = m.current
+	cm.map_btn.button_pressed = true
+	cm._on_map()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("52n_city_map")
+	cm._travel("inn")
+	print("city: map travel to ", cm.area.pos, " facing ", cm.area.facing)
+	print("city: nan ", LehanQuests.get_q("aub_nan"), " feast ", LehanQuests.get_q("aub_feast"), " edrin ", LehanQuests.get_q("aub_edrin"),
+		" wick ", LehanQuests.get_q("aub_wick"), " crest ", LehanQuests.get_q("aub_crest"))
+	var c2: Node = m.current
+	c2.area.place_at("shop", true)
+	c2.view.snap()
+	c2._use_ahead()
+	await get_tree().create_timer(0.8).timeout
+	await _shot("52l_corvin")
+	print("city: shop ", m.current_name, " ", m.current.shop.name)
+	m.current._on_talk()
+	m.current._leave()
+	await get_tree().create_timer(0.8).timeout
+	var c3: Node = m.current
+	c3.area.place_at("inn", true)
+	c3.view.snap()
+	c3._use_ahead()
+	await get_tree().create_timer(0.8).timeout
+	var inn: Node = m.current
+	print("city: inn screen ", m.current_name, " checkpoint ", Game.story.get("checkpoint", {}), " named ", Game.checkpoint_name())
+	inn._on_rest()
+	await get_tree().create_timer(0.4).timeout
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.3).timeout
+	inn.member = Game.party.size() - 1
+	var left: String = Game.party[inn.member].name
+	inn._on_dismiss()
+	await get_tree().create_timer(0.4).timeout
+	if m.modal_open:
+		m._modal_done.emit(true)
+		await get_tree().create_timer(0.3).timeout
+	await _shot("52m_inn")
+	print("city: dismissed ", left, " here ", Game.inn_roster().map(func(c): return c.name), " all ", Game.roster.size(), " day ", Game.day)
+	Game.location = "lehan"
+	print("city: at Lehan's inn ", Game.inn_roster().map(func(c): return c.name))
+	Game.location = "aubermont"
+	inn.chosen = 0
+	inn._on_muster()
+	await get_tree().create_timer(0.4).timeout
+	print("city: mustered back, party ", Game.party.size(), " here ", Game.inn_roster().size())
+	inn._on_leave()
+	await get_tree().create_timer(0.8).timeout
+	print("city: left the inn to ", m.current_name, " at ", m.current.area.pos)
 
 
 ## Oggal: Orrun at the gate, the boardwalk, Ubba's story, Grath-Ul, Hett's stall, the guest hut.

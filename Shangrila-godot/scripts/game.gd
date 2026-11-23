@@ -112,7 +112,7 @@ const LOCATIONS := {
 		"desc": "Old mine workings in the hills above Lehan."},
 	"marsh_shrine": {"name": "The Drowned Shrine", "kind": "plot", "at": Vector2(424, 300), "screen": "village",
 		"desc": "Oggal, a Thuug stilt village on the causeways of the marshes, and beyond it an old shrine half sunk in black water. The jailers' record says they drowned something of the spirit's there."},
-	"aubermont": {"name": "Aubermont", "kind": "capital", "at": Vector2(205, 92), "screen": "",
+	"aubermont": {"name": "Aubermont", "kind": "capital", "at": Vector2(205, 92), "screen": "city",
 		"desc": "The great city of the north, dark stone on four hills above the mouth of the Aube. The old founding families live there, in their houses on the highest hill. Something of the spirit's lies there, behind iron."},
 }
 ## Town maps. Places appear on them as they are discovered; `start` are known on arrival.
@@ -516,6 +516,18 @@ func _estimate_xp_total(c: Dictionary) -> int:
 
 
 ## Story experience: everyone in the party gets `fraction` of a raise.
+## Which inn the party is at, or would be: "aubermont" (the Lamplighter) there, otherwise "lehan".
+func inn_here() -> String:
+	return "aubermont" if location == "aubermont" else "lehan"
+
+
+## The followers waiting at this inn. Each inn keeps its own: those left in another town are out
+## of the spirit's reach (until free travel, R1). Followers without an inn are at Lehan's.
+func inn_roster() -> Array:
+	var here := inn_here()
+	return roster.filter(func(c): return c.get("inn", "lehan") == here)
+
+
 ## R2 Insight, from the marsh remnant: the spirit sees its followers' natures, not only its host's.
 func has_insight() -> bool:
 	return story.get("insight", false)
@@ -779,6 +791,9 @@ func party_defeated(wounding := true) -> String:
 	if cp.get("kind", "") == "village":
 		location = "marsh_shrine"
 		return "village"
+	if cp.get("kind", "") == "city":
+		location = "aubermont"
+		return "inn"
 	location = "lehan"
 	return "inn"
 
@@ -790,6 +805,8 @@ func checkpoint_name() -> String:
 		return "by the camp's fire on level %d of the mines" % int(cp.level)
 	if cp.get("kind", "") == "village":
 		return "in the guest hut at Oggal"
+	if cp.get("kind", "") == "city":
+		return "at the Lamplighter in Aubermont"
 	return "at the inn in %s" % city.name
 
 
@@ -800,6 +817,8 @@ func reach_checkpoint(screen: String) -> bool:
 		story["checkpoint"] = {"kind": "camp", "level": mine_level, "pos": [pos.x, pos.y], "facing": facing}
 	elif screen == "village":
 		story["checkpoint"] = {"kind": "village"}
+	elif screen == "city":
+		story["checkpoint"] = {"kind": "city"}
 	else:
 		story["checkpoint"] = {"kind": "inn"}
 	return save_game(screen, "auto")
@@ -1153,6 +1172,8 @@ func place_name(screen: String) -> String:
 			return "Under %s" % city.get("name", "Lehan")
 		"village":
 			return "Oggal, in the marshes"
+		"city":
+			return "Aubermont, the river gate"
 	return LOCATIONS.get(location, {}).get("name", location.capitalize())
 
 

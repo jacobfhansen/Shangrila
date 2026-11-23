@@ -345,8 +345,21 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   behind iron", and Aubermont, the great city of the north, appears on the world map, four days
   from Lehan. The first trip has two scenes (`scripts/data/north_road.gd`): a toll bridge over
   the Aube whose guards ask who comes from Lehan (pay, talk, or ford the river; a Thuug swims a
-  rope across), and Odo Brakk the gravedigger by the road (help, pray, or rob the dead). The
-  city's streets come next. "Start at..." has "The north road".
+  rope across), and Odo Brakk the gravedigger by the road (help, pray, or rob the dead).
+  "Start at..." has "The north road".
+- **Aubermont, the river gate district:** walked in first person (`scripts/screens/city.gd`,
+  `scripts/areas/aubermont_streets.gd`, people in `scripts/data/aubermont.gd`). Tall soot-black
+  houses whose upper storeys jut out further with every floor, so they lean over the narrow
+  streets and nearly meet overhead; lit gothic windows, lanterns, wet cobbles, spires, a low grey
+  sky. The market square has the Founders' statue (five lords round a broken crown; one crest,
+  a tower and a key, has had its name chiselled off). Nan Grebe (a runaway servant, the grey
+  "Quiet"), Sergeant Voss at the hill gate (Founders' Night and its guest lists), the crier, Edrin
+  Calloway and his ancient tune (the spirit knows it), and Wick the boy guide. Corvin's Arms (city
+  steel at city prices) and the Lamplighter, an inn like Lehan's (the same screen: muster,
+  dismiss, rest, provisions, save; the city's checkpoint). Each inn keeps its own followers:
+  those left at one inn wait there, out of reach from the other. Map (M) shows a plan of the
+  district; click a place to walk there. The inn screen shows the inn's own room, with a fire
+  burning in the hearth. The old town and the hill come next. "Start at..." has "Aubermont, the river gate".
 - **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
   the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
   3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the

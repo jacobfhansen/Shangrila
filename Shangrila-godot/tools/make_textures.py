@@ -1121,6 +1121,246 @@ def temple_textures():
         img.save(OUT / ("stone_%s.png" % kind))
 
 
+# ---------------------------------------------------------------- Aubermont (dark, gothic)
+
+def _gothic(d, x0, y0, x1, y1, fill, frame, width=4, mullion=True):
+    """A tall pointed-arch window or door: a rectangle under a pointed top."""
+    mx = (x0 + x1) / 2
+    top = y0 + (x1 - x0) * 0.75
+    pts = [(x0, y1), (x0, top), (x0 + (x1 - x0) * 0.12, y0 + (top - y0) * 0.35), (mx, y0),
+           (x1 - (x1 - x0) * 0.12, y0 + (top - y0) * 0.35), (x1, top), (x1, y1)]
+    d.polygon(pts, fill=fill)
+    d.line(pts + [pts[0]], fill=frame, width=width)
+    if mullion:
+        d.line([(mx, y0 + 6), (mx, y1)], fill=frame, width=max(2, width - 1))
+        for yy in range(int(top), int(y1), 22):
+            d.line([(x0, yy), (x1, yy)], fill=frame, width=2)
+
+
+LIT = (236, 172, 86)
+DARK_PANE = (22, 22, 28)
+
+
+def aubermont_textures():
+    w = h = 256
+    soot = (50, 48, 50)
+    timber = (30, 24, 22)
+    for i in range(4):
+        rng = np.random.default_rng(1100 + i)
+        # Ground floor: soot-black stone, a pointed door, and a leaded window or a dim shop front.
+        img = blocks(w, h, 6, 3, 1110 + i, mortar=3, base=soot, jitter=10)
+        d = ImageDraw.Draw(img)
+        if i % 2 == 0:
+            _gothic(d, 26, 70, 104, h, (40, 28, 22), (20, 18, 18), 6, mullion=False)
+            d.ellipse([86, 170, 94, 178], fill=(120, 100, 60))
+            lit = rng.random() < 0.6
+            _gothic(d, 140, 80, 220, 196, LIT if lit else DARK_PANE, (18, 16, 16), 5)
+        else:
+            d.rectangle([20, 70, 236, 190], fill=(26, 22, 22), outline=(16, 14, 14), width=6)
+            for k in range(4):
+                _gothic(d, 30 + k * 52, 82, 72 + k * 52, 180, LIT if (k + i) % 3 == 0 else DARK_PANE, (16, 14, 14), 3)
+        img.save(OUT / f"aub_low_{i}.png")
+        # Upper storey: dark timber framing over grimy plaster, tall gothic windows, some lit.
+        rgb = _plaster(w, h, 1130 + i, (66, 62, 58))
+        img = to_img(rgb)
+        d = ImageDraw.Draw(img)
+        for x in (0, 128, w - 1):
+            d.line([(x, 0), (x, h)], fill=timber, width=12)
+        d.line([(0, 6), (w, 6)], fill=timber, width=14)
+        d.line([(0, h - 6), (w, h - 6)], fill=timber, width=14)
+        for k in range(2):
+            x0 = 10 + k * 128
+            d.line([(x0, 250), (x0 + 30, 160)], fill=timber, width=7)
+            d.line([(x0 + 108, 250), (x0 + 78, 160)], fill=timber, width=7)
+        glow = Image.new("RGB", (w, h), (0, 0, 0))
+        g = ImageDraw.Draw(glow)
+        for k in range(2):
+            x0 = 34 + k * 128
+            lit = rng.random() < 0.25
+            _gothic(d, x0, 30, x0 + 60, 200, LIT if lit else DARK_PANE, timber, 5)
+            if lit:
+                _gothic(g, x0, 30, x0 + 60, 200, (255, 200, 120), (0, 0, 0), 5)
+        img.save(OUT / f"aub_up_{i}.png")
+        glow.save(OUT / f"aub_up_{i}_glow.png")
+    # Wet, dark cobbles: rounded stones with a sheen.
+    rng = np.random.default_rng(1150)
+    yy, xx = np.mgrid[0:h, 0:w]
+    pts = rng.random((90, 2)) * w
+    best = np.full((h, w), 1e9)
+    second = np.full((h, w), 1e9)
+    idx = np.zeros((h, w), int)
+    for i, (px_, py_) in enumerate(pts):
+        for ox in (-w, 0, w):
+            for oy in (-h, 0, h):
+                dd = np.hypot(xx - px_ - ox, yy - py_ - oy)
+                closer = dd < best
+                second = np.where(closer, best, np.minimum(second, dd))
+                idx = np.where(closer, i, idx)
+                best = np.where(closer, dd, best)
+    edge = second - best
+    tone = rng.normal(0, 1, len(pts))[idx]
+    grain = tile_noise(w, h, 8, 1151, 4)
+    base = 62 + tone * 8 + (grain - 0.5) * 20
+    bevel = np.clip(edge / 6.0, 0, 1)
+    v = base * (0.3 + 0.7 * bevel)
+    to_img(np.stack([v * 0.98, v, v * 1.06], -1)).save(OUT / "aub_cobbles.png")
+    # Dark slate.
+    img = Image.new("RGB", (w, h), (34, 36, 42))
+    d = ImageDraw.Draw(img)
+    for r in range(8):
+        y = r * 32
+        off = 16 if r % 2 else 0
+        for c in range(9):
+            x = c * 32 - off
+            t = int(rng.integers(-6, 7))
+            d.rectangle([x + 1, y + 1, x + 30, y + 30], fill=(40 + t, 42 + t, 50 + t), outline=(22, 22, 26))
+    img.save(OUT / "aub_slate.png")
+    # A side wall where a taller house stands over a lower one: plain soot-black stone.
+    blocks(w, h, 8, 3, 1160, mortar=3, base=(44, 42, 44), jitter=8).save(OUT / "aub_side.png")
+    # The river gate: a deep arch with a raised portcullis, grey light beyond.
+    img = blocks(w, h, 6, 3, 1170, mortar=3, base=(56, 54, 56), jitter=8)
+    d = ImageDraw.Draw(img)
+    _gothic(d, 40, 30, 216, h, (120, 124, 128), (24, 22, 22), 10, mullion=False)
+    for x in range(56, 210, 18):
+        d.line([(x, 40), (x, 92)], fill=(26, 24, 24), width=5)
+    d.line([(46, 92), (210, 92)], fill=(26, 24, 24), width=6)
+    img.save(OUT / "aub_gate.png")
+    # The old town arch: a low, deep passage into darkness.
+    img = blocks(w, h, 6, 3, 1171, mortar=3, base=(54, 52, 54), jitter=8)
+    d = ImageDraw.Draw(img)
+    _gothic(d, 50, 50, 206, h, (12, 12, 14), (24, 22, 22), 10, mullion=False)
+    img.save(OUT / "aub_arch.png")
+    # The hill gate: tall iron bars in a stone frame, a crest above, grey light beyond.
+    img = blocks(w, h, 6, 3, 1172, mortar=3, base=(58, 56, 58), jitter=8)
+    d = ImageDraw.Draw(img)
+    d.rectangle([44, 60, 212, h], fill=(96, 100, 104))
+    for x in range(52, 210, 16):
+        d.line([(x, 60), (x, h)], fill=(18, 18, 20), width=5)
+        d.polygon([(x - 5, 64), (x + 5, 64), (x, 50)], fill=(18, 18, 20))
+    for y in (110, 200):
+        d.line([(44, y), (212, y)], fill=(18, 18, 20), width=5)
+    d.ellipse([110, 8, 146, 44], fill=(80, 74, 60), outline=(150, 130, 80), width=3)
+    img.save(OUT / "aub_hill_gate.png")
+    # The inn: a broad door, a lit window, and a hanging lantern sign.
+    img = blocks(w, h, 6, 3, 1173, mortar=3, base=soot, jitter=10)
+    d = ImageDraw.Draw(img)
+    _gothic(d, 30, 90, 120, h, (48, 32, 24), (20, 18, 18), 6, mullion=False)
+    _gothic(d, 150, 100, 226, 200, LIT, (18, 16, 16), 5)
+    d.line([(150, 30), (230, 30)], fill=(20, 20, 20), width=4)
+    d.line([(190, 30), (190, 46)], fill=(20, 20, 20), width=3)
+    d.polygon([(178, 46), (202, 46), (198, 80), (182, 80)], fill=LIT, outline=(20, 20, 20))
+    d.rectangle([176, 42, 204, 48], fill=(20, 20, 20))
+    img.save(OUT / "aub_inn.png")
+    inn_glow = Image.new("RGB", (w, h), (0, 0, 0))
+    g = ImageDraw.Draw(inn_glow)
+    _gothic(g, 150, 100, 226, 200, (255, 200, 120), (0, 0, 0), 5)
+    g.polygon([(178, 46), (202, 46), (198, 80), (182, 80)], fill=(255, 210, 130))
+    inn_glow.save(OUT / "aub_inn_glow.png")
+    # The shop: a dim front of small panes, a sign with a blade and a sack.
+    img = blocks(w, h, 6, 3, 1174, mortar=3, base=soot, jitter=10)
+    d = ImageDraw.Draw(img)
+    d.rectangle([20, 80, 150, 200], fill=(26, 22, 22), outline=(16, 14, 14), width=6)
+    for k in range(3):
+        _gothic(d, 30 + k * 40, 90, 64 + k * 40, 190, LIT if k == 1 else DARK_PANE, (16, 14, 14), 3)
+    _gothic(d, 170, 90, 236, h, (44, 30, 22), (20, 18, 18), 6, mullion=False)
+    d.rectangle([40, 20, 216, 62], fill=(40, 30, 22), outline=(140, 110, 60), width=3)
+    d.line([(80, 54), (110, 28)], fill=(190, 190, 200), width=5)
+    d.ellipse([140, 30, 176, 58], fill=(150, 120, 70))
+    img.save(OUT / "aub_shop.png")
+
+
+# ---------------------------------------------------------------- inn interiors (the inn screen)
+
+FIRE_BOX = (34, 120, 96, 168)   # the hearth opening in the 280x226 picture (the screen animates flames there)
+
+
+def _inn_interior(name, wall, beam, floor, stone, window, lanterns):
+    W, H = 280, 226
+    img = Image.new("RGB", (W, H), (0, 0, 0))
+    d = ImageDraw.Draw(img)
+    horizon = 150   # where the back wall meets the floor
+    # Back wall, and the side walls receding.
+    rgb = _plaster(W, horizon, 1300 + len(name), wall)
+    img.paste(to_img(rgb), (0, 0))
+    d.polygon([(0, 0), (40, 24), (40, horizon), (0, H)], fill=tuple(int(c * 0.7) for c in wall))
+    d.polygon([(W, 0), (W - 40, 24), (W - 40, horizon), (W, H)], fill=tuple(int(c * 0.6) for c in wall))
+    # Floor planks in perspective.
+    d.polygon([(0, H), (40, horizon), (W - 40, horizon), (W, H)], fill=floor)
+    for k in range(-6, 7):
+        d.line([(W / 2 + k * 18, horizon), (W / 2 + k * 60, H)], fill=tuple(int(c * 0.7) for c in floor), width=2)
+    for y in (162, 178, 200):
+        d.line([(0, y), (W, y)], fill=tuple(int(c * 0.82) for c in floor), width=1)
+    # Ceiling beams.
+    for y in (6, 18):
+        d.rectangle([0, y, W, y + 7], fill=beam)
+    for x in (60, 140, 220):
+        d.line([(x, 0), (x, horizon)], fill=beam, width=6)
+    # A window on the back wall.
+    wx = 150
+    if window == "gothic":
+        _gothic(d, wx, 40, wx + 34, 104, (30, 40, 70), beam, 3)
+        d.ellipse([wx + 20, 48, wx + 28, 56], fill=(200, 210, 230))   # the moon
+    else:
+        d.rectangle([wx, 46, wx + 40, 96], fill=(120, 150, 190), outline=beam, width=4)
+        d.line([(wx + 20, 46), (wx + 20, 96)], fill=beam, width=3)
+        d.line([(wx, 71), (wx + 40, 71)], fill=beam, width=3)
+    # The hearth: a stone chimney breast with a dark opening, logs and a glow (the screen adds flames).
+    x0, y0, x1, y1 = FIRE_BOX
+    d.rectangle([x0 - 16, 30, x1 + 16, horizon + 4], fill=stone)
+    for yy in range(34, horizon, 12):
+        off = 0 if (yy // 12) % 2 else 10
+        for xx in range(x0 - 16 + off, x1 + 16, 20):
+            d.rectangle([xx, yy, xx + 18, yy + 10], outline=tuple(int(c * 0.75) for c in stone))
+    d.rectangle([x0 - 22, y0 - 14, x1 + 22, y0 - 6], fill=beam)   # the mantel
+    d.rectangle([x0, y0, x1, y1], fill=(20, 12, 8))
+    for k in range(3):
+        d.rectangle([x0 + 8 + k * 6, y1 - 10 + (k % 2) * 3, x1 - 8 - k * 4, y1 - 4 + (k % 2) * 3], fill=(70, 40, 20))
+    glow = Image.new("RGB", (W, H), (0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    g.ellipse([x0 - 60, y0 - 30, x1 + 90, H + 40], fill=(90, 50, 18))
+    glow = glow.filter(ImageFilter.GaussianBlur(28))
+    img = Image.fromarray(np.clip(np.array(img, float) + np.array(glow, float), 0, 255).astype(np.uint8))
+    d = ImageDraw.Draw(img)
+    # Things on the mantel.
+    d.rectangle([x0 - 8, y0 - 24, x0 - 2, y0 - 14], fill=(170, 150, 120))
+    d.ellipse([x1 - 4, y0 - 26, x1 + 8, y0 - 14], fill=(110, 80, 50))
+    # The bar: a counter on the right, shelves of bottles and barrels behind it.
+    bx = 196
+    d.rectangle([bx, 60, W - 44, 64], fill=beam)
+    d.rectangle([bx, 84, W - 44, 88], fill=beam)
+    for k in range(6):
+        col = [(60, 90, 50), (110, 50, 40), (60, 60, 100), (140, 110, 50)][k % 4]
+        d.rectangle([bx + 4 + k * 6, 48, bx + 8 + k * 6, 60], fill=col)
+        d.rectangle([bx + 6 + k * 6, 72, bx + 10 + k * 6, 84], fill=col)
+    for k in range(2):
+        d.ellipse([bx + 2 + k * 18, 100, bx + 18 + k * 18, 122], fill=(100, 66, 36), outline=beam)
+    d.polygon([(bx - 10, 128), (W - 20, 128), (W - 8, 176), (bx - 26, 176)], fill=tuple(int(c * 1.1) for c in beam))
+    d.rectangle([bx - 26, 124, W - 8, 132], fill=tuple(min(255, int(c * 1.5)) for c in beam))
+    for k in range(3):
+        d.rectangle([bx - 6 + k * 22, 116, bx + 2 + k * 22, 124], fill=(200, 170, 110))   # mugs
+    # Tables with candles, and stools.
+    for (cx, cy, r) in ((130, 178, 30), (70, 204, 36)):
+        d.ellipse([cx - r, cy - r * 0.35, cx + r, cy + r * 0.35], fill=tuple(min(255, int(c * 1.3)) for c in beam))
+        d.rectangle([cx - 4, cy, cx + 4, cy + r * 0.9], fill=beam)
+        d.rectangle([cx - 1, cy - 16, cx + 1, cy - 6], fill=(230, 220, 190))
+        d.ellipse([cx - 3, cy - 22, cx + 3, cy - 15], fill=(255, 210, 110))
+        for sx in (-r - 10, r + 4):
+            d.rectangle([cx + sx, cy + 4, cx + sx + 8, cy + 8], fill=beam)
+            d.line([(cx + sx + 4, cy + 8), (cx + sx + 4, cy + 26)], fill=beam, width=2)
+    # Hanging lanterns.
+    for lx in lanterns:
+        d.line([(lx, 25), (lx, 40)], fill=(20, 20, 20), width=1)
+        d.rectangle([lx - 4, 40, lx + 4, 50], fill=(255, 200, 110), outline=(30, 26, 20))
+    img.save(OUT / (name + ".png"))
+
+
+def inn_interiors():
+    _inn_interior("inn_lehan", wall=(196, 170, 130), beam=(70, 46, 26), floor=(120, 84, 50), stone=(130, 120, 108),
+                  window="square", lanterns=[100, 250])
+    _inn_interior("inn_lamplighter", wall=(70, 64, 60), beam=(34, 26, 22), floor=(64, 48, 36), stone=(66, 64, 66),
+                  window="gothic", lanterns=[100, 180, 250])
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -1146,3 +1386,5 @@ if __name__ == "__main__":
     marsh_textures()
     shrine_textures()
     temple_textures()
+    aubermont_textures()
+    inn_interiors()

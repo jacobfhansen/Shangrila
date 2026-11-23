@@ -162,4 +162,4 @@ static func _gravedigger() -> Array:
 
 ## The first sight of Aubermont, added to the arrival summary on the first trip.
 static func first_sight() -> String:
-	return "Aubermont: walls of soot-black stone climbing four hills above the mouth of the Aube. Spires and steep roofs crowd together under a low grey sky, and ten thousand chimneys smoke. On the highest hill, behind a second wall, the great houses look down on it all.\n\n(The city's streets are the next part of the game to be built.)"
+	return "Aubermont: walls of soot-black stone climbing four hills above the mouth of the Aube. Spires and steep roofs crowd together under a low grey sky, and ten thousand chimneys smoke. On the highest hill, behind a second wall, the great houses look down on it all."

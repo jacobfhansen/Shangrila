@@ -30,7 +30,7 @@ const AFTER := [
 ]
 
 var shop: Dictionary
-var shop_key := "smith"    # "smith" (Lehan, Game.city.shop) or "marsh" (Hett's stall, MarshData.TRADER)
+var shop_key := "smith"    # "smith" (Lehan, Game.city.shop), "marsh" (Hett's stall) or "aubermont" (Corvin's)
 var back: Array            # [screen, args] for Leave
 var selling := false
 var basket: Array = []     # [{id, n}]
@@ -49,7 +49,7 @@ var talk_i := 0
 
 func _ready() -> void:
 	shop_key = get_meta("args", {}).get("shop", "smith")
-	shop = MarshData.TRADER if shop_key == "marsh" else Game.city.shop
+	shop = {"marsh": MarshData.TRADER, "aubermont": AubermontData.SHOP}.get(shop_key, Game.city.shop)
 	back = shop.get("back", ["streets", {"at": "smith"}])
 	Ui.stone_background(self)
 	Ui.btn(self, "Leave", Rect2(12, 20, 50, 30), _leave, "Back outside")
@@ -58,10 +58,11 @@ func _ready() -> void:
 	mode_btn = Ui.btn(self, "Sell", Rect2(12, 372, 156, 30), _on_mode, "")
 
 	Ui.frame(self, Rect2(16, 62, 148, 121), Color(0, 0, 0, 0.6), Color("#a07a40"), 2)
-	if shop_key == "marsh":
+	if shop_key != "smith":
+		var keeper: Dictionary = MarshData.HETT if shop_key == "marsh" else AubermontData.CORVIN
 		var por := RacePortrait.new()
-		por.race = MarshData.HETT.race
-		por.look = MarshData.HETT.look
+		por.race = keeper.race
+		por.look = keeper.look
 		add_child(por)
 		Ui.place(por, Rect2(46, 66, 88, 113))
 	else:
@@ -142,7 +143,7 @@ func _leave() -> void:
 
 ## "the smith" / "Hett", for the texts.
 func _who() -> String:
-	return "Hett" if shop_key == "marsh" else "the smith"
+	return {"marsh": "Hett", "aubermont": "Corvin"}.get(shop_key, "the smith")
 
 
 func _price(id: int) -> int:
@@ -360,8 +361,9 @@ func _on_sell_click(_s: Slot, id: int) -> void:
 # ---------------------------------------------------------------- talk
 
 func _on_talk() -> void:
-	if shop_key == "marsh":
-		talk_label.text = MarshData.TRADER_TALK[talk_i % MarshData.TRADER_TALK.size()]
+	if shop_key != "smith":
+		var talk: Array = MarshData.TRADER_TALK if shop_key == "marsh" else AubermontData.SHOP_TALK
+		talk_label.text = talk[talk_i % talk.size()]
 		talk_i += 1
 		return
 	var lines: Array = FLAVOUR.duplicate()

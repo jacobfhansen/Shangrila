@@ -1,10 +1,12 @@
 extends Control
-## AssmParty - the inn where characters are created and the party is assembled.
+## AssmParty - the inn where the party is assembled: Lehan's inn, or the Lamplighter in Aubermont
+## (by Game.location). Each inn has its own list of followers waiting there (Game.inn_roster).
 
 const ROWS := 10
 
 var scroll := 0
-var chosen := -1      # index into Game.roster
+var chosen := -1      # index into list (this inn's followers)
+var list: Array = []  # Game.inn_roster(): the followers waiting at this inn
 var member := -1      # index into Game.party
 
 var member_boxes := []   # [{btn, portrait, name, cls, bars}]
@@ -13,7 +15,16 @@ var gold_label: Label
 var cmd := {}
 
 
+func _aubermont() -> bool:
+	return Game.inn_here() == "aubermont"
+
+
+func _night() -> int:
+	return AubermontData.INN_NIGHT if _aubermont() else Game.INN_NIGHT
+
+
 func _ready() -> void:
+	list = Game.inn_roster()
 	Ui.stone_background(self)
 	Ui.btn(self, "Leave Inn", Rect2(20, 20, 206, 28), _on_leave, "Back out into the town")
 	Ui.btn(self, "Save", Rect2(20, 54, 66, 28), _on_save, "Save the game")
@@ -22,13 +33,17 @@ func _ready() -> void:
 	cmd.food = Ui.btn(self, "Provisions", Rect2(126, 88, 100, 28), _on_food,
 		"Bread and dried fish for the road: eaten by themselves on long trips")
 	cmd.rest = Ui.btn(self, "Rest a night", Rect2(20, 88, 100, 28), _on_rest,
-		"A night at the inn: hits and mana back (not past a bad wound). %d silver a head; a day passes" % Game.INN_NIGHT)
+		"A night at the inn: hits and mana back (not past a bad wound). %d silver a head; a day passes" % _night())
 
-	Ui.title(self, "The Inn", Vector2(250, 26), 30)
-	Ui.label(self, "of " + Game.city.name, Vector2(254, 64), 14, Ui.DIM)
+	Ui.title(self, "The Lamplighter" if _aubermont() else "The Inn", Vector2(250, 28 if _aubermont() else 26), 24 if _aubermont() else 30)
+	Ui.label(self, "in Aubermont, by the river gate" if _aubermont() else "of " + Game.city.name, Vector2(254, 64), 14, Ui.DIM)
 	gold_label = Ui.label(self, "", Vector2(250, 92), 12, Ui.TEXT)
 	Ui.frame(self, Rect2(464, 34, 148, 121), Color(0, 0, 0, 0.6), Color("#a07a40"), 2)
-	Ui.image(self, "The_Man", Rect2(468, 38, 140, 113))
+	# The inn's own room, with the fire going (tools/make_textures.py inn_interiors; FIRE_BOX halved).
+	Ui.image(self, "inn_lamplighter" if _aubermont() else "inn_lehan", Rect2(468, 38, 140, 113))
+	var fire := _Fire.new()
+	add_child(fire)
+	Ui.place(fire, Rect2(468, 38, 140, 113))
 
 	# Party, two columns of three (AssmParty 35-55).
 	Ui.frame(self, Rect2(14, 128, 330, 340))
@@ -75,7 +90,7 @@ func _ready() -> void:
 		var c := Ui.label(b, "", Vector2(104, 4), 11, Ui.DIM, 72)
 		roster_rows.append({"btn": b, "name": n, "cls": c})
 	refresh()
-	Game.reach_checkpoint("inn")
+	Game.reach_checkpoint("city" if _aubermont() else "inn")
 	if get_meta("args", {}).get("split", false):
 		_split_notice.call_deferred()
 
@@ -85,8 +100,9 @@ func _split_notice() -> void:
 
 
 func refresh() -> void:
-	scroll = clampi(scroll, 0, maxi(0, Game.roster.size() - ROWS))
-	if chosen >= Game.roster.size():
+	list = Game.inn_roster()
+	scroll = clampi(scroll, 0, maxi(0, list.size() - ROWS))
+	if chosen >= list.size():
 		chosen = -1
 	if member >= Game.party.size():
 		member = -1
@@ -112,8 +128,8 @@ func refresh() -> void:
 	for r in ROWS:
 		var row: Dictionary = roster_rows[r]
 		var idx := scroll + r
-		if idx < Game.roster.size():
-			var c: Dictionary = Game.roster[idx]
+		if idx < list.size():
+			var c: Dictionary = list[idx]
 			row.name.text = c.name
 			row.cls.text = Game.CLASSES[c.cls]
 			if Game.is_resting(c):
@@ -124,10 +140,10 @@ func refresh() -> void:
 			row.cls.text = ""
 			row.btn.disabled = true
 		var col := Ui.RED if idx == chosen else Ui.TEXT
-		row.name.add_theme_color_override("font_color", col if idx < Game.roster.size() else Ui.DIM)
+		row.name.add_theme_color_override("font_color", col if idx < list.size() else Ui.DIM)
 		row.cls.add_theme_color_override("font_color", col if idx == chosen else Ui.DIM)
 	cmd.up.disabled = scroll == 0
-	cmd.down.disabled = scroll >= Game.roster.size() - ROWS
+	cmd.down.disabled = scroll >= list.size() - ROWS
 	cmd.muster.disabled = chosen < 0 or Game.party.size() >= Game.MAX_PARTY
 	cmd.dismiss.disabled = member < 0 or Game.roster.size() >= Game.MAX_ROSTER
 	cmd.info.disabled = chosen < 0 and member < 0
@@ -156,7 +172,7 @@ func _on_scroll(d: int) -> void:
 
 
 func _on_muster() -> void:
-	var c: Dictionary = Game.roster[chosen]
+	var c: Dictionary = list[chosen]
 	if Game.is_resting(c):
 		var n := Game.rest_left(c)
 		await Game.main.message("%s: \"Not yet. %s more day%s.\"\n\n(Resting at the inn. Rest a night, or come back later: days pass on the road and when you sleep.)" % [
@@ -168,6 +184,7 @@ func _on_muster() -> void:
 			return
 		for k in ["rejoin", "grudge", "owed", "fee"]:
 			c.erase(k)
+	c.erase("inn")
 	Game.party.append(c)
 	Game.roster.erase(c)
 	chosen = -1
@@ -242,6 +259,7 @@ func _on_dismiss() -> void:
 		Game.start_rest(c)
 	else:
 		Game.party.remove_at(member)
+	c["inn"] = Game.inn_here()
 	Game.roster.append(c)
 	member = -1
 	refresh()
@@ -285,7 +303,7 @@ func _on_food() -> void:
 ## A night at the inn for the party: hits and mana back (up to the limit of a bad wound), a day
 ## passes, and anyone resting here may be fit again.
 func _on_rest() -> void:
-	var price := Game.INN_NIGHT * Game.party.size()
+	var price := _night() * Game.party.size()
 	if not Game.pay(price):
 		await Game.main.message("A night costs %d silver for the party, and the purse can't cover it." % price)
 		return
@@ -304,19 +322,19 @@ func _on_info() -> void:
 	if member >= 0:
 		Game.main.goto("view", {"party": true, "index": member})
 	elif chosen >= 0:
-		Game.main.goto("view", {"party": false, "index": chosen})
+		Game.main.goto("view", {"party": false, "index": chosen})   # view lists this inn's followers
 
 
 func _on_kill() -> void:
-	var c: Dictionary = Game.roster[chosen]
+	var c: Dictionary = list[chosen]
 	if await Game.main.confirm("Do you really want to kill %s?\nThis cannot be undone." % c.name, "Kill"):
-		Game.roster.remove_at(chosen)
+		Game.roster.erase(c)
 		chosen = -1
 		refresh()
 
 
 func _on_leave() -> void:
-	Game.main.goto("streets", {"at": "inn"})
+	Game.main.goto("city" if _aubermont() else "streets", {"at": "inn"})
 
 
 func _on_save() -> void:
@@ -326,3 +344,32 @@ func _on_save() -> void:
 func _on_quit() -> void:
 	if await Game.main.confirm("Do you really want to quit to the main menu?\nUnsaved progress will be lost."):
 		Game.main.goto("title")
+
+
+## Flames in the hearth of the inn picture, and the firelight flickering over the room.
+class _Fire:
+	extends Control
+	const BOX := Rect2(17, 60, 31, 24)   # the hearth opening, in the 140x113 picture
+	var t := 0.0
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _process(delta: float) -> void:
+		t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var base := BOX.position.y + BOX.size.y - 4
+		for i in 5:
+			var x := BOX.position.x + 4 + i * (BOX.size.x - 8) / 4.0
+			var ht := 9.0 + 5.0 * sin(t * (7.0 + i) + i * 1.7) + 3.0 * sin(t * 13.0 + i)
+			var w := 3.4 + 0.8 * sin(t * 5.0 + i)
+			var sway := 1.5 * sin(t * 6.0 + i * 2.0)
+			var outer := PackedVector2Array([Vector2(x - w, base), Vector2(x + sway, base - ht), Vector2(x + w, base)])
+			draw_colored_polygon(outer, Color(1.0, 0.45, 0.1, 0.9))
+			var inner := PackedVector2Array([Vector2(x - w * 0.5, base), Vector2(x + sway * 0.7, base - ht * 0.6), Vector2(x + w * 0.5, base)])
+			draw_colored_polygon(inner, Color(1.0, 0.85, 0.35, 0.95))
+		draw_rect(Rect2(BOX.position.x + 2, base - 1, BOX.size.x - 4, 3), Color(1.0, 0.5, 0.15, 0.8))
+		var flick := 0.05 + 0.035 * sin(t * 9.0) + 0.02 * sin(t * 23.0)
+		draw_rect(Rect2(Vector2.ZERO, size), Color(1.0, 0.55, 0.2, flick))
