@@ -151,7 +151,12 @@ func _use(t: Dictionary) -> void:
 				"elder":
 					await Game.main.message("The elder's longhouse. The elder is out on the water with the fishing boats; Ubba speaks for the village while he is gone.")
 				"shrine":
-					await Game.main.message("The causeway runs on east into the mist, towards the drowned house and its overgrown grounds.\n\n(The shrine grounds are the next part of the marsh to be built.)")
+					if await Game.main.confirm("Follow the causeway east, out to the drowned house?", "Go"):
+						Game.site = "shrine"
+						Game.mine_level = 1
+						Game.pos = ShrineArea.START
+						Game.facing = ShrineArea.START_FACING
+						Game.main.goto("dungeon")
 
 
 ## The guest hut: the village's checkpoint (saved on going in), and a night's rest.

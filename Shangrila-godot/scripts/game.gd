@@ -150,7 +150,8 @@ var city := {}
 var roster: Array = []    # "Mob" - characters waiting at the inn
 var party: Array = []     # up to 6 characters
 var visited := {}         # Vector3i(x, y, level) -> true: the squares of the mines seen so far
-var mine_level := 1       # the level of the mines the party is on (see MinesArea)
+var site := "mines"       # which dungeon the dungeon screen shows: "mines" or "shrine" (area_script)
+var mine_level := 1       # the level of that dungeon the party is on (see MinesArea, ShrineArea)
 var pos := MinesArea.START   # the party's square on that level
 var facing := 0           # 0 N, 1 E, 2 S, 3 W
 var location := "lehan"   # key in LOCATIONS: where the party is on the world map
@@ -273,6 +274,13 @@ func _make_items() -> void:
 		"Dark marsh iron on an ash shaft. Heavy, and it never quite rusts.")
 	_it(53, "Shell Shield", "shield", "#6a7a4a", 30, 10, {"armor": true, "defense": 2},
 		"Overlapping plates of river-turtle shell on a wicker frame. Light and tough.")
+	# The Drowned Shrine's sigils, which open its sunken door (ShrineQuest).
+	_it(54, "Crown Sigil", "sigil_crown", "#4a4c48", 3, 0, {"dims": true, "quest": true},
+		"A disc of dark stone as wide as a hand, carved with a crown. Found in the shrine grounds.")
+	_it(55, "Chain Sigil", "sigil_chain", "#4a4c48", 3, 0, {"dims": true, "quest": true},
+		"A disc of dark stone as wide as a hand, carved with a chain. Found in the shrine grounds.")
+	_it(56, "Wave Sigil", "sigil_wave", "#4a4c48", 3, 0, {"dims": true, "quest": true},
+		"A disc of dark stone as wide as a hand, carved with waves. Found in the shrine grounds.")
 
 
 func item(id: int) -> Dictionary:
@@ -683,6 +691,29 @@ func add_silver(c: Dictionary, amount: int) -> void:
 	c.silver = maxi(0, c.silver + amount)
 
 
+## The map code of the current dungeon (MinesArea or ShrineArea: the same static API).
+func area_script() -> GDScript:
+	return ShrineArea if site == "shrine" else MinesArea
+
+
+## Its story code (MinesQuest or ShrineQuest).
+func quest_script() -> GDScript:
+	return ShrineQuest if site == "shrine" else MinesQuest
+
+
+## The level part of a visited square's key: each dungeon's levels get their own numbers.
+func vz() -> int:
+	return mine_level + (100 if site == "shrine" else 0)
+
+
+## Back to the mines' own state (after leaving the shrine): their entrance, level 1.
+func to_mines() -> void:
+	site = "mines"
+	mine_level = 1
+	pos = MinesArea.START
+	facing = MinesArea.START_FACING
+
+
 ## How deep in the mines the party is, for the wandering monsters (Combat.TIERS: depth / 7).
 func depth() -> int:
 	return (mine_level - 1) * 7 + 3
@@ -703,17 +734,16 @@ func party_defeated(wounding := true) -> String:
 		add_silver(c, -c.silver / 2)
 	var cp: Dictionary = story.get("checkpoint", {})
 	if cp.get("kind", "") == "camp":
+		site = "mines"
 		mine_level = int(cp.level)
 		pos = Vector2i(int(cp.pos[0]), int(cp.pos[1]))
 		facing = int(cp.facing)
 		location = "mines"
 		return "dungeon"
+	to_mines()
 	if cp.get("kind", "") == "village":
 		location = "marsh_shrine"
 		return "village"
-	mine_level = 1
-	pos = MinesArea.START
-	facing = MinesArea.START_FACING
 	location = "lehan"
 	return "inn"
 
@@ -1030,6 +1060,7 @@ func new_game() -> void:
 	story = {}
 	town_known = {}
 	day = 1
+	site = "mines"
 
 
 ## After the prologue: the Harrow Company becomes the party, with the host first. They stand
@@ -1075,6 +1106,8 @@ func has_save() -> bool:
 func place_name(screen: String) -> String:
 	match screen:
 		"dungeon":
+			if site == "shrine":
+				return ShrineArea.NAMES[mine_level - 1]
 			var at_camp := MinesArea.kind_of(mine_level, MinesArea.char_at(mine_level, pos)) == "camp"
 			return "Mines level %d%s" % [mine_level, ", camp" if at_camp else ""]
 		"inn":
@@ -1113,7 +1146,7 @@ func save_game(screen: String, slot: Variant = 1) -> bool:
 		"version": 7, "screen": screen, "roster": roster, "party": party,
 		"visited": v, "level": mine_level, "pos": [pos.x, pos.y], "facing": facing,
 		"location": location, "known": known, "story": story, "town_known": town_known,
-		"day": day, "where": place_name(screen),
+		"day": day, "where": place_name(screen), "site": site,
 	}
 	var f := FileAccess.open(slot_path(slot), FileAccess.WRITE)
 	if f == null:
@@ -1197,9 +1230,11 @@ func load_game(slot: Variant = 1) -> String:
 	story = data.get("story", {})
 	day = int(data.get("day", 1))
 	visited = {}
-	mine_level = clampi(int(data.get("level", 1)), 1, MinesArea.MAPS.size())
-	pos = MinesArea.START
-	facing = MinesArea.START_FACING
+	site = data.get("site", "mines")
+	var A := area_script()
+	mine_level = clampi(int(data.get("level", 1)), 1, A.MAPS.size())
+	pos = A.START
+	facing = A.START_FACING
 	if data.get("version", 1) < 6:
 		# The mines were redrawn (three new levels): old saves start again at the entrance.
 		if data.get("visited", []).size() > 1:
@@ -1210,10 +1245,10 @@ func load_game(slot: Variant = 1) -> String:
 		var p: Array = data.get("pos", [pos.x, pos.y])
 		pos = Vector2i(int(p[0]), int(p[1]))
 		facing = int(data.get("facing", 0))
-		if not MinesArea.walkable(mine_level, pos):
+		if not A.walkable(mine_level, pos):
 			mine_level = 1
-			pos = MinesArea.START
-			facing = MinesArea.START_FACING
+			pos = A.START
+			facing = A.START_FACING
 	location = data.get("location", "lehan")
 	if not LOCATIONS.has(location):
 		location = "lehan"

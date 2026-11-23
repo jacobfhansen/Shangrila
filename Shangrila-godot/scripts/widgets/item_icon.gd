@@ -64,6 +64,23 @@ func _draw() -> void:
 				var d := Vector2.from_angle(TAU * a / 8.0)
 				draw_line(Vector2(20, 10) + d * 5, Vector2(20, 10) + d * 8, c.darkened(0.2), 2)
 			draw_circle(Vector2(20, 10), 6, c)
+		"sigil_crown", "sigil_chain", "sigil_wave":
+			draw_circle(Vector2(16, 16), 12, c)
+			draw_arc(Vector2(16, 16), 12, 0, TAU, 24, c.lightened(0.3), 1.5)
+			var mark := c.lightened(0.55)
+			match it.shape:
+				"sigil_crown":
+					draw_polyline(PackedVector2Array([Vector2(9, 20), Vector2(9, 13), Vector2(12.5, 16), Vector2(16, 10),
+						Vector2(19.5, 16), Vector2(23, 13), Vector2(23, 20), Vector2(9, 20)]), mark, 1.6)
+				"sigil_chain":
+					for k in 3:
+						draw_arc(Vector2(10 + k * 6, 16), 3.5, 0, TAU, 12, mark, 1.6)
+				"sigil_wave":
+					for k in 3:
+						var pts := PackedVector2Array()
+						for i in 9:
+							pts.append(Vector2(8 + i * 2, 11 + k * 5 + sin(i * 1.2) * 1.5))
+						draw_polyline(pts, mark, 1.4)
 		"spear":
 			draw_line(Vector2(6, 30), Vector2(23, 7), WOOD, 2.5)
 			_poly([Vector2(21, 9), Vector2(29, 1), Vector2(25, 11)], c)

@@ -1132,7 +1132,85 @@ func _mines_will() -> void:
 	await _wounds_and_saves()
 	await _stacks_and_smith()
 	await _marsh_road()
+	await _shrine()
 	get_tree().quit()
+
+
+## The shrine grounds: in from Oggal, the carving, the three sigils (one behind the Reed Stalkers),
+## the fish pens (a fight), the door opened with the sigils, and back out to the village.
+func _shrine() -> void:
+	var m: Node = Game.main
+	Checkpoints.start("marsh", "joss")
+	await get_tree().create_timer(1.5).timeout
+	await _drive(m.current, [0])
+	LehanQuests.apply("q:marsh_ubba=told")
+	LehanQuests.apply("q:marsh_leeches=asked")
+	for c in Game.party:
+		c.hits = c.max_hits
+	var v: Node = m.current
+	v.area.pos = Vector2i(14, 6)
+	v.area.facing = 1
+	v.view.snap()
+	v._use_ahead()
+	await get_tree().create_timer(0.4).timeout
+	m._modal_done.emit(true)
+	await get_tree().create_timer(1.5).timeout
+	print("shrine: screen ", m.current_name, " site ", Game.site, " at ", Game.pos)
+	await _drive(m.current, [])
+	await _shot("49a_grounds")
+	await _mine_at(1, Vector2i(6, 14), 2)
+	await get_tree().create_timer(0.5).timeout
+	await _shot("49a2_causeway_back")
+	await _mine_use(1, Vector2i(13, 5), 0, [0], "49b_carving")
+	await _mine_step(1, Vector2i(10, 5), 1)
+	await _drive(m.current, [])
+	for k in 6:
+		if LehanQuests.get_q("s_sigil_2") != "":
+			break
+		await _mine_step(1, Vector2i(5, 4), 0)
+		await _drive(m.current, [])
+	await _mine_step(1, Vector2i(15, 7), 2)
+	await _mine_fight("49c_stalkers")
+	await _mine_step(1, Vector2i(15, 8), 2)
+	await _drive(m.current, [])
+	print("shrine: sigils ", [54, 55, 56].map(func(id): return not Game.holder_of(id).is_empty()), " order ", LehanQuests.get_q("s_order"))
+	for c in Game.party:
+		c.hits = c.max_hits
+	await _mine_step(1, Vector2i(3, 10), 2)
+	await _drive(m.current, [0], "49d_pens")
+	await get_tree().create_timer(1.0).timeout
+	await _mine_fight()
+	print("shrine: leeches ", LehanQuests.get_q("marsh_leeches"))
+	await _mine_use(1, Vector2i(11, 7), 0, [0], "49e_door")
+	await _mine_at(1, Vector2i(11, 7), 0)
+	await _shot("49f_door_open")
+	await get_tree().create_timer(0.3).timeout
+	await _mine_at(1, Vector2i(9, 5), 1)
+	await _shot("49g_grounds_east")
+	print("shrine: door ", LehanQuests.get_q("s_door"), " loud ", LehanQuests.get_q("s_loud"), " sigils left ",
+		[54, 55, 56].filter(func(id): return not Game.holder_of(id).is_empty()).size())
+	var dg: Node = m.current
+	dg.map_btn.button_pressed = true
+	dg._on_map()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("49h_map")
+	dg.map_btn.button_pressed = false
+	dg._on_map()
+	await _mine_at(1, ShrineArea.START, 2)
+	m.current._on_close.call()
+	await get_tree().create_timer(0.4).timeout
+	m._modal_done.emit(true)
+	await get_tree().create_timer(1.0).timeout
+	var lures := 0
+	var lines := []
+	for k in 40:
+		var cb := Combat.new(0, [{"key": "marsh_light", "n": 1}])
+		var out: Array = cb._monster(0, cb.groups[0].members[0])
+		if not cb.lured.is_empty():
+			lures += 1
+			lines = out
+	print("shrine: marsh light lured someone in ", lures, "/40 attacks: ", lines)
+	print("shrine: back at ", m.current_name, " site ", Game.site, " pos ", Game.pos)
 
 
 ## Oggal: Orrun at the gate, the boardwalk, Ubba's story, Grath-Ul, Hett's stall, the guest hut.
@@ -1160,6 +1238,16 @@ func _village() -> void:
 	v2.view.snap()
 	await get_tree().create_timer(0.5).timeout
 	await _shot("48e_village_view")
+	v2.area.pos = Vector2i(2, 6)
+	v2.area.facing = 3
+	v2.view.snap()
+	await get_tree().create_timer(0.5).timeout
+	await _shot("48e2_gate_causeway")
+	v2.area.pos = Vector2i(12, 6)
+	v2.area.facing = 1
+	v2.view.snap()
+	await get_tree().create_timer(0.5).timeout
+	await _shot("48e3_shrine_causeway")
 	v2.area.pos = Vector2i(3, 5)
 	v2.area.facing = 0
 	v2.view.snap()

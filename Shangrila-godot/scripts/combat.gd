@@ -50,6 +50,17 @@ const MONSTERS := {
 	"sworn_knight": {"name": "Sworn Knight", "plural": "Sworn Knights", "lvl": 7, "hp": [12, 18], "def": 9, "atk": 5,
 		"dmg": [2, 7], "speed": 1, "coins": [1, 5], "max": 1, "shape": "oath_knight", "col": "#9a9890", "verb": "cleaves",
 		"undead": true, "oath": true},
+	# The Thuug marshes, around the Drowned Shrine.
+	"bog_leech": {"name": "Bog Leech", "plural": "Bog Leeches", "lvl": 2, "hp": [2, 5], "def": 6, "atk": 2, "dmg": [1, 3],
+		"speed": 2, "coins": [0, 0], "max": 6, "shape": "leech", "col": "#4a3434", "verb": "latches onto"},
+	"reed_stalker": {"name": "Reed Stalker", "plural": "Reed Stalkers", "lvl": 4, "hp": [6, 10], "def": 8, "atk": 4,
+		"dmg": [2, 5], "speed": 5, "coins": [0, 0], "max": 2, "shape": "stalker", "col": "#7a7a48", "verb": "spears"},
+	# Lures one character away instead of striking, unless their nerve holds (see _monster).
+	"marsh_light": {"name": "Marsh Light", "plural": "Marsh Lights", "lvl": 3, "hp": [2, 4], "def": 9, "atk": 3,
+		"dmg": [1, 2], "speed": 6, "coins": [0, 0], "max": 3, "shape": "wisp", "col": "#c8f0d0", "verb": "flickers at",
+		"lure": true},
+	"mire_toad": {"name": "Mire Toad", "plural": "Mire Toads", "lvl": 6, "hp": [14, 20], "def": 7, "atk": 4, "dmg": [2, 7],
+		"speed": 1, "coins": [0, 0], "max": 1, "shape": "toad", "col": "#5a6a38", "size": 1.3, "verb": "slams into"},
 	# It cannot be beaten (yet): blows do nothing, it can't be turned or put to sleep, and it
 	# doesn't follow anyone who runs. See "The mines" in IDEAS.md.
 	"warden": {"name": "Warden", "plural": "Wardens", "lvl": 12, "hp": [99, 99], "def": 6, "atk": 7, "dmg": [3, 9],
@@ -92,6 +103,7 @@ var waver := {}          # party index -> true: failed a nerve check, one more a
 var gone := {}           # party index -> true: fled the fight (greyed out, back when it ends)
 var returning := {}      # party index -> true: rallied back, fights again from the next round
 var rallied := {}        # party index -> true: steadied by a friend, +2 Nerve for the fight
+var lured := {}          # party index -> true: followed a marsh light away (comes back after the fight)
 var came_back := {}      # party index -> true: fled and was rallied back (gets experience)
 
 
@@ -781,6 +793,12 @@ func _monster(gi: int, m: Dictionary) -> Array:
 	if Game.party[t].hits <= 0 and (not lethal or Game.my_random(1, 3) > 1):
 		t = cand.pick_random()
 	var c: Dictionary = Game.party[t]
+	if def.get("lure", false) and c.hits > 0 and t != host_index() and Game.my_random(1, 10) + nerve(t) < 7:
+		# A marsh light: the character follows it out into the reeds, and is out of the fight.
+		gone[t] = true
+		lured[t] = true
+		waver.erase(t)
+		return ["The %s dances just out of reach... and %s follows it, step by step, out into the reeds!" % [def.name, c.name]]
 	if c.hits <= 0:
 		var hit := Game.my_random(def.dmg[0], def.dmg[1])
 		c.hits -= hit
@@ -896,7 +914,8 @@ func after_fight() -> Array:
 				lines.append("%s comes around, bruised." % c.name)
 			c.hits = 1
 		if gone.has(i):
-			lines.append("%s comes back, not meeting anyone's eyes." % c.name)
+			lines.append("%s wades back out of the reeds, soaked and dazed." % c.name if lured.has(i)
+				else "%s comes back, not meeting anyone's eyes." % c.name)
 	var bodies := []
 	for i in dead:
 		bodies.append(Game.party[i])
@@ -904,5 +923,6 @@ func after_fight() -> Array:
 		lines.append_array(Game.bury(c))
 	dead.clear()
 	gone.clear()
+	lured.clear()
 	waver.clear()
 	return lines

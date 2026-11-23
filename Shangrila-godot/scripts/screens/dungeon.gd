@@ -53,7 +53,9 @@ var auto := false
 var fast := false      # hurry the current round
 var steps_quiet := 0
 var last_pos := Game.pos
-var area := MinesArea.new()
+var A: GDScript = Game.area_script()    # MinesArea or ShrineArea (Game.site)
+var Q: GDScript = Game.quest_script()   # MinesQuest or ShrineQuest
+var area = A.new()
 var talking := false
 var came_from := Game.pos   # the square before the last step (running from a placed group goes back there)
 var combat_tag := ""        # what the fight is: a placed group's key, "warden", or "" for wandering monsters
@@ -172,13 +174,19 @@ func _ready() -> void:
 	_explore_ui()
 	_refresh_party()
 	var args: Dictionary = get_meta("args", {})
-	Game.visited[Vector3i(Game.pos.x, Game.pos.y, Game.mine_level)] = true
+	Game.visited[Vector3i(Game.pos.x, Game.pos.y, Game.vz())] = true
 	came_from = Game.pos
 	last_pos = Game.pos
 	if args.get("resume", false):
 		_hint()
 		return
 	var lv := Game.mine_level
+	if Game.site == "shrine":
+		say(ShrineQuest.arrive_line(lv, args.has("arrived")))
+		_hint()
+		if ShrineQuest.first_visit(lv):
+			_scene.call_deferred(ShrineArea.NAMES[lv - 1], ShrineQuest.arrival(lv))
+		return
 	say("Level %d: %s." % [lv, MinesArea.NAMES[lv - 1].to_lower()] if args.has("arrived") else "You enter the mines. Daylight fades behind you.")
 	_hint()
 	var first := not Game.mines_entered() if lv == 1 else LehanQuests.get_q("m_reached_%d" % lv) == ""
@@ -217,7 +225,7 @@ func _refresh_party() -> void:
 				t = "Dead"
 				ports[i].modulate = Color(0.25, 0.22, 0.22)
 			elif combat.gone.has(i):
-				t = "Coming back" if combat.returning.has(i) else "Fled"
+				t = "Coming back" if combat.returning.has(i) else ("Lured away" if combat.lured.has(i) else "Fled")
 				ports[i].modulate = Color(1, 1, 1, 0.3)
 			elif c.hits <= 0:
 				t = "Down"
@@ -243,28 +251,28 @@ func _after_move() -> void:
 	came_from = last_pos
 	last_pos = Game.pos
 	steps_quiet += 1
-	var t := area.thing_at(Game.pos)
+	var t: Dictionary = area.thing_at(Game.pos)
 	match t.get("kind", ""):
 		"group":
-			var g: Dictionary = MinesQuest.GROUPS[t.key]
+			var g: Dictionary = Q.GROUPS[t.key]
 			say(g.intro)
 			combat_tag = t.key
 			var c := Combat.new(0, g.m)
-			c.dark = true
+			c.dark = Q.DARK
 			start_combat(c)
 			return
-		"note", "trap", "breach":
-			_scene.call_deferred({"note": "Something written", "trap": "Careful!", "breach": "The breach"}[t.kind],
-				MinesQuest.scene(Game.mine_level, t))
+		"note", "trap", "breach", "sigil", "pens":
+			_scene.call_deferred({"note": "Something written", "trap": "Careful!", "breach": "The breach",
+				"sigil": "Something in the mud", "pens": "The fish pens"}[t.kind], Q.scene(Game.mine_level, t))
 			return
 		"camp":
 			say("A camp. The party can rest here safely (Sleep).")
 			if Game.reach_checkpoint("dungeon"):
 				say("(Checkpoint: the game is saved, and you will wake here if the party falls.)")
-	if t.get("kind", "") != "camp" and Game.pos != MinesArea.START and steps_quiet > QUIET_STEPS \
+	if t.get("kind", "") != "camp" and Game.pos != A.START and steps_quiet > QUIET_STEPS \
 			and Game.my_random(1, 100) <= ENCOUNTER_CHANCE:
 		combat_tag = ""
-		start_combat(Combat.new(Game.depth()))
+		start_combat(_wanderers())
 		return
 	_hint()
 
@@ -273,7 +281,7 @@ func _after_move() -> void:
 func _hint() -> void:
 	if combat:
 		return
-	var t := area.thing_at(area.ahead())
+	var t: Dictionary = area.thing_at(area.ahead())
 	var k: String = t.get("kind", "")
 	var text: String = {
 		"exit": "Ahead: daylight. The way out (walk on, or Space).",
@@ -292,7 +300,17 @@ func _hint() -> void:
 		"vein": "Ahead: a seam of ore in the rock." if not t.get("done", false) else "",
 		"pillar": "Ahead: a carved pillar.",
 		"words": "Ahead: words carved in the wall.",
+		"pool": "Ahead: a deep pool, black and still.",
+		"reeds": "Ahead: reeds, taller than a man.",
+		"statue": "Ahead: a fallen statue.",
+		"carving": "Ahead: carved panels on the wall, half under ivy.",
+		"shrine_door": "Ahead: the sunken door stands open, steps going down." if t.get("done", false)
+			else "Ahead: a sunken stone door with three empty sockets.",
 	}.get(k, "")
+	if k == "exit" and Game.site == "shrine":
+		text = "Ahead: the causeway back to Oggal (walk on, or Space)."
+	if k == "chest" and Game.site == "shrine":
+		text = "Ahead: an old offering box." if not t.get("done", false) else "Ahead: the empty offering box."
 	status_label.text = text if text != "" else "No enemies in sight."
 	status_label.add_theme_color_override("font_color", Ui.TEXT if text != "" else Ui.DIM)
 
@@ -310,7 +328,11 @@ func _walk(rel: int) -> void:
 	var dir := (Game.facing + rel) % 4
 	if view.step(dir):
 		return
-	var t := area.thing_at(Game.pos + Game.DIR_VEC[dir])
+	var t: Dictionary = area.thing_at(Game.pos + Game.DIR_VEC[dir])
+	if t.get("kind", "") in ["pool", "reeds"]:
+		say("Deep, black water blocks the way %s." % Game.DIR_NAMES[dir].to_lower() if t.kind == "pool"
+			else "A wall of reeds blocks the way %s." % Game.DIR_NAMES[dir].to_lower())
+		return
 	if rel == 0 and not t.has("looks") and t.get("kind", "wall") != "wall":
 		_use(t)
 	else:
@@ -328,20 +350,30 @@ func _use(t: Dictionary) -> void:
 		"", "wall", "secret", "tomb":
 			pass
 		_:
-			_scene(_title(t), MinesQuest.scene(Game.mine_level, t))
+			_scene(_title(t), Q.scene(Game.mine_level, t))
+
+
+## Wandering monsters: by depth in the mines, from the marsh's own list at the shrine.
+func _wanderers() -> Combat:
+	if Game.site == "shrine":
+		var c := Combat.new(0, ShrineQuest.wandering(Game.mine_level))
+		c.dark = ShrineQuest.DARK
+		return c
+	return Combat.new(Game.depth())
 
 
 func _title(t: Dictionary) -> String:
 	return {"chest": "A chest", "lever": "A lever", "cart": "The ore cart", "air": "Bad air", "door": "A locked door",
 		"water": "The flooded passage", "ward": "The ward door", "npc": "Survivors" if t.get("ch", "") == "S" else "Saelen",
 		"warden": "The Warden", "vein": "A seam of ore", "pillar": "A carved pillar", "words": "Carved words",
-		"lift": "The lift"}.get(t.kind, "In the mines")
+		"lift": "The lift", "carving": "Carvings on the wall", "statue": "A fallen statue",
+		"shrine_door": "The sunken door"}.get(t.kind, "In the mines" if Game.site == "mines" else "The shrine grounds")
 
 
 ## Moves the party to another level: down or up a ladder (arriving by the matching way), or by lift.
 func _travel(to: int, how: String) -> void:
 	var near: String = {"down": "<", "up": ">", "lift": "L"}[how]
-	var spot := MinesArea.arrive_near(to, near)
+	var spot: Array = A.arrive_near(to, near)
 	if spot.is_empty():
 		say("At the top of the ladder an ore cart stands jammed across the way. You can't get past it from here." if how == "up"
 			else "The way is blocked.")
@@ -390,8 +422,14 @@ func _on_map() -> void:
 func _on_close() -> void:
 	if talking or combat:
 		return
-	if Game.mine_level != 1 or (Game.pos - MinesArea.START).length() > 1.5:
-		say("The way out is at the mouth of the mines, on the first level.")
+	if Game.mine_level != 1 or (Game.pos - A.START).length() > 1.5:
+		say("The way out is at the mouth of the mines, on the first level." if Game.site == "mines"
+			else "The way back to Oggal is the causeway, where you came in.")
+		return
+	if Game.site == "shrine":
+		if await Game.main.confirm("Go back along the causeway to Oggal?"):
+			Game.to_mines()
+			Game.main.goto("village", {"at": "shrine"})
 		return
 	if await Game.main.confirm("Do you really want to leave the mines?"):
 		Game.pos = MinesArea.START   # next time, in again at the entrance
@@ -416,13 +454,13 @@ func _on_load() -> void:
 func _on_examine() -> void:
 	if talking or combat or view.busy or Game.main.modal_open:
 		return
-	var t := area.thing_at(area.ahead())
+	var t: Dictionary = area.thing_at(area.ahead())
 	if t.get("kind", "") not in ["", "wall", "secret", "tomb"]:
 		_use(t)
 		return
 	for d in 4:
 		var n: Vector2i = Game.pos + Game.DIR_VEC[d]
-		var h := area.thing_at(n)
+		var h: Dictionary = area.thing_at(n)
 		if h.get("kind", "") == "secret":
 			var eyes := LehanQuests.best("perception")
 			if Game.check(eyes, "perception", Game.NORMAL):
@@ -445,7 +483,7 @@ func _on_sleep() -> void:
 	if not camp and Game.my_random(1, 100) <= 30:
 		say("The party settles down to rest... but something finds you first!")
 		combat_tag = ""
-		start_combat(Combat.new(Game.depth()))
+		start_combat(_wanderers())
 		return
 	var hungry := []
 	for c in Game.party:
@@ -484,10 +522,11 @@ func _scene(title: String, lines: Array) -> void:
 	Ui.frame(ov, Rect2(10, 150, 620, 322), Color("#1a120a"), Color("#a07a40"), 2)
 	Ui.label(ov, title, Vector2(22, 156), 15, Ui.GOLD)
 	var box := DialogueBox.new()
-	box.cast = MinesQuest.cast()
+	box.cast = Q.cast()
 	box.host = host
-	box.journal = "mines"
-	box.journal_place = "The mines, level %d: %s" % [Game.mine_level, title.to_lower()]
+	box.journal = "mines" if Game.site == "mines" else "marsh"
+	box.journal_place = ("The mines, level %d: %s" % [Game.mine_level, title.to_lower()]) if Game.site == "mines" \
+		else "%s: %s" % [ShrineArea.NAMES[Game.mine_level - 1], title.to_lower()]
 	Ui.place(box, Rect2(20, 180, 600, 286))   # sized before _ready builds it
 	ov.add_child(box)
 	box.effect.connect(_on_effect)
@@ -500,6 +539,14 @@ func _scene(title: String, lines: Array) -> void:
 	_refresh_party()
 	if after_scene.has("travel"):
 		_travel(after_scene.travel[0], after_scene.travel[1])
+	elif after_scene.has("fight") and after_scene.fight != "warden":
+		# A fight a scene starts (the shrine's fish pens): one of the site's groups.
+		var g: Dictionary = Q.GROUPS[after_scene.fight]
+		combat_tag = after_scene.fight
+		say(g.intro)
+		var c := Combat.new(0, g.m)
+		c.dark = Q.DARK
+		start_combat(c)
 	elif after_scene.has("fight"):
 		combat_tag = "warden"
 		var c := Combat.new(0, [{"key": "warden", "n": 1}])
@@ -519,7 +566,7 @@ func _on_effect(fx: String) -> void:
 	elif fx.begins_with("fight:"):
 		after_scene = {"fight": fx.substr(6)}
 	else:
-		MinesQuest.apply(fx)
+		Q.apply(fx)
 
 
 ## The mines' quest values, to see whether a scene changed anything that shows in the view.
@@ -527,7 +574,7 @@ func _state() -> String:
 	var parts := []
 	var st := LehanQuests.state()
 	for k in st:
-		if str(k).begins_with("m_"):
+		if str(k).begins_with("m_") or str(k).begins_with("s_") or str(k).begins_with("marsh_"):
 			parts.append("%s=%s" % [k, st[k]])
 	parts.sort()
 	return ",".join(parts)
@@ -831,7 +878,9 @@ func _end_combat(result: String) -> void:
 		return
 	match result:
 		"won":
-			if tag != "" and tag != "warden":
+			if Game.site == "shrine":
+				ShrineQuest.won(tag)
+			elif tag != "" and tag != "warden":
 				LehanQuests.apply("q:m_grp_%s=1" % tag)
 			var lines := c.rewards()
 			for l in lines:

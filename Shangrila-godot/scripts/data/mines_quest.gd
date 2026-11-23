@@ -33,6 +33,7 @@ const CHESTS := {
 }
 
 ## The placed monsters: they stay dead once beaten.
+const DARK := true   # fights in the mines are in the dark (Aeldroes hide better)
 const GROUPS := {
 	"1k": {"m": [{"key": "kobold", "n": 4}], "intro": "Kobolds! This side gallery is their den, and they don't like visitors."},
 	"1r": {"m": [{"key": "rat", "n": 5}], "intro": "The floor moves: a nest of giant rats in the old spoil."},

@@ -140,11 +140,16 @@ static func _ubba() -> Array:
 		out.append({"s": host, "t": "How does one become a friend of Oggal?"})
 		out.append({"s": "ubba", "t": "By being one. Leeches have got into Old Moss's fish pens, big as eels, and the children go hungry. Clear them, and we will talk about chants."})
 		out.append(_fx("q:marsh_leeches=asked"))
-		out.append({"n": "(Old Moss by the boat knows where the pens are. The leeches are out in the shrine grounds' pools.)"})
+		out.append({"n": "(Old Moss by the boat knows where the pens are: in the shrine grounds, out along the causeway east.)"})
 	elif q("marsh_leeches") == "asked":
 		out.append({"s": "ubba", "t": "The leeches are still in Moss's pens. Friends of Oggal, I said."})
+	elif q("marsh_chant") == "":
+		out.append({"s": "ubba", "t": "You cleared the pens. The children are eating tonight. Come, then: I will teach you the chant."})
+		out.append({"n": "She sings it three times, low, a tune that rises and falls like water over stones, and makes you sing it back until she stops wincing."})
+		out.append(_fx("q:marsh_chant=1"))
+		out.append({"n": "(You know the old chant. Sing it at the sunken door.)"})
 	else:
-		out.append({"s": "ubba", "t": "You cleared the pens. The children are eating. Come, then: I will teach you the chant."})
+		out.append({"s": "ubba", "t": "Sing it slowly at the door. It is older than the stones."})
 	if ommuk.is_empty() and Game.party.any(func(c): return "Pious" in c.get("traits", [])) and q("marsh_ubba") != "":
 		out.append({"s": "ubba", "t": "One of you prays, I can tell. Good. Pray hard out there."})
 	return out
@@ -189,12 +194,14 @@ static func _pim() -> Array:
 
 static func _moss() -> Array:
 	match q("marsh_leeches"):
-		"asked":
-			return [{"s": "moss", "t": "Ubba sent you? Bless her. The pens are out past the old shrine's wall, where the water's warm. Leeches long as your arm. They take the fish and they take fingers."},
-				{"n": "(The fish pens are in the shrine grounds: the next part of the marsh to be built.)"}]
+		"asked", "":
+			if q("marsh_leeches") == "" and q("marsh_ubba") == "":
+				return [{"s": "moss", "t": "Fish don't bite. Something's eating them first. Talk to Ubba, she decides who helps with what around here."}]
+			return [{"s": "moss", "t": "The pens are inside the old shrine's walls, south-west, where the water's warm. Leeches long as your arm. They take the fish and they take fingers."},
+				{"n": "(The fish pens are in the shrine grounds, out along the causeway east.)"}]
 		"done":
 			return [{"s": "moss", "t": "Fish in the pens again. Fish in the pot. You'll eat with us tonight, and every night you like."}]
-	return [{"s": "moss", "t": "Fish don't bite. Something's eating them first. Talk to Ubba, she decides who helps with what around here."}]
+	return []
 
 
 ## The conversation with the person on map digit `id`.

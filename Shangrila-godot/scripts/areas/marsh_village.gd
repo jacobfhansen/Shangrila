@@ -6,7 +6,7 @@ extends RefCounted
 ##
 ## The map, north at the top:
 ##   .  boardwalk         ~  open water (seen over, not walked on)
-##   #  a reed hut        G  the causeway gate (back to the world map)
+##   #  a reed hut        G  the causeway back to the road (the world map)
 ##   T  Hett the trader's stall     H  the guest hut (rest, and the village's checkpoint)
 ##   U  Ubba's hut        E  the elder's longhouse
 ##   P  the causeway on to the old shrine
@@ -31,7 +31,7 @@ const MAP := [
 const CELL := DungeonView.CELL
 const WATER_Y := -0.35        # the water lies a little below the boardwalks
 const WALL_H := 2.3           # reed walls, from the water up to the eaves
-const HUT := "#TUHEG"
+const HUT := "#TUHE"
 const WATER := "~rb"
 const EXITS := {"G": "gate", "T": "trader", "H": "guest", "U": "ubba_hut", "E": "elder", "P": "shrine"}
 const ENTRANCES := {
@@ -93,7 +93,7 @@ func ahead() -> Vector2i:
 
 
 func _walkway(ch: String) -> bool:
-	return ch == "." or ch == "R" or ch == "P" or MarshData.PEOPLE.has(ch)
+	return ch == "." or ch == "R" or ch == "P" or ch == "G" or MarshData.PEOPLE.has(ch)
 
 
 # ---------------------------------------------------------------- building the scene
@@ -169,12 +169,9 @@ func build(root: Node3D, cam: Camera3D) -> void:
 						"T": tex = "trader_front" if _walkway(nch) else "reed_wall"
 						"H": tex = "guest_front" if _walkway(nch) else "reed_wall"
 						"U", "E": tex = "reed_door" if _walkway(nch) else "reed_wall"
-						"G": tex = "causeway_gate"
 				_tool(by_tex, tex)
 				var bottom := WATER_Y
 				_quad(by_tex[tex], wall_c + Vector3(0, (bottom + WALL_H) / 2.0, 0), dv, Vector3.UP, h, (WALL_H - bottom) / 2.0)
-				if ch == "G":
-					continue   # the gate is a palisade, no roof
 				# A thatched roof sloping back from the eaves, hipped at the corners.
 				var side_v := Vector3.UP.cross(dv)
 				var side_g := Vector2i(roundi(side_v.x), roundi(side_v.z))
@@ -198,7 +195,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 				"r": _reeds(root, at, x * 7 + y * 3)
 				"b": _boat(root, at)
 				"R": _rack(root, at)
-				"P": _shrine_way(root, at)
+				"G", "P": _way_frame(root, at)
 				var ch:
 					if MarshData.PEOPLE.has(ch):
 						_person(root, at, MarshData.PEOPLE[ch])
@@ -209,6 +206,13 @@ func build(root: Node3D, cam: Camera3D) -> void:
 		var a := rng.randf() * TAU
 		var r := rng.randf_range(14.0, 30.0)
 		_reeds(root, mid + Vector3(cos(a) * r, -WATER_Y, sin(a) * r * 0.8), i)
+	# The causeway winding away into the mist from both ends: west to the road, east to the shrine.
+	for y in MAP.size():
+		for x in MAP[y].length():
+			var ch: String = MAP[y][x]
+			if ch == "G" or ch == "P":
+				var out := Vector3(-1, 0, 0) if x == 0 else Vector3(1, 0, 0)
+				causeway(root, Vector3(x * CELL, 0, y * CELL) + out * CELL / 2.0, out, WATER_Y, 11 if ch == "G" else 23)
 
 
 ## 1 if hut `cell`'s wall facing open `n` ends at an outside corner on side `e`, -1 at an inside
@@ -256,8 +260,9 @@ func _rack(root: Node3D, at: Vector3) -> void:
 		_box(root, at + Vector3(-0.55 + i * 0.22, 1.3, 0), Vector3(0.1, 0.5, 0.04), fish)
 
 
-## Where the causeway goes on to the old shrine: two tall posts with a crossbar and hanging charms.
-func _shrine_way(root: Node3D, at: Vector3) -> void:
+## Where the causeway leaves the village, at either end: two tall posts with a crossbar and
+## hanging charms.
+func _way_frame(root: Node3D, at: Vector3) -> void:
 	var wood := _plain(Color("#3a3024"))
 	for s in [-0.85, 0.85]:
 		_box(root, at + Vector3(0, 1.3, s), Vector3(0.14, 2.6, 0.14), wood)
@@ -265,6 +270,98 @@ func _shrine_way(root: Node3D, at: Vector3) -> void:
 	var bone := _plain(Color("#d8d0b8"))
 	for i in 4:
 		_box(root, at + Vector3(0, 2.2 - (i % 2) * 0.15, -0.5 + i * 0.33), Vector3(0.04, 0.3, 0.06), bone)
+
+
+## A raised plank causeway on posts, starting at `start` (its near end, at boardwalk height) and
+## winding off along `dir` into the mist over water at `water_y`. `seed_` varies the bends. Also
+## used by ShrineArea, for the causeway back to Oggal.
+static func causeway(root: Node3D, start: Vector3, dir: Vector3, water_y: float, seed_: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_
+	var phase := rng.randf() * TAU
+	var freq := rng.randf_range(0.09, 0.13)
+	var hw := 0.75
+	var step := 0.8
+	var top := SurfaceTool.new()
+	top.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var side := SurfaceTool.new()
+	side.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var p := start
+	var heading := 0.0
+	var prev_l := Vector3.ZERO
+	var prev_r := Vector3.ZERO
+	var posts: Array = []
+	var n_steps := 70
+	for i in n_steps + 1:
+		var s := i * step
+		# Straight at first, then bending more and more from side to side.
+		var bend := clampf((s - 3.0) / 10.0, 0.0, 1.0)
+		var turn := sin(s * freq + phase) - sin(3.0 * freq + phase)
+		heading = turn * 0.75 * bend
+		var d := dir.rotated(Vector3.UP, heading)
+		if i > 0:
+			p += d * step
+		var across := Vector3.UP.cross(d).normalized()
+		# A gentle sag between the posts, and a slight rise and fall over the length.
+		var y := -0.04 * absf(sin(s * 0.9)) + 0.06 * (sin(s * 0.21 + phase) - sin(phase))
+		var l := p + across * hw + Vector3(0, y, 0)
+		var r := p - across * hw + Vector3(0, y, 0)
+		if i > 0:
+			var v0 := float(i - 1) * step / 1.6
+			var v1 := float(i) * step / 1.6
+			_tri(top, [prev_l, prev_r, r, prev_l, r, l], [Vector2(0, v0), Vector2(1, v0), Vector2(1, v1), Vector2(0, v0), Vector2(1, v1), Vector2(0, v1)])
+			for e in [[prev_l, l], [prev_r, r]]:
+				var a: Vector3 = e[0]
+				var b: Vector3 = e[1]
+				var dn := Vector3(0, -0.18, 0)
+				_tri(side, [a, b, b + dn, a, b + dn, a + dn], [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 0), Vector2(1, 1), Vector2(0, 1)])
+		if i % 3 == 0:
+			posts.append(l)
+			posts.append(r)
+		prev_l = l
+		prev_r = r
+	var wood := StandardMaterial3D.new()
+	wood.albedo_texture = Ui.tex("boardwalk")
+	wood.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	wood.roughness = 0.95
+	wood.cull_mode = BaseMaterial3D.CULL_DISABLED
+	for pair in [[top, Color.WHITE], [side, Color(0.62, 0.6, 0.55)]]:
+		var st: SurfaceTool = pair[0]
+		st.generate_normals()
+		var m: StandardMaterial3D = wood.duplicate()
+		m.albedo_color = pair[1]
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		mi.material_override = m
+		root.add_child(mi)
+	# The posts, one MultiMesh, standing from the water up past the planks.
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.07
+	cm.bottom_radius = 0.08
+	cm.height = 1.0
+	cm.radial_segments = 6
+	var pm := StandardMaterial3D.new()
+	pm.albedo_color = Color("#4a3a28")
+	pm.roughness = 0.9
+	cm.material = pm
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = cm
+	mm.instance_count = posts.size()
+	for k in posts.size():
+		var at: Vector3 = posts[k]
+		var ht := at.y + 0.3 - water_y
+		var t := Transform3D(Basis().scaled(Vector3(1, ht, 1)), Vector3(at.x, water_y + ht / 2.0, at.z))
+		mm.set_instance_transform(k, t)
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	root.add_child(mmi)
+
+
+static func _tri(st: SurfaceTool, pts: Array, uvs: Array) -> void:
+	for k in pts.size():
+		st.set_uv(uvs[k])
+		st.add_vertex(pts[k])
 
 
 # ---------------------------------------------------------------- mesh helpers (as LehanStreets)

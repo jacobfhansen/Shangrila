@@ -116,6 +116,46 @@ static func draw_monster(ci: CanvasItem, def: Dictionary, r: Rect2, dead: bool) 
 	var c := r.get_center()
 	var s := r.size.x / 64.0 * float(def.get("size", 1.0))
 	match def.shape:
+		"leech":
+			# A bog leech: a fat, ringed worm rearing up, with a round sucking mouth.
+			var pts := [Vector2(-22, 24), Vector2(-12, 26), Vector2(0, 22), Vector2(8, 10), Vector2(10, -4), Vector2(6, -16)]
+			for k in pts.size():
+				ci.draw_colored_polygon(_ell(c + pts[k] * s, (9 - k * 0.6) * s, (7 - k * 0.4) * s), col.lightened(0.04 * (k % 2)))
+			ci.draw_circle(c + Vector2(6, -18) * s, 4 * s, col.darkened(0.6))
+			for k in 6:
+				var d := Vector2.from_angle(TAU * k / 6.0)
+				ci.draw_line(c + Vector2(6, -18) * s + d * 2 * s, c + Vector2(6, -18) * s + d * 4 * s, Color("#d8c8b0") if not dead else eye, 1 * s)
+		"stalker":
+			# A reed stalker: a long-legged, stooping thing like a heron grown man-tall, with a spear of a beak.
+			var leg := col.darkened(0.3)
+			ci.draw_line(c + Vector2(-4, 4) * s, c + Vector2(-8, 32) * s, leg, 2 * s)
+			ci.draw_line(c + Vector2(4, 4) * s, c + Vector2(8, 32) * s, leg, 2 * s)
+			ci.draw_colored_polygon(_ell(c + Vector2(0, -2) * s, 12 * s, 9 * s), col)
+			ci.draw_polyline(PackedVector2Array([c + Vector2(6, -8) * s, c + Vector2(10, -20) * s, c + Vector2(4, -28) * s]), col, 3 * s)
+			ci.draw_colored_polygon(_ell(c + Vector2(4, -29) * s, 5 * s, 4 * s), col.lightened(0.1))
+			ci.draw_colored_polygon(PackedVector2Array([c + Vector2(7, -30) * s, c + Vector2(28, -24) * s, c + Vector2(7, -27) * s]),
+				Color("#c8b880") if not dead else col)
+			ci.draw_circle(c + Vector2(4, -30) * s, 1.4 * s, eye)
+		"wisp":
+			# A marsh light: a pale glow with a brighter heart, hanging in the air.
+			if not dead:
+				for k in 4:
+					ci.draw_circle(c + Vector2(0, -4) * s, (20 - k * 4) * s, Color(col, 0.12 + k * 0.12))
+				ci.draw_circle(c + Vector2(0, -4) * s, 4 * s, Color(1, 1, 0.9))
+			else:
+				ci.draw_circle(c + Vector2(0, 10) * s, 5 * s, col)
+		"toad":
+			# The mire toad: a huge squat body, wide mouth, eyes on top.
+			ci.draw_colored_polygon(_ell(c + Vector2(0, 12) * s, 28 * s, 18 * s), col)
+			ci.draw_colored_polygon(_ell(c + Vector2(0, 18) * s, 22 * s, 10 * s), col.lightened(0.25))
+			for sx in [-1, 1]:
+				ci.draw_colored_polygon(_ell(c + Vector2(14 * sx, -4) * s, 7 * s, 6 * s), col.lightened(0.1))
+				ci.draw_circle(c + Vector2(14 * sx, -5) * s, 3 * s, Color("#e0c040") if not dead else eye)
+				ci.draw_circle(c + Vector2(14 * sx, -5) * s, 1.2 * s, Color.BLACK)
+				ci.draw_colored_polygon(_ell(c + Vector2(26 * sx, 26) * s, 8 * s, 4 * s), col.darkened(0.15))
+			ci.draw_line(c + Vector2(-18, 8) * s, c + Vector2(18, 8) * s, col.darkened(0.5), 2 * s)
+			for k in 5:
+				ci.draw_circle(c + Vector2(-12 + k * 6, 2 + (k % 2) * 6) * s, 1.6 * s, col.darkened(0.3))
 		"delver":
 			# A blind, burrowing beast: a hunched mound of a body, a snout and great digging claws.
 			ci.draw_colored_polygon(_ell(c + Vector2(0, 10) * s, 22 * s, 15 * s), col)

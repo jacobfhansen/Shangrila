@@ -324,8 +324,9 @@ come to light during play, a mix of gifts and drawbacks.
 *Thuug*
 - T1 **Cold-blooded:** sluggish in cold places (mountain passes, winter, deep mines), with lower
   Dexterity. Quicker in warm places.
-- T2 **Sink like stones:** cannot swim, but can hold their breath for a long time and walk
-  across river bottoms where others need a ford or a boat.
+- T2 **Slow, strong swimmers:** Thuugs swim well, though slowly, and can hold their breath
+  for a very long time: they can cross under water, along river bottoms and through flooded
+  passages, where others need a ford or a boat. They can't be hurried in water.
 - T3 **Long fasts:** travel uses only half as much of their Endurance, but when they eat, they
   eat a lot.
 - T4 **Moulting:** every few weeks the shell is shed. For a few days there is no armour bonus,
@@ -1401,7 +1402,7 @@ can be talked to. It is the home of the hooks for the Lehan quests.
 - **Open question:** what else should be in the square (market sounds, time of day, a
   pickpocket who tests Perception)?
 
-### The Drowned Shrine: the marsh remnant (agreed; steps 1-2 of 4 built)
+### The Drowned Shrine: the marsh remnant (agreed; steps 1-3 of 4 built)
 The Jailer's Record found in the mines says the second piece of the spirit was "drowned at the
 old shrine on the marsh-folk's causeway, where the water never clears". The world map already has
 the Drowned Shrine, three days from Lehan. This is the next chapter: the road, the Thuug marsh
@@ -1464,7 +1465,7 @@ village, the overgrown shrine grounds and the temple below, and the second remna
   broken ward), to build up to them.
 
 **Build order:** 1. food and the road scenes (built); 2. the village (built); 3. the shrine grounds and the
-door; 4. the temple, the test and Insight.
+door (built); 4. the temple, the test and Insight.
 
 **As built (step 1)**
 - A day on the road costs 20 Endurance (was 8). Each evening everyone eats one ration from the
@@ -1495,8 +1496,25 @@ door; 4. the temple, the test and Insight.
   a Bog-Iron Spear and a Shell Shield; Hett buys anything with a price. Haggle is per shop.
 - **The guest hut** is the village's checkpoint (saved on going in) and a night's rest (1 silver
   a head). A wipe out in the marsh wakes the party there.
-- The quest log has "The Drowned Shrine". The causeway east ("P") is a message for now: the
-  shrine grounds are step 3.
+- The quest log has "The Drowned Shrine".
+
+**As built (step 3)**
+- **The grounds** (`scripts/areas/shrine.gd`, `scripts/data/shrine_quest.gd`) are walked by the
+  dungeon screen like the mines: `Game.site` says which dungeon it shows ("mines" or "shrine"),
+  and the screen and the map take their map and story code from it. Open sky and mist, ruined
+  walls of different heights with ivy, wet flagstones, shallow water to wade and deep pools,
+  reeds, fallen statues. The causeway east from Oggal leads in; the way back is where you came.
+- **Monsters:** Bog Leeches, Reed Stalkers, Marsh Lights (they lure someone out of the fight into
+  the reeds unless their nerve holds; the host is never lured) and a Mire Toad on the offering box.
+- **The three sigils** (quest items): the crown on a broken statue, the chain under shallow water
+  (Perception, try again by stepping back), the wave in the Reed Stalkers' nest (fight them).
+- **The carving** tells the order (crown, chain, wave) to a Lore check; the panels show it too.
+- **The fish pens:** fight the leeches, or smoke them out (Survival). Ubba then teaches the chant.
+- **The door, four ways:** the sigils in order (three orders offered if the carving wasn't read;
+  a wrong one jolts everyone), Ubba's chant, forcing it (Toughness, Hard) or the lock (Thievery);
+  the last two are loud (`s_loud`, the temple below is warned). Behind it the steps go down; the
+  temple is step 4.
+- "Start at..." has "Oggal, the marsh village" (the mines played, the record found).
 
 **Open questions**
 - Is Orrun or Ubba recruitable after the shrine (CHARACTERS.md has them as Tier 2 followers)?

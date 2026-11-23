@@ -914,6 +914,104 @@ def marsh_textures():
     img.save(OUT / "marsh_water.png")
 
 
+# ---------------------------------------------------------------- the Drowned Shrine's grounds
+
+def _vines(img, seed, density=1.0):
+    """Ivy and creepers trailing down over a wall, thicker towards the top."""
+    rng = np.random.default_rng(seed)
+    d = ImageDraw.Draw(img)
+    w, h = img.size
+    for _ in range(int(14 * density)):
+        x = float(rng.integers(0, w))
+        y = 0.0
+        length = int(rng.integers(h // 3, h))
+        pts = []
+        while y < length:
+            pts.append((x, y))
+            x += float(rng.normal(0, 3))
+            y += 6
+        d.line(pts, fill=(54, 70, 34), width=3)
+        for (px, py) in pts[::2]:
+            for _ in range(2):
+                ox, oy = int(rng.integers(-9, 9)), int(rng.integers(-5, 5))
+                g = int(rng.integers(-20, 30))
+                d.ellipse([px + ox - 5, py + oy - 3, px + ox + 5, py + oy + 3], fill=(62 + g, 98 + g, 44 + g // 2))
+    return img
+
+
+def _sigil(d, kind, cx, cy, r, col, width=5):
+    if kind == "crown":
+        pts = [(cx - r, cy + r * 0.6), (cx - r, cy - r * 0.2), (cx - r * 0.5, cy + r * 0.2), (cx, cy - r * 0.7),
+               (cx + r * 0.5, cy + r * 0.2), (cx + r, cy - r * 0.2), (cx + r, cy + r * 0.6)]
+        d.line(pts + [pts[0]], fill=col, width=width)
+    elif kind == "chain":
+        for k in (-1, 0, 1):
+            d.ellipse([cx + k * r * 0.65 - r * 0.45, cy - r * 0.3, cx + k * r * 0.65 + r * 0.45, cy + r * 0.3], outline=col, width=width)
+    else:  # wave: the drowning
+        for k in (-1, 0, 1):
+            yy = cy + k * r * 0.45
+            pts = [(cx - r + i * r / 6, yy + np.sin(i * 1.3) * r * 0.15) for i in range(13)]
+            d.line(pts, fill=col, width=width)
+
+
+def shrine_textures():
+    w = h = 256
+    # Old fitted blocks, green with moss low down, vines from the top.
+    base = blocks(w, h, 4, 3, 950, mortar=4, base=(104, 104, 92), jitter=14)
+    arr = np.array(base).astype(float)
+    moss = tile_noise(w, h, 6, 951, 4)
+    ys = np.linspace(0, 1, h)[:, None]
+    m = np.clip((moss - 0.45) * 2.5 + (ys - 0.6), 0, 1)[..., None] * 0.7
+    arr = arr * (1 - m) + np.array([66, 92, 50]) * m
+    wall = _vines(to_img(arr), 952)
+    wall.save(OUT / "vine_wall.png")
+    # Wet flagstones with mud in the joints and puddles.
+    w2 = h2 = 128
+    fl = blocks(w2, h2, 3, 3, 953, mortar=5, base=(86, 84, 66), jitter=14)
+    arr = np.array(fl).astype(float)
+    mud = tile_noise(w2, h2, 5, 954, 4)
+    pud = (mud > 0.66)[..., None]
+    green = tile_noise(w2, h2, 7, 959, 3)[..., None]
+    arr = arr * (1 - 0.35 * green) + np.array([60, 78, 44]) * 0.35 * green
+    arr = np.where(pud, arr * 0.5 + np.array([32, 42, 36]) * 0.5, arr * (0.85 + 0.25 * mud[..., None]))
+    to_img(arr).save(OUT / "shrine_floor.png")
+    # The sunken door: a slab of dark stone in a frame, three empty sockets, water stains.
+    img = blocks(w, h, 4, 3, 955, mortar=4, base=(98, 100, 90), jitter=10)
+    d = ImageDraw.Draw(img)
+    d.rectangle([52, 40, 204, h], fill=(48, 52, 50))
+    d.rectangle([52, 40, 204, h], outline=(30, 32, 30), width=6)
+    d.line([(128, 40), (128, h)], fill=(30, 32, 30), width=3)
+    for i, kind in enumerate(("crown", "chain", "wave")):
+        cx = 84 + i * 44
+        d.ellipse([cx - 16, 108, cx + 16, 140], fill=(24, 26, 26), outline=(80, 84, 78), width=3)
+    _sigil(d, "crown", 128, 70, 18, (84, 90, 84), 3)
+    door_closed = _vines(img, 956, 0.5)
+    door_closed.save(OUT / "shrine_door.png")
+    img = blocks(w, h, 4, 3, 955, mortar=4, base=(98, 100, 90), jitter=10)
+    d = ImageDraw.Draw(img)
+    d.rectangle([52, 40, 204, h], fill=(8, 10, 12))
+    for k in range(5):   # steps going down into the dark
+        y = h - 20 - k * 22
+        d.rectangle([60 + k * 6, y, 196 - k * 6, y + 10], fill=(70 - k * 10, 72 - k * 10, 66 - k * 10))
+    d.rectangle([52, 40, 204, h], outline=(30, 32, 30), width=6)
+    _vines(img, 956, 0.5).save(OUT / "shrine_door_open.png")
+    # The carving: three panels, the story in order (crown, chain, wave), with little figures.
+    img = blocks(w, h, 4, 3, 957, mortar=4, base=(110, 108, 96), jitter=10)
+    d = ImageDraw.Draw(img)
+    groove = (52, 54, 50)
+    for i, kind in enumerate(("crown", "chain", "wave")):
+        x0 = 14 + i * 80
+        d.rectangle([x0, 60, x0 + 70, 196], outline=groove, width=4)
+        _sigil(d, kind, x0 + 35, 96, 22, groove, 5)
+        for k in range(3):   # little figures under each sign
+            fx = x0 + 14 + k * 21
+            d.ellipse([fx - 4, 142, fx + 4, 150], outline=groove, width=2)
+            d.line([(fx, 150), (fx, 172)], fill=groove, width=2)
+            if kind == "wave":
+                d.line([(fx - 8, 166), (fx + 8, 166)], fill=groove, width=2)
+    _vines(img, 958, 0.4).save(OUT / "shrine_carving.png")
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -937,3 +1035,4 @@ if __name__ == "__main__":
     print("wrote textures to", OUT)
     mines_textures()
     marsh_textures()
+    shrine_textures()

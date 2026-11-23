@@ -129,7 +129,7 @@ and dangerous, but he keeps his word.
 Traits: Ruthless, Loyal, Hot-tempered · Wins them over: a task (clear his name)
 
 **Taggu** – Thuug Ranger · Tier 1
-A ferry-keeper who walks across the river bottom when the ferry breaks.
+A ferry-keeper who swims the river under water, slow and steady, when the ferry breaks.
 Traits: Humble, Generous, Cautious · Wins them over: gold
 
 **Rennik** – Nisk Warrior · Tier 2

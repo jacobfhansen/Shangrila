@@ -323,6 +323,12 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   walked like Lehan's streets (`scripts/screens/village.gd`): Orrun at the causeway gate, Ubba
   and her story of the iron-crowned king, Grath-Ul the bored wrestler, Pim, Old Moss, Hett's
   stall (the shop screen for the marsh) and the guest hut (rest, and the village's checkpoint).
+- **The shrine grounds:** the causeway east of Oggal leads into the Drowned Shrine's overgrown
+  grounds, open to the sky, walked by the same dungeon screen as the mines (`Game.site`). Bog
+  Leeches, Reed Stalkers, Marsh Lights (which lure someone away) and a Mire Toad; three sigils to
+  find; a carving that tells their order (Lore); Old Moss's fish pens to clear (fight, or smoke
+  with Survival) for Ubba's chant; and the sunken door, opened by the sigils, the chant, force or
+  the lock (the last two loudly). The temple below comes next.
 - **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
   the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
   3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the

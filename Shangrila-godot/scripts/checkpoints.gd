@@ -15,6 +15,7 @@ const LIST := [
 	["mines", "The Mines, level 1", "The mines job is taken and the whole company is back together, at the entrance."],
 	["mines2", "The Mines, level 2", "Level 1 done (its chests, fights and cart): everyone a step stronger, at the foot of the ladder."],
 	["mines3", "The Mines, level 3", "Levels 1 and 2 done (the miners out, the lift repaired): everyone two steps stronger, in steel."],
+	["marsh", "Oggal, the marsh village", "The mines' levels played and the jailers' record found: arriving at the Thuug village on the causeway."],
 ]
 
 ## What each mines level's start counts as already done, on top of the levels before it.
@@ -70,6 +71,18 @@ static func start(key: String, host: String) -> void:
 			Game.discover_place("lehan", "council")
 			Game.discover_place("lehan", "smith")
 			Game.main.goto("streets", {"at": "council", "into": true})
+		"marsh":
+			start("mines3", host)
+			Game.story["marsh_road_done"] = true
+			LehanQuests.apply("q:m_record=1")
+			LehanQuests.apply("q:m_seal=1")
+			LehanQuests.sync_items()
+			if not "marsh_shrine" in Game.known:
+				Game.known.append("marsh_shrine")
+			for k in 4:
+				Game.party_add(51)
+			Game.location = "marsh_shrine"
+			Game.main.goto("village")
 		"mines", "mines2", "mines3":
 			Game.story["job_notice"] = true
 			Game.discover_place("lehan", "council")

@@ -20,8 +20,9 @@ const MARKS := {
 	"vein": ["◆", "Ore vein", GOODS], "lever": ["/", "Lever", INK], "note": ["§", "Writing", INK],
 	"carving": ["○", "Carving", INK], "gate": ["▬", "Blocked way", DANGER],
 	"trap": ["×", "Trap", DANGER], "breach": ["X", "The breach", DANGER], "warden": ["!", "Danger", DANGER],
+	"door": ["Π", "Sunken door", WAY], "pens": ["≈", "Fish pens", SAFE], "sigil": ["✦", "Something found", GOODS],
 }
-const CARVED := ["tomb", "pillar", "words"]
+const CARVED := ["tomb", "pillar", "words", "carving"]
 
 var pulse := 0.0
 
@@ -34,12 +35,16 @@ func _process(delta: float) -> void:
 
 ## The mark for a thing, or "" for none.
 static func _mark(lv: int, cell: Vector2i) -> String:
-	var ch := MinesArea.char_at(lv, cell)
-	var k := MinesArea.kind_of(lv, ch)
-	var done := MinesArea.cleared(lv, ch, cell)
+	var ch: String = Game.area_script().char_at(lv, cell)
+	var k: String = Game.area_script().kind_of(lv, ch)
+	var done: bool = Game.area_script().cleared(lv, ch, cell)
 	match k:
-		"exit", "up", "down", "lift", "camp", "lever", "note", "breach", "warden":
+		"exit", "up", "down", "lift", "camp", "lever", "note", "breach", "warden", "pens":
 			return k
+		"shrine_door":
+			return "door"
+		"sigil":
+			return "" if done else "sigil"
 		"npc":
 			return "" if done else "npc"
 		"chest":
@@ -57,14 +62,14 @@ static func _mark(lv: int, cell: Vector2i) -> String:
 
 ## A square drawn as rock: rock itself, things set into the rock, and a secret not yet found.
 static func _rock(lv: int, cell: Vector2i) -> bool:
-	var ch := MinesArea.char_at(lv, cell)
-	var k := MinesArea.kind_of(lv, ch)
-	return ch == "#" or k in MinesArea.IN_ROCK or (k == "secret" and not MinesArea.cleared(lv, ch))
+	var ch: String = Game.area_script().char_at(lv, cell)
+	var k: String = Game.area_script().kind_of(lv, ch)
+	return ch == "#" or k in Game.area_script().IN_ROCK or (k == "secret" and not Game.area_script().cleared(lv, ch))
 
 
 func _draw() -> void:
 	var lv := Game.mine_level
-	var map: Array = MinesArea.MAPS[lv - 1]
+	var map: Array = Game.area_script().MAPS[lv - 1]
 	var n := Vector2i(map[0].length(), map.size())
 	var r := Rect2(Vector2.ZERO, size)
 	draw_rect(r, Color("#e2cc98"))
@@ -78,7 +83,7 @@ func _draw() -> void:
 	for y in n.y:
 		for x in n.x:
 			var cell := Vector2i(x, y)
-			if not Game.visited.has(Vector3i(x, y, lv)):
+			if not Game.visited.has(Vector3i(x, y, Game.vz())):
 				continue
 			seen[cell] = true
 			var m := _mark(lv, cell)
@@ -111,8 +116,8 @@ func _draw() -> void:
 		var corners := [p, p + Vector2(cs, 0), p + Vector2(cs, cs), p + Vector2(0, cs)]
 		for d in 4:
 			var nb: Vector2i = cell + Game.DIR_VEC[d]
-			var closed := _rock(lv, nb) or (not Game.visited.has(Vector3i(cell.x, cell.y, lv))
-				and not Game.visited.has(Vector3i(nb.x, nb.y, lv)) and not seen.has(nb))
+			var closed := _rock(lv, nb) or (not Game.visited.has(Vector3i(cell.x, cell.y, Game.vz()))
+				and not Game.visited.has(Vector3i(nb.x, nb.y, Game.vz())) and not seen.has(nb))
 			if closed:
 				draw_line(corners[d], corners[(d + 1) % 4], INK, 1.5)
 	for cell: Vector2i in marks:
@@ -127,7 +132,8 @@ func _draw() -> void:
 	var side := Vector2(-dir.y, dir.x)
 	var tri := PackedVector2Array([c + dir * cs * 0.45, c - dir * cs * 0.35 + side * cs * 0.35, c - dir * cs * 0.35 - side * cs * 0.35])
 	draw_colored_polygon(tri, Color(0.1, 0.25, 0.9, a))
-	draw_string(f, Vector2(0, 17), "The Mines, level %d: %s" % [lv, MinesArea.NAMES[lv - 1].to_lower()],
+	draw_string(f, Vector2(0, 17), ("The Mines, level %d: %s" % [lv, Game.area_script().NAMES[lv - 1].to_lower()])
+		if Game.site == "mines" else Game.area_script().NAMES[lv - 1],
 		HORIZONTAL_ALIGNMENT_CENTER, size.x, 12, INK)
 
 	# Legend.

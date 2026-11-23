@@ -51,7 +51,7 @@ static func _offer() -> Array:
 		{"s": "boddo", "t": "Hm."},
 		_say("That's a heavy load, even for a Thuug."),
 		{"s": "boddo", "t": "Not as heavy as a debt. A Thuug pays what he owes. Boddo cannot. Not alone."},
-		{"s": "boddo", "t": "Tam Reed pulled Boddo out of the river, two winters back. Boddo sinks like a stone. Tam did not let go."},
+		{"s": "boddo", "t": "Tam Reed pulled Boddo out of the river, two winters back. The spring flood had Boddo under a drifting barge. A Thuug can hold his breath a long time, but not for ever. Tam did not let go."},
 		{"s": "boddo", "t": "Tam died in the spring. Fever. Master Gell, at the warehouse, says Tam was paid to the end. He was not. Fourteen weeks. Forty silver. His widow Hanna sells her pots to eat."},
 		{"s": "boddo", "t": "Boddo went to Gell. Gell laughed. Boddo went to the watch. The watch laughed. A Thuug's word against a merchant's book."},
 		{"i": "He doesn't raise his voice. He doesn't need to. That is the anger of someone who has waited a long time, and will wait longer."},

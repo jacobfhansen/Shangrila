@@ -112,7 +112,7 @@ var pos: Vector2i:
 	get: return Game.pos
 	set(v):
 		Game.pos = v
-		Game.visited[Vector3i(v.x, v.y, Game.mine_level)] = true
+		Game.visited[Vector3i(v.x, v.y, Game.vz())] = true
 var facing: int:
 	get: return Game.facing
 	set(v): Game.facing = v
