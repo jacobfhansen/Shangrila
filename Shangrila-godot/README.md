@@ -367,7 +367,15 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   the Hours (the Morvanes pay for its bells; its choir sings at their feast, through the servants'
   gate). Odo Brakk in the graveyard (joins if the party treated him well on the road), Mother
   Hesk (the runaway's mother: the iron door with no keyhole in the Morvane cellars), and a man in
-  grey watching from an alley. The hill and Below come next. "Start at..." has "Aubermont, the river gate".
+  grey watching from an alley.
+- **Aubermont, the hill:** past Sergeant Voss (a bribe, a story about hired swords for the Lion
+  house, or Aldric's scholar's seal), an avenue between the great houses, pale stone and iron
+  gates, and House Morvane in black with its old tower behind. The Morvane gate (turned away;
+  watch it and see the steward's chain: a ward-stone disc, the vault's key), Bett at the
+  servants' gate (the feast night: the choir at the second bell, the guards' cider at midnight,
+  the vault under the old tower and a grating to the drains), a drain grate with Sasska's chalk
+  mark, and Ysolde Marrin at the Lion house (empty chairs at the Lions' feast table). Below comes
+  next. "Start at..." has "Aubermont, the river gate".
 - **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
   the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
   3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the

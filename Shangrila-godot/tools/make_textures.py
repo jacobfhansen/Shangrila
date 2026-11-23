@@ -1351,6 +1351,93 @@ def aubermont_old_town():
     to_img(np.stack([30 * v, 44 * v, 28 * v], -1)).save(OUT / "aub_grass.png")
 
 
+def _crest(d, kind, cx, cy, r, col, field):
+    """A shield with a charge: tower and key (Morvane), lion, ship, wheel, sheaf."""
+    d.polygon([(cx - r, cy - r), (cx + r, cy - r), (cx + r, cy + r * 0.3), (cx, cy + r * 1.2), (cx - r, cy + r * 0.3)],
+              fill=field, outline=col)
+    if kind == "morvane":
+        d.rectangle([cx - r * 0.5, cy - r * 0.6, cx - r * 0.1, cy + r * 0.6], fill=col)
+        for k in range(2):
+            d.rectangle([cx - r * 0.55 + k * r * 0.3, cy - r * 0.8, cx - r * 0.42 + k * r * 0.3, cy - r * 0.6], fill=col)
+        d.ellipse([cx + r * 0.15, cy - r * 0.6, cx + r * 0.55, cy - r * 0.2], outline=col, width=2)
+        d.line([(cx + r * 0.35, cy - r * 0.2), (cx + r * 0.35, cy + r * 0.6)], fill=col, width=3)
+        d.line([(cx + r * 0.35, cy + r * 0.45), (cx + r * 0.55, cy + r * 0.45)], fill=col, width=3)
+    elif kind == "lion":
+        d.ellipse([cx - r * 0.4, cy - r * 0.6, cx + r * 0.3, cy + r * 0.1], fill=col)
+        d.rectangle([cx - r * 0.3, cy, cx + r * 0.4, cy + r * 0.5], fill=col)
+    else:
+        d.ellipse([cx - r * 0.4, cy - r * 0.4, cx + r * 0.4, cy + r * 0.4], outline=col, width=3)
+
+
+def aubermont_hill():
+    w = h = 256
+    pale = (92, 90, 94)
+    # A great house front: dressed pale stone, pilasters, tall windows, a crest panel.
+    for name, seed in (("aub_noble", 1250), ("aub_noble_up", 1251)):
+        img = blocks(w, h, 5, 2, seed, mortar=2, base=pale, jitter=5)
+        d = ImageDraw.Draw(img)
+        for x in (0, 236):
+            d.rectangle([x, 0, x + 20, h], fill=(104, 102, 106))
+        glow = Image.new("RGB", (w, h), (0, 0, 0))
+        g = ImageDraw.Draw(glow)
+        lit = name.endswith("_up")
+        _gothic(d, 80, 40 if lit else 70, 176, 230, LIT if lit else DARK_PANE, (44, 42, 46), 5)
+        if lit:
+            _gothic(g, 80, 40, 176, 230, (255, 200, 120), (0, 0, 0), 5)
+            glow.save(OUT / "aub_noble_up_glow.png")
+        img.save(OUT / (name + ".png"))
+    # A great house's gate: iron in a stone arch, a crest above.
+    def gate(name, crest, seed, base):
+        img = blocks(w, h, 5, 2, seed, mortar=2, base=base, jitter=5)
+        d = ImageDraw.Draw(img)
+        _gothic(d, 50, 70, 206, h, (60, 62, 66), (30, 28, 32), 8, mullion=False)
+        for x in range(62, 200, 14):
+            d.line([(x, 90), (x, h)], fill=(16, 16, 18), width=4)
+        d.line([(50, 160), (206, 160)], fill=(16, 16, 18), width=5)
+        _crest(d, crest, 128, 36, 22, (190, 170, 110), (40, 36, 44))
+        img.save(OUT / (name + ".png"))
+    gate("aub_noble_gate", "wheel", 1252, pale)
+    gate("aub_lion_gate", "lion", 1253, pale)
+    # House Morvane: soot-black stone, narrow barred slits, nothing to welcome anyone.
+    black = (34, 32, 36)
+    img = blocks(w, h, 6, 2, 1260, mortar=2, base=black, jitter=4)
+    d = ImageDraw.Draw(img)
+    for x0 in (60, 180):
+        d.rectangle([x0, 90, x0 + 16, 170], fill=(10, 10, 12))
+        for yy in range(96, 170, 14):
+            d.line([(x0, yy), (x0 + 16, yy)], fill=(40, 40, 44), width=2)
+    img.save(OUT / "aub_morvane_wall.png")
+    img = blocks(w, h, 6, 2, 1261, mortar=2, base=black, jitter=4)
+    d = ImageDraw.Draw(img)
+    glow = Image.new("RGB", (w, h), (0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    _gothic(d, 108, 50, 148, 200, (12, 12, 14), (20, 20, 22), 4)
+    img.save(OUT / "aub_morvane_up.png")
+    glow.save(OUT / "aub_morvane_up_glow.png")
+    img = blocks(w, h, 6, 2, 1262, mortar=2, base=black, jitter=4)
+    d = ImageDraw.Draw(img)
+    _gothic(d, 46, 64, 210, h, (22, 22, 26), (12, 12, 14), 8, mullion=False)
+    d.line([(128, 76), (128, h)], fill=(8, 8, 10), width=5)
+    for y in (120, 180, 230):
+        d.line([(50, y), (206, y)], fill=(8, 8, 10), width=4)
+    for x in (100, 156):
+        for y in range(90, h, 24):
+            d.ellipse([x - 3, y - 3, x + 3, y + 3], fill=(60, 58, 50))
+    _crest(d, "morvane", 128, 30, 20, (150, 140, 120), (20, 20, 24))
+    img.save(OUT / "aub_morvane_gate.png")
+    img = blocks(w, h, 6, 2, 1263, mortar=2, base=black, jitter=4)
+    d = ImageDraw.Draw(img)
+    d.rectangle([90, 120, 166, h], fill=(48, 34, 24), outline=(14, 12, 12), width=5)
+    d.line([(90, 170), (166, 170)], fill=(20, 16, 14), width=3)
+    d.ellipse([150, 186, 158, 194], fill=(90, 80, 60))
+    img.save(OUT / "aub_servants_gate.png")
+    # The hill's blind garden walls: high, dressed, ivy-less, a coping of darker stone.
+    img = blocks(w, h, 5, 2, 1270, mortar=2, base=(70, 68, 72), jitter=5)
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, w, 10], fill=(46, 44, 48))
+    img.save(OUT / "aub_hill_wall.png")
+
+
 # ---------------------------------------------------------------- inn interiors (the inn screen)
 
 FIRE_BOX = (34, 120, 96, 168)   # the hearth opening in the 280x226 picture (the screen animates flames there)
@@ -1470,4 +1557,5 @@ if __name__ == "__main__":
     temple_textures()
     aubermont_textures()
     aubermont_old_town()
+    aubermont_hill()
     inn_interiors()

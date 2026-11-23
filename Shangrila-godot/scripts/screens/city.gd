@@ -18,7 +18,8 @@ var map_btn: Button
 ## The places on the plan, by AubermontStreets.ENTRANCES key.
 const PLACE_NAMES := {"gate": "River Gate", "inn": "The Lamplighter", "shop": "Corvin's Arms",
 	"oldtown": "To the Old Town", "hill": "Hill Gate", "rivergate": "To the River Gate",
-	"library": "The Great Library", "temple": "Temple of the Hours"}
+	"library": "The Great Library", "temple": "Temple of the Hours", "down": "Down to the River Gate",
+	"morvane": "House Morvane", "servants": "Servants' Gate", "lion": "The Lion House"}
 
 
 func _ready() -> void:
@@ -88,6 +89,9 @@ func _ready() -> void:
 	elif area.district == "oldtown" and not Game.story.get("oldtown_entered", false):
 		Game.story["oldtown_entered"] = true
 		_dialog.call_deferred("The old town", AubermontData.oldtown_arrival())
+	elif area.district == "hill" and not Game.story.get("hill_entered", false):
+		Game.story["hill_entered"] = true
+		_dialog.call_deferred("The hill", AubermontData.hill_arrival())
 
 
 func _arrival() -> void:
@@ -111,18 +115,30 @@ func _after_move() -> void:
 				"rivergate": "Ahead: the arch back to the river gate.  Space to go through.",
 				"library": "Ahead: the Great Library, an open book carved over its door.  Space to go in.",
 				"temple": "Ahead: the Temple of the Hours, its clock face high above.  Space to go in.",
+				"down": "Ahead: the iron gate, back down to the river gate.  Space to go down.",
+				"morvane": "Ahead: the black gate of House Morvane, the tower and the key above it.",
+				"servants": "Ahead: the servants' gate, a low wooden door in the black wall.",
+				"lion": "Ahead: the Lion house's gate, a yard of raked sand beyond the bars.",
+				"noble": "Ahead: the gate of a great house, shut.",
 			}.get(t.to, "")
 		"prop":
 			hint.text = {"founders": "Ahead: the Founders, five lords in stone round a broken crown.  Space to look.",
 				"lamp": "An iron lamp post, its lantern lit at midday.", "stall": "A market stall under a sagging awning.",
 				"barrels": "Barrels, smelling of fish and tar.", "grave": "A headstone, the name worn away.",
-				"yew": "A dead yew, black and twisted.", "well": "An old well. The water is a long way down."}.get(t.what, "")
+				"yew": "A dead yew, black and twisted.", "well": "An old well. The water is a long way down.",
+				"drain": "Ahead: an iron grate over the drains.  Space to look."}.get(t.what, "")
 		_:
 			hint.text = _where()
 
 
 func _where() -> String:
 	var p := area.pos
+	if area.district == "hill":
+		if p.x == 16 and p.y <= 4:
+			return "A side lane along the Morvane wall. It smells of coal smoke and the drains."
+		if p.y >= 8:
+			return "The street up from the hill gate, between blind walls."
+		return "The avenue of the great houses. Swept, silent, watched."
 	if area.district == "oldtown":
 		if p.x >= 16 and p.y <= 9:
 			return "The graveyard behind the Temple of the Hours. Crooked stones, wet grass, a dead yew."
@@ -187,6 +203,8 @@ func _use(t: Dictionary) -> void:
 		"prop":
 			if t.what == "founders":
 				await _dialog("The Founders", AubermontData.founders())
+			elif t.what == "drain":
+				await _dialog("The drain", AubermontData.drain())
 		"exit":
 			match t.to:
 				"gate":
@@ -205,7 +223,20 @@ func _use(t: Dictionary) -> void:
 				"temple":
 					await _dialog("The Temple of the Hours", AubermontData.temple())
 				"hill":
-					await _dialog("The hill gate", AubermontData.talk("2"))
+					if LehanQuests.get_q("aub_hill") == "":
+						await _dialog("The hill gate", AubermontData.talk("2"))
+					if LehanQuests.get_q("aub_hill") != "":
+						Game.main.goto("city", {"district": "hill", "at": "down"})
+				"down":
+					Game.main.goto("city", {"district": "gate", "at": "hill"})
+				"morvane":
+					await _dialog("House Morvane", AubermontData.morvane_gate())
+				"servants":
+					await _dialog("The servants' gate", AubermontData.servants_gate())
+				"lion":
+					await _dialog("The Lion house", AubermontData.lion_gate())
+				"noble":
+					await _dialog("A great house", AubermontData.noble_gate())
 
 
 # ---------------------------------------------------------------- talking

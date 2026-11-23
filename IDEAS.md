@@ -1610,7 +1610,7 @@ the chapter where the truth about the spirit gets darker, a hidden Aeldroe city.
 
 **Build order (proposed):** 1. the trail north and the world map (the city appears, the road
 north) (built); 2. the first district (gate and market) (built); 3. the old town and the library (Aldric) (built); 4.
-the hill and the sect's house; 5. below (the smugglers); 6. the heist and the third remnant.
+the hill and the sect's house (built); 5. below (the smugglers); 6. the heist and the third remnant.
 
 **As built (step 1)**
 - At the basin, after the merge, the spirit feels the next piece "north, behind iron, in a house
@@ -1683,6 +1683,27 @@ the hill and the sect's house; 5. below (the smugglers); 6. the heist and the th
   whisper behind it that frightened Pell into running (`aub_vault`).
 - **A man in grey,** one of the Quiet, watching from the alley (he checks faces against a list if
   Aldric was told what the party wants).
+
+**As built (step 4)**
+- **Up the hill:** Sergeant Voss lets the party up for a bribe (15 silver), a story (hired swords
+  for the Lion house's feast, Talk Hard), or Aldric's scholar's seal (and his masters learn where
+  the party goes). After that the gate is open to them (`aub_hill`).
+- **The hill** (`AubermontStreets.DISTRICTS.hill`): blind garden walls up from the gate, then an
+  avenue between the great houses: grand flat fronts of pale stone with crested iron gates (ship,
+  wheel, sheaf; the Lion house), and House Morvane, five storeys of soot-black stone with barred
+  slits, its gate lit by two lanterns, and the old tower rising behind with one window lit.
+- **The Morvane gate:** the gatekeeper turns everyone away (and says they were expected, if
+  Aldric told). Watching the gate (Perception) shows Steward Hallam and the vault's key on his
+  chain: a ward-stone disc with a tiny crown, cut from the king's own wards (`aub_chain`).
+- **The servants' gate** in the side lane: Bett from the kitchens (Talk, or 3 silver): on
+  Founders' Night the choir comes in at the second bell through this door, the guards are in the
+  kitchen for cider at midnight, the steward goes up and down to the old tower's cellar, and an
+  old grating leads from that cellar to the drains (`aub_servants`).
+- **The drain grate** at the lane's end: Sasska's three-claw mark; Below reaches under the hill.
+- **Ysolde Marrin** at the Lion house: the Lions' guest champion, scornful of the Morvanes; she
+  seats some of the Lions' feast guests and invites the party to come back if they find something
+  rotten (`aub_invite=offered`: the invitation route).
+- **A watchman** on the avenue (Nisk watched; rats in the drains).
 
 **Open questions**
 - The sect family's name (the dead servant's crest: a tower and a key).

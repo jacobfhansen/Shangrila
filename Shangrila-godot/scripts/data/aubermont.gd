@@ -28,7 +28,18 @@ const PEOPLE := {
 		"look": {"skin": "#c89a74", "hair": "#9a9890", "cloth": "#4a4440", "legs": "#3a3430", "beard": true}},
 	"9": {"key": "grey", "name": "A man in grey", "race": "Human", "height": 1.8,
 		"look": {"skin": "#d8c0a8", "hair": "#2a2a2a", "cloth": "#5a5c60", "legs": "#3a3c40", "hood": true}},
+	# The hill.
+	"7": {"key": "watchman", "name": "A hill watchman", "race": "Human", "height": 1.85,
+		"look": {"skin": "#d8b494", "hair": "#4a3a2a", "cloth": "#3a4458", "legs": "#22262e"}},
 }
+const STEWARD := {"name": "Steward Hallam", "race": "Human",
+	"look": {"skin": "#d8c4b0", "hair": "#8a8a8a", "cloth": "#141418", "legs": "#0e0e10"}}
+const GATEKEEPER := {"name": "The Morvane gatekeeper", "race": "Human",
+	"look": {"skin": "#c8a888", "hair": "#2a2420", "cloth": "#2a2a30", "legs": "#1a1a1e", "beard": true}}
+const BETT := {"name": "Bett", "race": "Human",
+	"look": {"skin": "#e8c0a0", "hair": "#a0602a", "cloth": "#5a4a3a", "legs": "#3a3028", "apron": true}}
+const YSOLDE := {"name": "Ysolde Marrin", "race": "Human",
+	"look": {"skin": "#d0a080", "hair": "#c8c0b0", "cloth": "#5a3a2a", "legs": "#3a2a20"}}
 const ALDRIC := {"name": "Aldric Thorne", "race": "Human",
 	"look": {"skin": "#e0c4a8", "hair": "#3a3434", "cloth": "#1e1e24", "legs": "#16161a", "beard": true}}
 const AMSEL := {"name": "Sister Amsel", "race": "Human",
@@ -64,6 +75,10 @@ static func cast() -> Dictionary:
 	c["aldric"] = ALDRIC
 	c["amsel"] = AMSEL
 	c["archivist"] = ARCHIVIST
+	c["steward"] = STEWARD
+	c["gatekeeper"] = GATEKEEPER
+	c["bett"] = BETT
+	c["ysolde"] = YSOLDE
 	return c
 
 
@@ -128,6 +143,7 @@ static func talk(id: String) -> Array:
 		"hesk": return _hesk()
 		"odo": return _odo()
 		"grey": return _grey()
+		"watchman": return _watchman()
 	return []
 
 
@@ -174,10 +190,35 @@ static func _hillguard() -> Array:
 		out.append({"s": "hillguard", "t": "Till then, nobody goes up without a pass from a house. Not my rule. I just stand here."})
 		out.append(_fx("q:aub_feast=heard"))
 		out.append({"n": "(Founders' Night: the hill houses hold a feast, with guest lists. A way up the hill, for anyone who can get on one.)"})
-	else:
+	elif q("aub_hill") == "":
 		out.append({"s": "hillguard", "t": "Still no pass? Then still no hill."})
 	if not nisk.is_empty():
 		out.append({"s": "hillguard", "a": "eyeing %s" % _first(nisk), "t": "And keep that one where I can see it. Nisk in the city carry a token from the watch-house, or they spend the night in it."})
+	if q("aub_hill") != "":
+		out.append({"s": "hillguard", "t": "You again. Go on up. Mind your manners on the hill; they notice."})
+		return out
+	# The ways up: a bribe, a story (hired swords for the Lion's feast), or Aldric's scholar's seal.
+	var talker := LehanQuests.best("talk")
+	var ok := Game.check(talker, "talk", Game.HARD)
+	var up := [{"n": "Voss steps aside, and the iron gate swings open on a street that climbs, wide and clean and quiet, between high walls."},
+		{"n": "(The way up the hill is open to you now.)"}]
+	var opts: Array = []
+	opts.append({"t": "Slip him something for his trouble (15 silver).", "silent": true, "tip": "Needs 15 silver in the party purse",
+		"after": [_fx("pay:15"), {"s": "hillguard", "a": "pocketing it without looking", "t": "Deliveries. Of course. I'll remember your faces, so don't make me sorry."}, _fx("q:aub_hill=bribed")] + up})
+	opts.append({"t": "Say you're hired swords for the Lion house's feast, come to see the ground.", "silent": true, "say": host, "ok": ok,
+		"checks": [LehanQuests.chk(talker, "talk", Game.HARD)],
+		"after": ([{"s": host, "t": "The Lion house hired us for Founders' Night. Extra blades at the door. Their captain wants us to walk the ground first."},
+			{"s": "hillguard", "t": "The Lions would. They trust nobody, and they're right. Go on, then."}, _fx("q:aub_hill=talked")] + up) if ok
+			else [{"s": host, "t": "The Lion house hired us for Founders' Night. Extra blades at the door."},
+				{"s": "hillguard", "t": "Did they. Then they'll have given you a token with a lion on it. No? Then no."}]})
+	if gone("aldric") and Game.party.any(func(c): return c.get("recruit", "") == "aldric"):
+		opts.append({"t": "Let Aldric show his scholar's seal.", "silent": true,
+			"after": [{"s": "aldric", "t": "Aldric Thorne, reader to the House of the Wheel's library. These are my assistants."},
+				{"s": "hillguard", "t": "Master Thorne. Of course."},
+				{"n": "Voss doesn't even look at the seal. He looks at Aldric as if he knows him well."},
+				_fx("q:aub_hill=aldric"), _fx("q:aub_aldric_told=1")] + up})
+	opts.append({"t": "Leave it.", "silent": true, "after": []})
+	out.append({"choice": "hillgate", "options": opts})
 	return out
 
 
@@ -455,4 +496,136 @@ static func _grey() -> Array:
 	elif Game.check(looker, "perception", Game.NORMAL):
 		out.append({"n": "%s notices the grey thread on his sleeve, the same as on the broken ward in the drowned temple." % _first(looker)})
 	out.append(_fx("q:aub_grey=seen"))
+	return out
+
+
+
+# ---------------------------------------------------------------- the hill
+
+static func hill_arrival() -> Array:
+	var out: Array = [
+		{"n": "Above the gate the city changes. The street is wide and swept, the houses stand back behind iron, and the quiet is so complete you can hear the river far below. Five great houses face each other across an avenue: four of pale stone with their crests over their gates, and one that is black."},
+		{"n": "Behind the black house an old tower rises, far older than the house, with one window lit near the top."},
+	]
+	if _host() != "":
+		out.append({"sp": "There. In there. I can feel it the way you feel heat on your face with your eyes shut. So close. A wall and a door and an iron lock, and then me."})
+	return out
+
+
+## The Morvane gate. The gatekeeper; watching the gate shows the steward and what he wears on a chain.
+static func morvane_gate() -> Array:
+	var host := _host()
+	var looker := LehanQuests.best("perception")
+	var ok := Game.check(looker, "perception", Game.NORMAL)
+	var out: Array = [
+		{"n": "A double gate of black iron, studded, set deep in the black wall. Over it, the tower and the key, carved and not painted, so old the edges have gone soft. There's no bell, only a grille at head height."},
+	]
+	if q("aub_gate") == "":
+		if q("aub_aldric_told") != "":
+			out.append({"s": "gatekeeper", "a": "through the grille", "t": "Ah. You'll be the ones asking after old rolls in the library. We were told you might come by. The house isn't receiving."})
+			if host != "":
+				out.append({"sp": "Told. Aldric told them. Of course he did."})
+		else:
+			out.append({"s": "gatekeeper", "a": "through the grille", "t": "The house isn't receiving. Petitions to the steward, in writing, through the temple. Good day."})
+		out.append(_fx("q:aub_gate=refused"))
+	else:
+		out.append({"n": "The grille stays shut."})
+	if q("aub_chain") == "":
+		out.append({"choice": "morvane", "options": [
+			{"t": "Wait across the avenue and watch the gate.", "silent": true, "ok": ok,
+				"checks": [LehanQuests.chk(looker, "perception", Game.NORMAL)],
+				"after": ([{"n": "An hour passes. Then the gate opens a crack and a tall, grey man in black comes out, two guards behind him: the steward. On a chain round his neck, outside his coat where everyone can see it, hangs a disc of black stone as wide as a palm."},
+					{"n": "%s gets a good look as he passes: it's carved in rings of lines and circles, like the ward-stones in the tunnels under Lehan and in the drowned temple, and right in the middle, a tiny crown." % _first(looker)},
+					_fx("q:aub_chain=seen"), _fx("xp:%s" % LehanQuests.CHECK_XP),
+					{"n": "(Steward Hallam wears the vault's key: a ward-stone disc on a chain, not a key at all. It will open the door with no keyhole.)"}]
+					+ ([{"sp": "That stone. They cut it from my own wards. It's my key, and he wears it on his neck like a dog's tag."}] if host != "" else [])) if ok
+					else [{"n": "An hour passes. The gate opens once and shuts again behind somebody in black, too quickly to see more than a glint of something round on a chain."},
+						{"n": "(Try again another time.)"}]},
+			{"t": "Walk on.", "silent": true, "after": []},
+		]})
+	return out
+
+
+## The servants' gate in the side lane: Bett from the kitchens.
+static func servants_gate() -> Array:
+	var host := _host()
+	var talker := LehanQuests.best("talk")
+	var ok := Game.check(talker, "talk", Game.NORMAL)
+	var out: Array = [
+		{"n": "A low wooden door in the black wall, for coal and carts and people who don't count. It opens as you reach it, and a girl backs out with a bucket of ashes, sees you, and nearly drops it."},
+		{"s": "bett", "t": "Oh! You gave me a fright. Deliveries round the front. No, deliveries are here. What are you delivering?"},
+	]
+	if q("aub_servants") != "":
+		out.append({"s": "bett", "t": "You again. I can't stop, Cook'll skin me. Second bell, the choir, the guards' cider. I never told you nothing."})
+		return out
+	var told := [
+		{"s": "bett", "a": "glancing back at the door", "t": "Founders' Night? Worst night of the year. Two hundred guests, and the temple choir in at the second bell through this very door, and every guard in the house in the kitchen at midnight for the cider, steward or no steward."},
+		{"s": "bett", "t": "And the steward going up and down to the old tower's cellar all night like a man with a sore tooth. There's a door down there nobody else goes near. Pell said..."},
+		{"n": "She stops, and her face closes."},
+		{"s": "bett", "t": "Pell was a footman. He's gone. Cellar's got an old grating to the drains under the tower, Cook says, all rusted, nobody's opened it in a hundred years. That's all I know. I never told you nothing."},
+		_fx("q:aub_servants=told"),
+		{"n": "(Founders' Night at House Morvane: the choir comes in at the second bell through the servants' gate; the guards are in the kitchen at midnight; the vault is under the old tower, and an old grating leads from that cellar to the drains.)"},
+	]
+	out.append({"choice": "servants", "options": [
+		{"t": "Chat with her about the house, friendly.", "silent": true, "ok": ok,
+			"checks": [LehanQuests.chk(talker, "talk", Game.NORMAL)],
+			"after": told if ok else [{"s": "bett", "t": "I'm not to talk to people at the gate. Sorry."}, {"n": "(She hurries off. Another day, or a coin, might do it.)"}]},
+		{"t": "Press a few coins into her hand (3 silver).", "silent": true, "tip": "Needs 3 silver in the party purse",
+			"after": [_fx("pay:3"), {"s": "bett", "t": "Oh. Well. Just for a minute, then."}] + told},
+		{"t": "Move on.", "silent": true, "after": []},
+	]})
+	return out
+
+
+## The drain grate at the end of the lane: Below reaches up under the hill, and Sasska's mark.
+static func drain() -> Array:
+	var out: Array = [
+		{"n": "An iron grate in the cobbles, each bar as thick as a wrist, set into a frame sunk in lead. Warm air comes up through it, smelling of the river and of something worse. Far down, water runs."},
+		{"n": "Scratched into the kerb beside it, small and fresh, a mark in chalk: three claws."},
+		_fx("q:aub_drain=seen"),
+	]
+	if q("aub_wick") != "":
+		out.append({"n": "(Three claws: Sasska's mark. Below, Wick said, goes all the way up under the hill.)"})
+	else:
+		out.append({"n": "(Someone small uses these drains, and marks them.)"})
+	if q("aub_servants") != "":
+		out.append({"n": "(Bett said an old grating runs from the tower cellar down to the drains. From below, then.)"})
+	return out
+
+
+## The Lion house: Ysolde Marrin, champion, guest of the Lions, who despises the Morvanes.
+static func lion_gate() -> Array:
+	var host := _host()
+	var out: Array = []
+	if q("aub_ysolde") == "":
+		out.append({"n": "Through the bars of the Lion gate: a yard of raked sand, and in it a woman with white-grey hair, alone, going through the forms of a long sword, slow and exact, as if every cut were a word in a sentence she knows by heart."})
+		out.append({"n": "She finishes the form before she looks round."})
+		out.append({"s": "ysolde", "t": "You've been standing at the Morvane gate. Everyone on the avenue saw. Nobody stands at that gate."})
+		out.append({"s": host, "t": "Nobody answers it either."})
+		out.append({"s": "ysolde", "a": "with something close to a smile", "t": "No. Ysolde Marrin. I'm the Lions' guest, which is to say their ornament; they like a famous sword at the table. Three hundred years the Morvanes have had a seat at every table in this city, and never once drawn steel for it. Whatever they keep behind that wall, they keep it badly hidden."})
+		out.append({"s": "ysolde", "t": "If you find something rotten in that house, come and tell me. The Lions' table has empty chairs on Founders' Night, and I choose who sits in some of them."})
+		out.append(_fx("q:aub_ysolde=met"))
+		out.append(_fx("q:aub_invite=offered"))
+		out.append({"n": "(Ysolde Marrin can seat guests at the Lion house's feast: a way to be on the hill on Founders' Night, in silk.)"})
+		if host != "":
+			out.append({"sp": "That one has fought real wars. You can see it in how she stands. She'd be worth ten of Aldric."})
+	else:
+		out.append({"n": "Ysolde Marrin is in the yard again, cutting the air in slow, exact strokes."})
+		out.append({"s": "ysolde", "t": "Found anything rotten yet? Come back when you have."})
+	return out
+
+
+static func noble_gate() -> Array:
+	return [{"n": "An iron gate under a crest: a ship, or a wheel, or a sheaf of wheat. Beyond it, a raked drive and a house of pale stone with every shutter closed. A guard on the other side watches you until you move on."}]
+
+
+static func _watchman() -> Array:
+	var nisk := _of_race(Game.NISK)
+	var out: Array = [
+		{"s": "watchman", "t": "Business on the hill? Then go about it, and keep to the avenue. The houses don't like people in the lanes."},
+	]
+	if not nisk.is_empty():
+		out.append({"s": "watchman", "a": "staring at %s" % _first(nisk), "t": "And that one stays where I can see it."})
+	if q("aub_drain") != "":
+		out.append({"s": "watchman", "t": "Rats in the drains up here, big as dogs. Don't go poking at the grates."})
 	return out

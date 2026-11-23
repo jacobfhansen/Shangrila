@@ -1337,7 +1337,7 @@ func _city() -> void:
 		c._after_move()
 		await get_tree().create_timer(0.5).timeout
 		await _shot(v[2])
-	for stop in [[Vector2i(8, 7), 2, [], "52h_nan"], [Vector2i(10, 3), 3, [], ""], [Vector2i(10, 4), 2, [], ""],
+	for stop in [[Vector2i(8, 7), 2, [], "52h_nan"], [Vector2i(10, 3), 3, [2], ""], [Vector2i(10, 4), 2, [], ""],
 			[Vector2i(11, 6), 2, [], "52i_edrin"], [Vector2i(18, 6), 2, [0], "52j_wick"], [Vector2i(9, 6), 1, [0], "52k_founders"]]:
 		var c: Node = m.current
 		c.area.pos = stop[0]
@@ -1447,6 +1447,56 @@ func _old_town() -> void:
 	cm._use_ahead()
 	await get_tree().create_timer(1.0).timeout
 	print("old: back to ", m.current.area.district, " at ", m.current.area.pos)
+	await _hill()
+
+
+## The hill: up past Sergeant Voss (a bribe), the avenue and the Morvane tower, the Morvane gate
+## (watching for the steward's chain), Bett at the servants' gate, the drain, Ysolde at the Lion
+## house, a great house's gate, the watchman, the plan, and back down.
+func _hill() -> void:
+	var m: Node = Game.main
+	var c: Node = m.current
+	c.area.place_at("hill", true)
+	c.view.snap()
+	c._use_ahead()
+	await get_tree().create_timer(1.5).timeout
+	await _drive(m.current, [0], "54a_hill_gate")
+	await get_tree().create_timer(1.5).timeout
+	print("hill: way up ", LehanQuests.get_q("aub_hill"), " screen ", m.current_name, " district ", m.current.area.district)
+	await _drive(m.current, [])
+	await _shot("54b_hill")
+	var views := [[Vector2i(12, 6), 0, "54c_morvane"], [Vector2i(16, 4), 0, "54d_lane"], [Vector2i(3, 5), 1, "54e_avenue"],
+		[Vector2i(10, 9), 0, "54f_up_street"]]
+	for v in views:
+		var cc: Node = m.current
+		cc.area.pos = v[0]
+		cc.area.facing = v[1]
+		cc.view.snap()
+		cc._after_move()
+		await get_tree().create_timer(0.5).timeout
+		await _shot(v[2])
+	for stop in [[Vector2i(12, 5), 0, [0], "54g_morvane_gate"], [Vector2i(16, 2), 3, [1], "54h_bett"], [Vector2i(16, 2), 0, [], ""],
+			[Vector2i(5, 6), 2, [], ""], [Vector2i(15, 6), 2, [], ""], [Vector2i(11, 5), 2, [], ""]]:
+		var cc: Node = m.current
+		cc.area.pos = stop[0]
+		cc.area.facing = stop[1]
+		cc.view.snap()
+		cc._after_move()
+		await get_tree().create_timer(0.4).timeout
+		cc._use_ahead()
+		await get_tree().create_timer(1.5).timeout
+		await _drive(m.current, stop[2], stop[3])
+	print("hill: gate ", LehanQuests.get_q("aub_gate"), " chain ", LehanQuests.get_q("aub_chain"), " servants ", LehanQuests.get_q("aub_servants"),
+		" drain ", LehanQuests.get_q("aub_drain"), " ysolde ", LehanQuests.get_q("aub_ysolde"), " invite ", LehanQuests.get_q("aub_invite"))
+	var cm: Node = m.current
+	cm.map_btn.button_pressed = true
+	cm._on_map()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("54i_hill_map")
+	cm._travel("down")
+	cm._use_ahead()
+	await get_tree().create_timer(1.0).timeout
+	print("hill: back to ", m.current.area.district, " at ", m.current.area.pos)
 
 
 ## Oggal: Orrun at the gate, the boardwalk, Ubba's story, Grath-Ul, Hett's stall, the guest hut.

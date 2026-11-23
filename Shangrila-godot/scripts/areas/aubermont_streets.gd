@@ -69,17 +69,49 @@ const DISTRICTS := {
 		"library": {"cell": Vector2i(7, 2), "dir": 0},
 		"temple": {"cell": Vector2i(13, 10), "dir": 0},
 	}},
+	# The hill, behind the iron gate: an avenue between the great houses. House Morvane is the
+	# black front in the north with its old tower behind; its servants' gate is in the side lane,
+	# which ends at a drain grate. The Lion house is across the avenue.
+	"hill": {"name": "the Hill", "map": [
+		"######################",
+		"########mmmmmmmmD#####",
+		"########m######V.#####",
+		"########m######m.#####",
+		"#qqQqqqqmmmmMmmm.qqQq#",
+		"#....................#",
+		"#..........7.........#",
+		"#jjjjJjjjj.qqqqQqqqqq#",
+		"##########.###########",
+		"##########.###########",
+		"##########.###########",
+		"##########.###########",
+		"##########.###########",
+		"##########.###########",
+		"##########H###########",
+		"######################",
+	], "exits": {"H": "down", "M": "morvane", "V": "servants", "J": "lion", "Q": "noble"},
+	"entrances": {
+		"down": {"cell": Vector2i(10, 13), "dir": 2},
+		"morvane": {"cell": Vector2i(12, 5), "dir": 0},
+		"servants": {"cell": Vector2i(16, 2), "dir": 3},
+		"lion": {"cell": Vector2i(5, 6), "dir": 2},
+	}},
 }
-## Grand fronts: flat, tall stone, no jutting storeys (the library, the temple).
-const FLAT := "yYuT"
+## Grand fronts: flat, tall stone, no jutting storeys (the library, the temple, the great houses).
+const FLAT := "yYuTmMVqQjJ"
 const FLAT_TEX := {"y": ["aub_library", "aub_library_up"], "Y": ["aub_library_door", "aub_library_up"],
-	"u": ["aub_temple", "aub_temple_up"], "T": ["aub_temple_door", "aub_temple_up"]}
+	"u": ["aub_temple", "aub_temple_up"], "T": ["aub_temple_door", "aub_temple_up"],
+	"m": ["aub_morvane_wall", "aub_morvane_up"], "M": ["aub_morvane_gate", "aub_morvane_up"],
+	"V": ["aub_servants_gate", "aub_morvane_up"], "q": ["aub_noble", "aub_noble_up"],
+	"Q": ["aub_noble_gate", "aub_noble_up"], "j": ["aub_noble", "aub_noble_up"], "J": ["aub_lion_gate", "aub_noble_up"]}
+## How many storeys a grand front stands (the rest: 4).
+const FLAT_STOREYS := {"m": 5, "M": 5, "V": 5}
 const CELL := DungeonView.CELL
 const GROUND := 2.3      # the stone ground floor
 const UPPER := 1.9       # each storey above it
 const JUT := 0.26        # how much further out each storey sits than the one below...
 const MAX_JUT := 0.78    # ... up to this, so across a narrow street the eaves nearly meet
-const BUILDING := "#IGSOHAYyTu"
+const BUILDING := "#IGSOHAYyTumMVqQjJ"
 
 var district := "gate"
 var map: Array = DISTRICTS.gate.map
@@ -143,7 +175,7 @@ func thing_at(cell: Vector2i) -> Dictionary:
 	if FLAT.contains(ch):
 		return {"kind": "wall"}
 	return {"kind": "prop", "what": {"F": "founders", "L": "lamp", "s": "stall", "B": "barrels", "+": "grave",
-		"w": "yew", "W": "well"}.get(ch, "")}
+		"w": "yew", "W": "well", "D": "drain"}.get(ch, "")}
 
 
 func ahead() -> Vector2i:
@@ -232,19 +264,23 @@ func build(root: Node3D, cam: Camera3D) -> void:
 					"O", "A": low = "aub_arch"
 					"H": low = "aub_hill_gate"
 				var flat := FLAT.contains(ch)
+				var blind := district == "hill" and ch == "#"   # the hill's garden walls: no windows, no jutting
 				if flat:
 					low = FLAT_TEX[ch][0]
+				elif blind:
+					low = "aub_hill_wall"
+					flat = true
 				var side := Vector3.UP.cross(out)
 				var side_g := Vector2i(roundi(side.x), roundi(side.z))
 				var kl := _corner(n, cell, -side_g)
 				var kr := _corner(n, cell, side_g)
-				var storeys := 4 if flat else _storeys(n)
+				var storeys: int = (3 if blind else FLAT_STOREYS.get(ch, 4)) if flat else _storeys(n)
 				# The ground floor, flat against the street.
 				_tool(by_tex, low)
 				_band(by_tex[low], wall_c, out, side, 0.0, GROUND, 0.0, 0.0, h, kl, kr)
 				# The upper storeys, each further out than the last and leaning outward as it rises.
 				for k in range(1, storeys):
-					var up: String = FLAT_TEX[ch][1] if flat else "aub_up_%d" % ((variant + k) % 4)
+					var up: String = ("aub_hill_wall" if blind else FLAT_TEX[ch][1]) if flat else "aub_up_%d" % ((variant + k) % 4)
 					if flat and ch in "uT" and k != 2:
 						up = "aub_temple"   # tall lancets; the rose window only in the middle
 					_tool(by_tex, up)
@@ -272,7 +308,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 					if ke != 0 or not BUILDING.contains(_char(m)):
 						continue
 					var m_flat := FLAT.contains(_char(m))
-					var lower := 4 if m_flat else _storeys(m)
+					var lower: int = FLAT_STOREYS.get(_char(m), 4) if m_flat else _storeys(m)
 					var y_lo := _top(lower)
 					if m_flat and not flat:
 						y_lo = GROUND   # a jutting house beside a flat front: close its overhang
@@ -284,6 +320,9 @@ func build(root: Node3D, cam: Camera3D) -> void:
 						side * e, Vector3.UP, (reach + depth) / 2.0, (top + 2.6 - y_lo) / 2.0)
 				# A spire on some outside corners, and a lantern on some walls.
 				var hs := _hash(n)
+				if ch == "M":   # lanterns either side of the Morvane gate, the only light it gives
+					for e3 in [-1, 1]:
+						lanterns.push_front([wall_c + side * (0.75 * e3) + out * 0.18 + Vector3(0, 2.4, 0), out])
 				if ch == "T":
 					spires.append([wall_c - out * 1.0 + Vector3(0, top + 2.0, 0), 9.0])
 				if (kl == 1 or kr == 1) and hs % 3 == 0 and not flat:
@@ -297,7 +336,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 	_add(root, floors, cob)
 	for t in by_tex:
 		var m := _mat(t, Color.WHITE)
-		if t.begins_with("aub_up_") or t in ["aub_inn", "aub_library_up", "aub_temple_up"]:
+		if t.begins_with("aub_up_") or t in ["aub_inn", "aub_library_up", "aub_temple_up", "aub_noble_up", "aub_morvane_up"]:
 			m.emission_enabled = true
 			m.emission = Color(1.0, 0.72, 0.4)
 			m.emission_energy_multiplier = 1.4
@@ -317,6 +356,8 @@ func build(root: Node3D, cam: Camera3D) -> void:
 		mi.material_override = slate
 		mi.position = sp[0] + Vector3(0, sp[1] / 2.0, 0)
 		root.add_child(mi)
+	if district == "hill":
+		_morvane_tower(root)
 	var lit := 0
 	for ln in lanterns:
 		_lantern(root, ln[0], ln[1], lit < 8)
@@ -333,6 +374,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 				"+": _grave(root, at, x * 3 + y)
 				"w": _yew(root, at)
 				"W": _well(root, at)
+				"D": _drain(root, at)
 				var ch:
 					if AubermontData.PEOPLE.has(ch) and not _gone(ch):
 						_person(root, at, AubermontData.PEOPLE[ch])
@@ -473,6 +515,40 @@ func _well(root: Node3D, at: Vector3) -> void:
 	for sx in [-0.55, 0.55]:
 		_box(root, at + Vector3(sx, 1.25, 0), Vector3(0.08, 1.7, 0.08), wood)
 	_box(root, at + Vector3(0, 2.05, 0), Vector3(1.3, 0.08, 0.1), wood)
+
+
+## The Morvanes' old tower, rising black behind their house, with one window lit near the top.
+func _morvane_tower(root: Node3D) -> void:
+	var stone := _mat("aub_morvane_wall", Color(0.7, 0.7, 0.75))
+	var at := Vector3(12 * CELL, 0, 2 * CELL)
+	_box(root, at + Vector3(0, 10.0, 0), Vector3(3.6, 20.0, 3.6), stone)
+	var slate := _mat("aub_slate", Color(0.7, 0.7, 0.75))
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.0
+	cm.bottom_radius = 2.8
+	cm.height = 6.0
+	cm.radial_segments = 4
+	var mi := MeshInstance3D.new()
+	mi.mesh = cm
+	mi.material_override = slate
+	mi.position = at + Vector3(0, 23.0, 0)
+	mi.rotation = Vector3(0, PI / 4, 0)
+	root.add_child(mi)
+	var glow := StandardMaterial3D.new()
+	glow.albedo_color = Color(0.9, 0.4, 0.2)
+	glow.emission_enabled = true
+	glow.emission = Color(1.0, 0.45, 0.2)
+	glow.emission_energy_multiplier = 2.0
+	_box(root, at + Vector3(0, 17.5, 1.81), Vector3(0.5, 1.2, 0.05), glow)
+
+
+## A heavy iron grate over the old drains, at the end of the lane.
+func _drain(root: Node3D, at: Vector3) -> void:
+	var iron := _plain(Color(0.07, 0.07, 0.08))
+	_box(root, at + Vector3(0, 0.02, 0), Vector3(1.4, 0.04, 1.4), _plain(Color(0.02, 0.02, 0.02)))
+	for i in 6:
+		_box(root, at + Vector3(-0.6 + i * 0.24, 0.06, 0), Vector3(0.06, 0.06, 1.4), iron)
+	_box(root, at + Vector3(0, 0.06, 0), Vector3(1.4, 0.06, 0.08), iron)
 
 
 func _stall(root: Node3D, at: Vector3) -> void:
