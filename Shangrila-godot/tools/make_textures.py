@@ -1012,6 +1012,115 @@ def shrine_textures():
     _vines(img, 958, 0.4).save(OUT / "shrine_carving.png")
 
 
+def _sign(d, kind, cx, cy, r, col, width=5):
+    """The signs cut into the flooded hall's stepping stones and the temple's carvings."""
+    if kind in ("crown", "chain", "wave"):
+        _sigil(d, kind, cx, cy, r, col, width)
+    elif kind == "rose":
+        for k in range(5):
+            a = k * 2 * np.pi / 5
+            px, py = cx + np.cos(a) * r * 0.45, cy - r * 0.2 + np.sin(a) * r * 0.45
+            d.ellipse([px - r * 0.35, py - r * 0.35, px + r * 0.35, py + r * 0.35], outline=col, width=max(2, width - 2))
+        d.ellipse([cx - r * 0.18, cy - r * 0.38, cx + r * 0.18, cy - r * 0.02], outline=col, width=max(2, width - 2))
+        d.line([(cx, cy + r * 0.25), (cx, cy + r)], fill=col, width=width)
+        d.line([(cx, cy + r * 0.6), (cx + r * 0.4, cy + r * 0.4)], fill=col, width=width - 1)
+    elif kind == "fire":
+        for k, sc in ((-1, 0.7), (0, 1.0), (1, 0.7)):
+            bx = cx + k * r * 0.5
+            pts = [(bx - r * 0.3 * sc, cy + r * 0.8), (bx - r * 0.35 * sc, cy + r * 0.1), (bx - r * 0.05, cy - r * 0.4 * sc),
+                   (bx + r * 0.05 * sc, cy - r * 0.95 * sc), (bx + r * 0.3 * sc, cy - r * 0.1), (bx + r * 0.3 * sc, cy + r * 0.8)]
+            d.line(pts, fill=col, width=width)
+        d.line([(cx - r, cy + r * 0.85), (cx + r, cy + r * 0.85)], fill=col, width=width)
+    elif kind == "sun":
+        d.ellipse([cx - r * 0.45, cy - r * 0.45, cx + r * 0.45, cy + r * 0.45], outline=col, width=width)
+        for k in range(8):
+            a = k * np.pi / 4
+            d.line([(cx + np.cos(a) * r * 0.65, cy + np.sin(a) * r * 0.65), (cx + np.cos(a) * r, cy + np.sin(a) * r)], fill=col, width=width)
+    elif kind == "sword":
+        d.line([(cx, cy - r), (cx, cy + r * 0.55)], fill=col, width=width + 1)
+        d.line([(cx - r * 0.45, cy + r * 0.45), (cx + r * 0.45, cy + r * 0.45)], fill=col, width=width)
+        d.line([(cx, cy + r * 0.55), (cx, cy + r)], fill=col, width=width)
+    elif kind == "tower":
+        d.rectangle([cx - r * 0.4, cy - r * 0.5, cx + r * 0.4, cy + r], outline=col, width=width)
+        for k in (-1, 0, 1):
+            d.rectangle([cx + k * r * 0.3 - r * 0.1, cy - r * 0.8, cx + k * r * 0.3 + r * 0.1, cy - r * 0.5], outline=col, width=max(2, width - 2))
+        d.rectangle([cx - r * 0.12, cy + r * 0.5, cx + r * 0.12, cy + r], fill=col)
+    elif kind == "star":
+        pts = []
+        for k in range(10):
+            a = -np.pi / 2 + k * np.pi / 5
+            rr = r if k % 2 == 0 else r * 0.42
+            pts.append((cx + np.cos(a) * rr, cy + np.sin(a) * rr))
+        d.line(pts + [pts[0]], fill=col, width=width)
+
+
+def temple_textures():
+    w = h = 256
+    # Dressed blocks, close-fitted, grey-green, stained dark where the water stood higher once.
+    base = blocks(w, h, 5, 2, 970, mortar=3, base=(96, 102, 96), jitter=10)
+    arr = np.array(base).astype(float)
+    ys = np.linspace(0, 1, h)[:, None]
+    stain = tile_noise(w, h, 5, 971, 4)
+    m = np.clip((ys - 0.55) * 2.2 + (stain - 0.5) * 0.6, 0, 1)[..., None] * 0.55
+    arr = arr * (1 - m) + np.array([40, 52, 46]) * m
+    line = (np.abs(ys - 0.5) < 0.008)[..., None]   # an old high-water line
+    arr = np.where(line, arr * 0.7, arr)
+    wall = to_img(arr)
+    wall.save(OUT / "temple_wall.png")
+    fl = blocks(128, 128, 2, 2, 972, mortar=3, base=(88, 92, 84), jitter=10)
+    fa = np.array(fl).astype(float)
+    silt = tile_noise(128, 128, 6, 973, 4)[..., None]
+    fa = fa * (0.8 + 0.3 * silt) * 0.6 + np.array([52, 58, 46]) * 0.4
+    to_img(fa).save(OUT / "temple_floor.png")
+    # The steps up to the grounds: a dark doorway, steps rising into grey daylight.
+    img = wall.copy()
+    d = ImageDraw.Draw(img)
+    d.rectangle([56, 30, 200, h], fill=(150, 156, 146))
+    for k in range(7):
+        y0 = h - (k + 1) * 30
+        sh = 20 + k * 18
+        d.rectangle([56, y0, 200, y0 + 30], fill=(sh, sh + 4, sh))
+        d.line([(56, y0), (200, y0)], fill=(min(255, sh + 50),) * 3, width=2)
+    d.rectangle([56, 30, 200, h], outline=(40, 44, 40), width=6)
+    img.save(OUT / "temple_steps.png")
+    # The carvings of the king's reign. West, his glory: the crown and the rose, a crowd
+    # kneeling, a woman turning away. East, his fall: flames over a city, the chain, the water.
+    groove = (46, 52, 48)
+    for name, panels in (("reign_west", ("crown", "rose")), ("reign_east", ("fire", "chain", "wave"))):
+        img = blocks(w, h, 5, 2, 974 if name == "reign_west" else 975, mortar=3, base=(112, 116, 108), jitter=8)
+        d = ImageDraw.Draw(img)
+        n = len(panels)
+        pw = (w - 20) // n
+        for i, kind in enumerate(panels):
+            x0 = 10 + i * pw
+            d.rectangle([x0 + 4, 40, x0 + pw - 4, 214], outline=groove, width=4)
+            _sign(d, kind, x0 + pw // 2, 90, 26 if n == 2 else 22, groove, 5)
+            for k in range(3 if n == 2 else 2):
+                fx = x0 + 22 + k * ((pw - 44) // max(1, (2 if n == 2 else 1)))
+                d.ellipse([fx - 5, 150, fx + 5, 160], outline=groove, width=2)
+                if kind == "crown":   # bowing
+                    d.line([(fx, 160), (fx + 6, 176), (fx + 4, 196)], fill=groove, width=2)
+                elif kind == "chain":
+                    d.line([(fx, 160), (fx, 194)], fill=groove, width=2)
+                    d.line([(fx - 8, 172), (fx + 8, 172)], fill=groove, width=3)
+                else:
+                    d.line([(fx, 160), (fx, 194)], fill=groove, width=2)
+                    if kind == "wave":
+                        d.line([(fx - 9, 178), (fx + 9, 178)], fill=groove, width=2)
+        img.save(OUT / (name + ".png"))
+    # The stepping stones' tops, one for each sign.
+    for kind in ("crown", "rose", "fire", "chain", "sun", "sword", "tower", "star"):
+        st = blocks(128, 128, 1, 1, 976, mortar=6, base=(104, 108, 100), jitter=4)
+        sa = np.array(st).astype(float)
+        moss = tile_noise(128, 128, 5, 977, 3)[..., None]
+        sa = sa * (1 - 0.3 * moss) + np.array([60, 80, 54]) * 0.3 * moss
+        img = to_img(sa)
+        d = ImageDraw.Draw(img)
+        d.ellipse([18, 18, 110, 110], outline=(58, 62, 56), width=3)
+        _sign(d, kind, 64, 64, 30, (34, 38, 34), 6)
+        img.save(OUT / ("stone_%s.png" % kind))
+
+
 if __name__ == "__main__":
     floor_tiles()
     dark_stone()
@@ -1036,3 +1145,4 @@ if __name__ == "__main__":
     mines_textures()
     marsh_textures()
     shrine_textures()
+    temple_textures()

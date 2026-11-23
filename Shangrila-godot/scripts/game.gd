@@ -514,6 +514,39 @@ func _estimate_xp_total(c: Dictionary) -> int:
 
 
 ## Story experience: everyone in the party gets `fraction` of a raise.
+## R2 Insight, from the marsh remnant: the spirit sees its followers' natures, not only its host's.
+func has_insight() -> bool:
+	return story.get("insight", false)
+
+
+## How many remnants the spirit has gathered (itself, the one woken at the roadside shrine, is 1).
+func remnants() -> int:
+	return story.get("remnants", 1)
+
+
+## What the spirit can see of a character's nature: [text, tooltip]. The host's traits always; the
+## others' only with Insight, which also shows their nerve and any grudge.
+func nature_of(c: Dictionary) -> Array:
+	var host: String = story.get("host", "")
+	var is_host := host != "" and LehanQuests.key_of(c) == host
+	var traits: Array = c.get("traits", [])
+	if is_host:
+		var tip := "The spirit lives inside its host, so it knows its host's nature."
+		tip += "\nThe spirit has gathered %d remnant%s of itself%s." % [remnants(), "" if remnants() == 1 else "s",
+			" (Insight: it sees the nature of everyone who follows it)" if has_insight() else ""]
+		return ["Nature: " + ", ".join(traits), tip]
+	if not has_insight():
+		return ["Nature: hidden from the spirit", "The spirit can't see into anyone but its host yet: only what they say and do."]
+	var n := Combat.base_nerve(c)
+	var bits: Array = [", ".join(traits) if not traits.is_empty() else "nothing out of the ordinary"]
+	bits.append("nerve %s" % ("shaky" if n <= 0 else "steady" if n <= 2 else "bold"))
+	if str(c.get("grudge", "")) != "":
+		bits.append("holds a grudge")
+	return ["Nature: " + " · ".join(bits),
+		"Insight: the spirit sees %s's nature.\nNerve %d: how well %s holds in a fight before anything goes wrong (class, traits and experience)." % [c.name.split(" ")[0], n, c.name.split(" ")[0]]
+		+ ("\nA grudge from the split in Lehan, not yet forgotten." if str(c.get("grudge", "")) != "" else "")]
+
+
 func story_xp(fraction: float) -> int:
 	var total := 0
 	for c in party:

@@ -16,6 +16,7 @@ const LIST := [
 	["mines2", "The Mines, level 2", "Level 1 done (its chests, fights and cart): everyone a step stronger, at the foot of the ladder."],
 	["mines3", "The Mines, level 3", "Levels 1 and 2 done (the miners out, the lift repaired): everyone two steps stronger, in steel."],
 	["marsh", "Oggal, the marsh village", "The mines' levels played and the jailers' record found: arriving at the Thuug village on the causeway."],
+	["temple", "The drowned temple", "Oggal's people met and the shrine grounds done (the pens cleared, the door opened with the chant): at the foot of the steps."],
 ]
 
 ## What each mines level's start counts as already done, on top of the levels before it.
@@ -26,6 +27,20 @@ const MINES_DONE := {
 		"m_chest_2g=1", "m_gate=shut", "m_water=drained", "m_survivors=out", "m_grp_2Y=1",
 		"m_grp_2D=1", "m_grp_2W=1", "m_note_2n=1", "m_vein_4_5=1"],
 }
+
+
+## The marsh starts: the mines played and the jailers' record found, at the Thuug marshes.
+static func _marsh(host: String) -> void:
+	start("mines3", host)
+	Game.story["marsh_road_done"] = true
+	LehanQuests.apply("q:m_record=1")
+	LehanQuests.apply("q:m_seal=1")
+	LehanQuests.sync_items()
+	if not "marsh_shrine" in Game.known:
+		Game.known.append("marsh_shrine")
+	for k in 4:
+		Game.party_add(51)
+	Game.location = "marsh_shrine"
 
 
 static func keys() -> Array:
@@ -72,17 +87,23 @@ static func start(key: String, host: String) -> void:
 			Game.discover_place("lehan", "smith")
 			Game.main.goto("streets", {"at": "council", "into": true})
 		"marsh":
-			start("mines3", host)
-			Game.story["marsh_road_done"] = true
-			LehanQuests.apply("q:m_record=1")
-			LehanQuests.apply("q:m_seal=1")
-			LehanQuests.sync_items()
-			if not "marsh_shrine" in Game.known:
-				Game.known.append("marsh_shrine")
-			for k in 4:
-				Game.party_add(51)
-			Game.location = "marsh_shrine"
+			_marsh(host)
 			Game.main.goto("village")
+		"temple":
+			_marsh(host)
+			Game.story["marsh_arrived"] = true
+			for k in ["marsh_orrun=trust", "marsh_ubba=told", "marsh_leeches=done", "marsh_chant=1", "s_reached_1=1",
+					"s_door=open", "s_order=known", "s_sigil_1=1", "s_sigil_2=1", "s_sigil_3=1", "s_grp_1N=1", "s_grp_1T=1",
+					"s_chest_1c=1"]:
+				LehanQuests.apply("q:" + k)
+			for c in Game.party:
+				Game.gain_xp(c, Game.raise_unit(c))
+			Game.site = "shrine"
+			Game.mine_level = 2
+			var at: Array = ShrineArea.arrive_near(2, "<")
+			Game.pos = at[0]
+			Game.facing = at[1]
+			Game.main.goto("dungeon", {"arrived": "down"})
 		"mines", "mines2", "mines3":
 			Game.story["job_notice"] = true
 			Game.discover_place("lehan", "council")

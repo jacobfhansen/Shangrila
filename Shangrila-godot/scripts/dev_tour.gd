@@ -1196,6 +1196,7 @@ func _shrine() -> void:
 	await _shot("49h_map")
 	dg.map_btn.button_pressed = false
 	dg._on_map()
+	await _temple()
 	await _mine_at(1, ShrineArea.START, 2)
 	m.current._on_close.call()
 	await get_tree().create_timer(0.4).timeout
@@ -1211,6 +1212,77 @@ func _shrine() -> void:
 			lines = out
 	print("shrine: marsh light lured someone in ", lures, "/40 attacks: ", lines)
 	print("shrine: back at ", m.current_name, " site ", Game.site, " pos ", Game.pos)
+
+
+## The drowned temple under the shrine: down through the door, the broken ward, the carvings,
+## the priest's niche, the Drowned, the flooded hall (a wrong stone, the spirit's memory, the
+## crossing), the basin and the merge, Insight on the sheet, and back up the steps.
+func _temple() -> void:
+	var m: Node = Game.main
+	await _mine_use(1, Vector2i(11, 7), 0, [0])
+	await get_tree().create_timer(1.5).timeout
+	print("temple: screen ", m.current_name, " level ", Game.mine_level, " at ", Game.pos)
+	await _drive(m.current, [])
+	await _shot("50a_temple")
+	if m.current.combat:
+		await _mine_fight()
+	for c in Game.party:
+		c.hits = c.max_hits
+	await _mine_at(2, Vector2i(5, 13), 1)
+	await get_tree().create_timer(0.4).timeout
+	await _shot("50a2_shallows")
+	await _mine_use(2, Vector2i(14, 13), 2, [], "")
+	await _shot("50b_ward")
+	await _drive(m.current, [])
+	await _mine_use(2, Vector2i(1, 14), 3, [0], "50c_reign_west")
+	await _mine_use(2, Vector2i(2, 12), 2, [0])
+	await _mine_step(2, Vector2i(7, 15), 0)
+	await _mine_fight("50d_drowned")
+	for c in Game.party:
+		c.hits = c.max_hits
+	await _mine_step(2, Vector2i(14, 8), 0)
+	await _mine_fight()
+	for c in Game.party:
+		c.hits = c.max_hits
+	await _mine_use(2, Vector2i(14, 6), 0, [0], "50e_reign_east")
+	print("temple: carvings ", LehanQuests.get_q("s_reign_K"), "/", LehanQuests.get_q("s_reign_J"), " path ", LehanQuests.get_q("s_path"),
+		" tracks ", LehanQuests.get_q("s_tracks"), " groups ", LehanQuests.get_q("s_grp_2A"), "/", LehanQuests.get_q("s_grp_2B"))
+	await _mine_step(2, Vector2i(7, 12), 0)
+	await _drive(m.current, [1], "50f_hall")
+	await _mine_at(2, Vector2i(7, 10), 0)
+	await get_tree().create_timer(0.4).timeout
+	await _shot("50g_stones")
+	await _mine_step(2, Vector2i(5, 10), 0)
+	await _drive(m.current, [])
+	await get_tree().create_timer(1.0).timeout
+	print("temple: wrong stone, washed back to ", Game.pos, " step ", LehanQuests.get_q("s_step"), " washed ", LehanQuests.get_q("s_washed"))
+	if LehanQuests.get_q("s_path") == "":
+		await _mine_step(2, Vector2i(7, 12), 0)
+		await _drive(m.current, [0])
+	print("temple: path ", LehanQuests.get_q("s_path"))
+	for st in [Vector2i(7, 10), Vector2i(5, 8), Vector2i(9, 6), Vector2i(7, 4)]:
+		await _mine_step(2, st, 0)
+		await _drive(m.current, [])
+	print("temple: across, step ", LehanQuests.get_q("s_step"), " at ", Game.pos)
+	await _mine_at(2, Vector2i(7, 2), 0)
+	m.current._on_examine()
+	await get_tree().create_timer(3.0).timeout
+	await _shot("50h_memory")
+	await _drive(m.current, [])
+	await get_tree().create_timer(0.6).timeout
+	print("temple: remnant ", LehanQuests.get_q("s_remnant"), " insight ", Game.has_insight(), " remnants ", Game.remnants(),
+		" marsh ", Journal.status("marsh"))
+	await _mine_at(2, Vector2i(7, 2), 2)
+	await get_tree().create_timer(0.4).timeout
+	await _shot("50i_hall_clear")
+	m.goto("view", {"party": true, "index": 1, "back": "dungeon", "back_args": {"resume": true}})
+	await get_tree().create_timer(0.6).timeout
+	await _shot("50j_insight")
+	print("temple: nature ", Game.party.map(func(c): return Game.nature_of(c)[0]))
+	await _mine_at(2, Vector2i(9, 16), 3)
+	m.current._walk(0)
+	await get_tree().create_timer(1.2).timeout
+	print("temple: back up, level ", Game.mine_level, " at ", Game.pos, " screen ", m.current_name)
 
 
 ## Oggal: Orrun at the gate, the boardwalk, Ubba's story, Grath-Ul, Hett's stall, the guest hut.

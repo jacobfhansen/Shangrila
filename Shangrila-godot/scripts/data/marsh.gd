@@ -73,7 +73,7 @@ static func _first(c: Dictionary) -> String:
 static func meet_orrun() -> Array:
 	var host := _host()
 	var out: Array = [
-		{"n": "The causeway ends at a palisade of sharpened stakes. Beyond it, boardwalks run between reed huts on stilts, and smoke hangs low over the water. A broad Thuug in a coat of shell plates steps out with a spear and plants it across the planks."},
+		{"n": "The causeway passes under a frame of two tall posts hung with bone charms. Beyond it, boardwalks run between reed huts on stilts, and smoke hangs low over the water. A broad Thuug in a coat of shell plates steps out with a spear and plants it across the planks."},
 		{"s": "orrun", "t": "Hold. Strangers don't come down the causeway in a crowd. What do you want in Oggal?"},
 	]
 	var ommuk := _with("ommuk")
@@ -150,8 +150,45 @@ static func _ubba() -> Array:
 		out.append({"n": "(You know the old chant. Sing it at the sunken door.)"})
 	else:
 		out.append({"s": "ubba", "t": "Sing it slowly at the door. It is older than the stones."})
+	if q("s_remnant") != "":
+		out.append({"s": "ubba", "t": "Moss went out to his pens this morning and came back running. The water by the drowned house is clear, he says. Clear to the bottom, for the first time since my grandmother's grandmother."})
+		out.append({"s": "ubba", "a": "looking at the host for a long moment", "t": "Whatever you took out of there, I hope you know what to do with it."})
+	elif q("s_hall") != "" and q("s_path") == "" and q("marsh_song") == "":
+		out.append_array(_song_ask(ommuk))
+	elif q("marsh_song") != "":
+		out.append({"s": "ubba", "t": "Crown, rose, fire, chain, and the water. Mind your feet on those stones."})
 	if ommuk.is_empty() and Game.party.any(func(c): return "Pious" in c.get("traits", [])) and q("marsh_ubba") != "":
 		out.append({"s": "ubba", "t": "One of you prays, I can tell. Good. Pray hard out there."})
+	return out
+
+
+## After the party has seen the flooded hall: Ubba knows a children's rhyme about the drowned
+## house that tells the stones' order. Friends of Oggal (or Ommuk) just get it; others must ask well.
+static func _song_ask(ommuk: Dictionary) -> Array:
+	var host := _host()
+	var sing: Array = [
+		{"s": "ubba", "a": "after a long look", "t": "Stones with signs on them, in a hall of water. Hm. The children have a rhyme for skipping, older than any of them. Nobody remembers what it is about. Listen."},
+		{"n": "She sings it in the flat sing-song of a skipping game:\n\n%s" % ShrineQuest.SONG},
+		_fx("q:marsh_song=1"), _fx("q:s_path=known"),
+		{"n": "(Ubba's rhyme: crown, rose, fire, chain, and the water.)"},
+	]
+	if host != "":
+		sing.append({"sp": "Children skip to it. They skip to what I did."})
+	var out: Array = [{"s": host, "t": "Down in the temple there's a hall full of water, and stepping stones with signs cut into them. Do the old stories say anything about them?"}]
+	if not ommuk.is_empty() or q("marsh_leeches") == "done":
+		out.append_array(sing)
+		return out
+	var talker := LehanQuests.best("talk")
+	var ok := Game.check(talker, "talk", Game.NORMAL)
+	out.append({"s": "ubba", "t": "And why would I tell strangers what the drowned house wants? You haven't done one thing for Oggal."})
+	out.append({"choice": "song", "options": [
+		{"t": "Ask her for the sake of whatever is down there: it should not stay there.", "silent": true, "say": host, "ok": ok,
+			"checks": [LehanQuests.chk(talker, "talk", Game.NORMAL)],
+			"after": ([{"s": host, "t": "Whatever is in that basin has poisoned your water for longer than anyone can remember. Help us take it out."}] + sing) if ok
+				else [{"s": host, "t": "Whatever is in that basin has poisoned your water for longer than anyone can remember. Help us take it out."},
+					{"s": "ubba", "t": "Pretty words. Clear Moss's pens, and then we'll talk about songs."}]},
+		{"t": "Leave it for now.", "silent": true, "after": []},
+	]})
 	return out
 
 

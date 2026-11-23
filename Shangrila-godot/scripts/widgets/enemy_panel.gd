@@ -156,6 +156,24 @@ static func draw_monster(ci: CanvasItem, def: Dictionary, r: Rect2, dead: bool) 
 			ci.draw_line(c + Vector2(-18, 8) * s, c + Vector2(18, 8) * s, col.darkened(0.5), 2 * s)
 			for k in 5:
 				ci.draw_circle(c + Vector2(-12 + k * 6, 2 + (k % 2) * 6) * s, 1.6 * s, col.darkened(0.3))
+		"drowned":
+			# One of the Drowned: a swollen, pale body in a priest's rotted robe, hair hanging wet,
+			# arms reaching, water running off it.
+			var robe := col.darkened(0.45) if not dead else col
+			ci.draw_colored_polygon(PackedVector2Array([c + Vector2(-13, -6) * s, c + Vector2(13, -6) * s,
+				c + Vector2(17, 30) * s, c + Vector2(6, 26) * s, c + Vector2(0, 31) * s, c + Vector2(-8, 27) * s,
+				c + Vector2(-17, 30) * s]), robe)
+			ci.draw_polyline(PackedVector2Array([c + Vector2(-11, -2) * s, c + Vector2(-22, 2) * s, c + Vector2(-27, -6) * s]), col, 4 * s)
+			ci.draw_polyline(PackedVector2Array([c + Vector2(11, -2) * s, c + Vector2(23, 0) * s, c + Vector2(28, -8) * s]), col, 4 * s)
+			ci.draw_colored_polygon(_ell(c + Vector2(0, -16) * s, 10 * s, 11 * s), col)
+			ci.draw_colored_polygon(PackedVector2Array([c + Vector2(-10, -20) * s, c + Vector2(10, -20) * s,
+				c + Vector2(9, -2) * s, c + Vector2(6, -12) * s, c + Vector2(-6, -12) * s, c + Vector2(-9, -2) * s]), Color(0.12, 0.14, 0.12))
+			var pale := Color("#d8f0e8") if not dead else eye
+			ci.draw_circle(c + Vector2(-3.5, -15) * s, 1.8 * s, pale)
+			ci.draw_circle(c + Vector2(3.5, -15) * s, 1.8 * s, pale)
+			if not dead:
+				for k in 3:
+					ci.draw_line(c + Vector2(-8 + k * 8, 26) * s, c + Vector2(-8 + k * 8, 32) * s, Color(0.6, 0.75, 0.8, 0.6), 1 * s)
 		"delver":
 			# A blind, burrowing beast: a hunched mound of a body, a snout and great digging claws.
 			ci.draw_colored_polygon(_ell(c + Vector2(0, 10) * s, 22 * s, 15 * s), col)

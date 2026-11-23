@@ -61,6 +61,9 @@ const MONSTERS := {
 		"lure": true},
 	"mire_toad": {"name": "Mire Toad", "plural": "Mire Toads", "lvl": 6, "hp": [14, 20], "def": 7, "atk": 4, "dmg": [2, 7],
 		"speed": 1, "coins": [0, 0], "max": 1, "shape": "toad", "col": "#5a6a38", "size": 1.3, "verb": "slams into"},
+	# The drowned temple: the old priests, dead in the water and still keeping their house.
+	"drowned": {"name": "Drowned", "plural": "Drowned", "lvl": 5, "hp": [8, 12], "def": 7, "atk": 3, "dmg": [2, 6],
+		"speed": 1, "coins": [0, 3], "max": 4, "shape": "drowned", "col": "#9aa8a0", "verb": "grips", "undead": true},
 	# It cannot be beaten (yet): blows do nothing, it can't be turned or put to sleep, and it
 	# doesn't follow anyone who runs. See "The mines" in IDEAS.md.
 	"warden": {"name": "Warden", "plural": "Wardens", "lvl": 12, "hp": [99, 99], "def": 6, "atk": 7, "dmg": [3, 9],
@@ -454,6 +457,16 @@ func end_round() -> Array:
 ## once a friend has rallied them.
 func nerve(i: int) -> int:
 	var c: Dictionary = Game.party[i]
+	var n := base_nerve(c)
+	if "Loyal" in c.get("traits", []) and _friends_down(i) > 0:
+		n += 2
+	if rallied.has(i):
+		n += 2
+	return n
+
+
+## Nerve before a fight: class, traits and experience (what R2 Insight shows on the sheet).
+static func base_nerve(c: Dictionary) -> int:
 	var n := 0
 	if c.cls in [Game.WARRIOR, Game.PALADIN, Game.MONK]:
 		n += 2
@@ -464,11 +477,7 @@ func nerve(i: int) -> int:
 		n += 2
 	if "Cowardly" in traits:
 		n -= 2
-	if "Loyal" in traits and _friends_down(i) > 0:
-		n += 2
 	n += mini(2, Game.raises_bought(c) / 5)
-	if rallied.has(i):
-		n += 2
 	return n
 
 

@@ -13,10 +13,29 @@ extends RefCounted
 ##   1 2 3  the three sigils (stepped on)     F  Old Moss's fish pens (stepped on)
 ##   N  the Reed Stalkers' nest (a placed group)   T  the Mire Toad (a placed group)
 ##   c  an old offering box
+##
+## The temple (level 2): dressed stone under a vaulted roof, knee-deep water in the low halls.
+##   <  the steps up to the grounds (by the sunken door)     A B  the Drowned (placed groups)
+##   K J  the carvings of the king's reign (west: his glory; east: his fall)
+##   g  a broken ward slab (the sect was here)   c  a priest's niche
+##   h  the threshold of the flooded hall        o  a stepping stone (see STONES)
+##   X  the basin where the remnant lies, in water that never clears
 
 const START := Vector2i(6, 14)
 const START_FACING := 0
 const NAMES := ["The shrine grounds", "The drowned temple"]
+const TEMPLE_H := 3.0          # the temple's vault
+const HALL_WATER := -0.18      # the flooded hall's water, between the stones
+const KNEE := 0.06             # the water standing in the temple's low halls, just over the floor
+## The flooded hall's stepping stones, row by row from the threshold north to the basin: the
+## carved sign on each stone by its column (x). The right one in each row tells the king's story
+## in order: crowned, in love, burning her people, bound by his lords (then drowned: the basin).
+const STONES := {9: {5: "sun", 7: "crown", 9: "sword"}, 7: {5: "rose", 7: "tower", 9: "star"},
+	5: {5: "star", 7: "sword", 9: "fire"}, 3: {5: "sun", 7: "chain", 9: "tower"}}
+const STORY := ["crown", "rose", "fire", "chain"]
+const SIGN_NAMES := {"crown": "a crown", "rose": "a rose", "fire": "flames", "chain": "a chain", "sun": "a sun",
+	"sword": "a sword", "tower": "a tower", "star": "a star"}
+const HALL_BACK := Vector2i(7, 12)   # where the water washes the party back to
 const WALL_LOW := 1.9
 const WALL_HIGH := 3.1
 const POOL_Y := -0.45
@@ -40,16 +59,39 @@ const MAPS := [
 		"#~~,,..........,,#",
 		"######E###########",
 	],
+	[
+		"##################",
+		"####~~~X~~~#######",
+		"####.......#######",
+		"####~o~o~o~#######",
+		"####.......#######",
+		"####~o~o~o~###J###",
+		"####.......##,,.,#",
+		"####~o~o~o~##,B.,#",
+		"####.......#,,.,,#",
+		"####~o~o~o~#..,..#",
+		"####.......#.,,..#",
+		"#######h######.###",
+		"#...#..,,,....,..#",
+		"#.c.#.,,,~~,,....#",
+		"K...,.,A,~~,,.g..#",
+		"#...#.,,,,,,.#####",
+		"#####...<....#####",
+		"##################",
+	],
 ]
 const THINGS := [
 	{"E": {"kind": "exit"}, "D": {"kind": "shrine_door"}, "W": {"kind": "carving"}, "1": {"kind": "sigil"},
 		"2": {"kind": "sigil"}, "3": {"kind": "sigil"}, "F": {"kind": "pens"}, "N": {"kind": "group"},
 		"T": {"kind": "group"}, "c": {"kind": "chest"}, "s": {"kind": "statue"}, "r": {"kind": "reeds"},
 		"~": {"kind": "pool"}},
+	{"<": {"kind": "up"}, "A": {"kind": "group"}, "B": {"kind": "group"}, "K": {"kind": "reign"},
+		"J": {"kind": "reign"}, "g": {"kind": "ward_broken"}, "c": {"kind": "chest"}, "h": {"kind": "hall"},
+		"o": {"kind": "stone"}, "X": {"kind": "basin"}, "~": {"kind": "pool"}},
 ]
-const SOLID := ["exit", "chest", "shrine_door", "statue", "reeds", "pool", "carving"]
+const SOLID := ["exit", "chest", "shrine_door", "statue", "reeds", "pool", "carving", "up", "reign", "ward_broken", "basin"]
 const GATES := []
-const IN_ROCK := ["carving", "shrine_door"]
+const IN_ROCK := ["carving", "shrine_door", "up", "reign"]
 const OPEN := ".,"   # floor you walk on (',' with shallow water over it)
 
 var eye := 1.0
@@ -88,6 +130,9 @@ static func cleared(lv: int, ch: String, _cell := Vector2i.ZERO) -> bool:
 		"sigil": return q.call("s_sigil_" + ch) != ""
 		"pens": return q.call("marsh_leeches") == "done"
 		"shrine_door": return q.call("s_door") != ""
+		"reign": return q.call("s_reign_" + ch) != ""
+		"hall": return q.call("s_path") != ""
+		"basin": return q.call("s_remnant") != ""
 	return false
 
 
@@ -99,6 +144,8 @@ static func walkable(lv: int, cell: Vector2i) -> bool:
 
 
 static func arrive_near(lv: int, ch: String) -> Array:
+	if lv == 1 and ch == ">":
+		ch = "D"   # back up the steps, out through the sunken door
 	for y in MAPS[lv - 1].size():
 		var x: int = MAPS[lv - 1][y].find(ch)
 		if x < 0:
@@ -137,9 +184,22 @@ func thing_at(cell: Vector2i) -> Dictionary:
 	if k == "":
 		return {}
 	var gone := cleared(level, ch, cell)
-	if gone and k in ["group", "sigil", "pens"]:
+	if gone and k in ["group", "sigil", "pens", "hall"]:
 		return {}
+	if k == "stone":
+		return stone_at(cell)
 	return {"kind": k, "ch": ch, "key": key(level, ch), "cell": cell, "done": gone}
+
+
+## A stepping stone in the flooded hall: its row (1 nearest the threshold), its sign, and whether
+## it is the right one. A right stone already stood on is just floor.
+static func stone_at(cell: Vector2i) -> Dictionary:
+	var row: int = [9, 7, 5, 3].find(cell.y) + 1
+	var sign: String = STONES[cell.y][cell.x]
+	var right: bool = sign == STORY[row - 1]
+	if right and int("0" + LehanQuests.get_q("s_step")) >= row:
+		return {}
+	return {"kind": "stone", "ch": "o", "key": "2o", "cell": cell, "row": row, "sign": sign, "right": right, "done": false}
 
 
 func ahead() -> Vector2i:
@@ -162,6 +222,9 @@ func _height(cell: Vector2i) -> float:
 
 
 func build(root: Node3D, cam: Camera3D) -> void:
+	if level == 2:
+		_build_temple(root, cam)
+		return
 	var env := Environment.new()
 	var sky := Sky.new()
 	var sm := ProceduralSkyMaterial.new()
@@ -296,6 +359,189 @@ func build(root: Node3D, cam: Camera3D) -> void:
 		var a := rng.randf() * TAU
 		var r := rng.randf_range(22.0, 40.0)
 		_reeds(root, mid + Vector3(cos(a) * r, 0, sin(a) * r * 0.85), i + 300, POOL_Y)
+
+
+# ---------------------------------------------------------------- the temple (level 2)
+
+func _build_temple(root: Node3D, cam: Camera3D) -> void:
+	var env := Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color.BLACK
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.32, 0.37, 0.36)
+	env.ambient_light_energy = 1.1
+	env.fog_enabled = true
+	env.fog_light_color = Color(0.01, 0.02, 0.02)
+	env.fog_density = 0.065
+	var we := WorldEnvironment.new()
+	we.environment = env
+	root.add_child(we)
+	cam.fov = 75
+	var cs := DungeonView.CELL
+	var h := cs / 2.0
+	var merged := cleared(2, "X")
+	var by_tex := {}
+	var floors := _st()
+	var ceils := _st()
+	var knee := _st()
+	var hall := _st()
+	var pools := _st()
+	var stone_sides := _st()
+	var sz := size()
+	for y in sz.y:
+		for x in sz.x:
+			var cell := Vector2i(x, y)
+			if _rocky(cell):
+				continue
+			var ch := _char(cell)
+			var c := Vector3(x * cs, 0, y * cs)
+			_quad(ceils, c + Vector3(0, TEMPLE_H, 0), Vector3.DOWN, Vector3.BACK, h, h)
+			var in_hall := y <= 10 and x >= 4 and x <= 10
+			var low := 0.0
+			match ch:
+				"~", "X":
+					if in_hall:
+						_quad(hall, c + Vector3(0, HALL_WATER, 0), Vector3.UP, Vector3.FORWARD, h, h)
+						low = HALL_WATER - 0.6
+					else:
+						_quad(pools, c + Vector3(0, POOL_Y, 0), Vector3.UP, Vector3.FORWARD, h, h)
+						low = POOL_Y
+				"o":
+					# A stepping stone standing up out of the water, its sign cut into the top.
+					_quad(hall, c + Vector3(0, HALL_WATER, 0), Vector3.UP, Vector3.FORWARD, h, h)
+					var sign: String = STONES[y][x]
+					_tool(by_tex, "stone_" + sign)
+					_quad(by_tex["stone_" + sign], c + Vector3(0, 0.12, 0), Vector3.UP, Vector3.FORWARD, 0.62, 0.62)
+					for d in 4:
+						var dv := Vector3(Game.DIR_VEC[d].x, 0, Game.DIR_VEC[d].y)
+						_quad(stone_sides, c + dv * 0.62 + Vector3(0, (0.12 + HALL_WATER - 0.3) / 2.0, 0), dv, Vector3.UP, 0.62, (0.12 - HALL_WATER + 0.3) / 2.0)
+					low = HALL_WATER - 0.6
+				_:
+					_quad(floors, c, Vector3.UP, Vector3.FORWARD, h, h)
+					if ch == ",":
+						_quad(knee, c + Vector3(0, KNEE, 0), Vector3.UP, Vector3.FORWARD, h, h)
+			for d in 4:
+				var n: Vector2i = cell + Game.DIR_VEC[d]
+				var dv := Vector3(Game.DIR_VEC[d].x, 0, Game.DIR_VEC[d].y)
+				if _rocky(n):
+					var tex := "temple_wall"
+					match kind_of(2, _char(n)):
+						"up": tex = "temple_steps"
+						"reign": tex = "reign_west" if _char(n) == "K" else "reign_east"
+					var bottom := low
+					if tex != "temple_wall":
+						_tool(by_tex, tex)
+						_quad(by_tex[tex], c + dv * h + Vector3(0, h, 0), -dv, Vector3.UP, h, h)
+						bottom = cs
+					_tool(by_tex, "temple_wall")
+					_quad(by_tex["temple_wall"], c + dv * h + Vector3(0, (bottom + TEMPLE_H) / 2.0, 0), -dv, Vector3.UP, h, (TEMPLE_H - bottom) / 2.0)
+				elif low < 0.0 and not _char(n) in ["~", "X", "o"]:
+					# The stone edge of the water, down to its bottom.
+					_tool(by_tex, "temple_wall")
+					_quad(by_tex["temple_wall"], c + dv * h + Vector3(0, low / 2.0, 0), dv, Vector3.UP, h, -low / 2.0)
+	_add(root, floors, _mat("temple_floor", Color.WHITE))
+	_add(root, ceils, _mat("temple_wall", Color(0.6, 0.62, 0.6)))
+	_add(root, stone_sides, _mat("temple_wall", Color(0.75, 0.78, 0.76)))
+	for t in by_tex:
+		_add(root, by_tex[t], _mat(t, Color.WHITE))
+	# The water: dark and murky until the remnant is taken; then it runs clear.
+	var murk := Color(0.32, 0.4, 0.34) if not merged else Color(0.5, 0.7, 0.72)
+	var wm := _mat("marsh_water", murk, 1.0)
+	wm.roughness = 0.08
+	wm.metallic_specular = 0.9
+	_add(root, pools, wm)
+	var hm: StandardMaterial3D = wm.duplicate()
+	hm.albedo_color = murk.darkened(0.1)
+	_add(root, hall, hm)
+	var km := _mat("marsh_water", Color(murk, 0.6))
+	km.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	km.roughness = 0.08
+	_add(root, knee, km)
+
+	for y in sz.y:
+		for x in sz.x:
+			var cell := Vector2i(x, y)
+			var ch := _char(cell)
+			var at := Vector3(x * cs, 0, y * cs)
+			match kind_of(2, ch):
+				"chest": _chest(root, at, cleared(2, ch))
+				"ward_broken": _broken_ward(root, at)
+				"basin": _basin(root, at, merged)
+				"group":
+					if not cleared(2, ch):
+						_drowned_shape(root, at)
+	# Pillars along the flooded hall, between the rows of stones.
+	var pillar := _mat("temple_wall", Color(0.8, 0.82, 0.8))
+	for y in [2, 4, 6, 8, 10]:
+		for x in [4, 10]:
+			_cyl(root, Vector3(x * cs + (-0.55 if x == 4 else 0.55), TEMPLE_H / 2.0, y * cs), 0.3, TEMPLE_H, pillar)
+	var torch := OmniLight3D.new()
+	torch.light_color = Color(1.0, 0.8, 0.55)
+	torch.light_energy = 2.0
+	torch.omni_range = 12.0
+	torch.omni_attenuation = 1.2
+	torch.position = Vector3(0.15, 0.1, 0.1)
+	cam.add_child(torch)
+	var flicker := torch.create_tween().set_loops()
+	flicker.tween_property(torch, "light_energy", 1.8, 0.23)
+	flicker.tween_property(torch, "light_energy", 2.1, 0.31)
+	flicker.tween_property(torch, "light_energy", 1.9, 0.19)
+
+
+## A ward slab like the ones under Lehan, broken in two and lying in the silt. Recently.
+func _broken_ward(root: Node3D, at: Vector3) -> void:
+	var m := _mat("ward_seal", Color(0.9, 0.9, 0.9))
+	_box(root, at + Vector3(-0.3, 0.45, 0.1), Vector3(0.9, 0.9, 0.18), m, Vector3(0.25, 0.3, 0.15))
+	_box(root, at + Vector3(0.35, 0.12, -0.15), Vector3(0.8, 0.85, 0.18), m, Vector3(-1.45, 0.6, 0))
+	_box(root, at + Vector3(0, 0.05, 0.5), Vector3(0.2, 0.1, 0.15), _plain(Color(0.5, 0.5, 0.52)), Vector3(0, 0.8, 0))
+
+
+## The basin at the hall's far end: a round stone bowl on a step, full of black water, with a
+## faint light under the surface while the remnant still lies in it.
+func _basin(root: Node3D, at: Vector3, merged: bool) -> void:
+	var stone := _mat("temple_wall", Color(0.85, 0.86, 0.82))
+	_cyl(root, at + Vector3(0, HALL_WATER + 0.1, 0), 0.95, 0.3, stone)
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.8
+	cm.bottom_radius = 0.6
+	cm.height = 0.7
+	var bowl := MeshInstance3D.new()
+	bowl.mesh = cm
+	bowl.material_override = stone
+	bowl.position = at + Vector3(0, 0.55, 0)
+	root.add_child(bowl)
+	var wm := StandardMaterial3D.new()
+	wm.albedo_color = Color(0.04, 0.06, 0.05) if not merged else Color(0.45, 0.65, 0.68)
+	wm.roughness = 0.05
+	wm.metallic_specular = 1.0
+	if not merged:
+		wm.emission_enabled = true
+		wm.emission = Color(0.4, 0.75, 0.6)
+		wm.emission_energy_multiplier = 0.35
+	_cyl(root, at + Vector3(0, 0.88, 0), 0.74, 0.02, wm)
+	if not merged:
+		var gl := OmniLight3D.new()
+		gl.light_color = Color(0.5, 0.9, 0.7)
+		gl.light_energy = 0.9
+		gl.omni_range = 4.5
+		gl.position = at + Vector3(0, 1.2, 0)
+		root.add_child(gl)
+
+
+## Something pale standing in the water, waiting (a placed group of the Drowned).
+func _drowned_shape(root: Node3D, at: Vector3) -> void:
+	var m := _plain(Color(0.55, 0.6, 0.56))
+	_cyl(root, at + Vector3(-0.25, 0.6, 0.1), 0.18, 1.2, m, Vector3(0.05, 0, 0.08))
+	_cyl(root, at + Vector3(0.3, 0.55, -0.1), 0.17, 1.1, m, Vector3(-0.06, 0, -0.1))
+	var head := SphereMesh.new()
+	head.radius = 0.14
+	head.height = 0.28
+	for p in [Vector3(-0.22, 1.32, 0.12), Vector3(0.34, 1.2, -0.08)]:
+		var mi := MeshInstance3D.new()
+		mi.mesh = head
+		mi.material_override = m
+		mi.position = at + p
+		root.add_child(mi)
 
 
 # ---------------------------------------------------------------- props

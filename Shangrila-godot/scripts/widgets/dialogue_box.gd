@@ -410,6 +410,8 @@ func _show_speakers() -> void:
 		pic.mouse_filter = Control.MOUSE_FILTER_STOP
 		pic.tooltip_text = "%s (host)\nThe spirit speaks through them freely." % who.name if key == host \
 			else "%s\nThe spirit cannot reach them yet." % who.name
+		if key != host and Game.has_insight() and not who.get("traits", []).is_empty():
+			pic.tooltip_text += "\nInsight: " + ", ".join(who.traits)
 		speak_row.add_child(pic)
 		Ui.place(pic, Rect2(80 + i * 34, 0, 28, 28))
 	var me := _who(host)

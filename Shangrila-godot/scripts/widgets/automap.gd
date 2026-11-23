@@ -21,8 +21,9 @@ const MARKS := {
 	"carving": ["○", "Carving", INK], "gate": ["▬", "Blocked way", DANGER],
 	"trap": ["×", "Trap", DANGER], "breach": ["X", "The breach", DANGER], "warden": ["!", "Danger", DANGER],
 	"door": ["Π", "Sunken door", WAY], "pens": ["≈", "Fish pens", SAFE], "sigil": ["✦", "Something found", GOODS],
+	"stone": ["•", "Stepping stone", INK], "basin": ["◎", "The basin", GOODS], "ward_broken": ["⌿", "Broken ward", DANGER],
 }
-const CARVED := ["tomb", "pillar", "words", "carving"]
+const CARVED := ["tomb", "pillar", "words", "carving", "reign"]
 
 var pulse := 0.0
 
@@ -39,7 +40,7 @@ static func _mark(lv: int, cell: Vector2i) -> String:
 	var k: String = Game.area_script().kind_of(lv, ch)
 	var done: bool = Game.area_script().cleared(lv, ch, cell)
 	match k:
-		"exit", "up", "down", "lift", "camp", "lever", "note", "breach", "warden", "pens":
+		"exit", "up", "down", "lift", "camp", "lever", "note", "breach", "warden", "pens", "stone", "basin", "ward_broken":
 			return k
 		"shrine_door":
 			return "door"

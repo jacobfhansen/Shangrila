@@ -1402,7 +1402,7 @@ can be talked to. It is the home of the hooks for the Lehan quests.
 - **Open question:** what else should be in the square (market sounds, time of day, a
   pickpocket who tests Perception)?
 
-### The Drowned Shrine: the marsh remnant (agreed; steps 1-3 of 4 built)
+### The Drowned Shrine: the marsh remnant (built)
 The Jailer's Record found in the mines says the second piece of the spirit was "drowned at the
 old shrine on the marsh-folk's causeway, where the water never clears". The world map already has
 the Drowned Shrine, three days from Lehan. This is the next chapter: the road, the Thuug marsh
@@ -1465,7 +1465,7 @@ village, the overgrown shrine grounds and the temple below, and the second remna
   broken ward), to build up to them.
 
 **Build order:** 1. food and the road scenes (built); 2. the village (built); 3. the shrine grounds and the
-door (built); 4. the temple, the test and Insight.
+door (built); 4. the temple, the test and Insight (built).
 
 **As built (step 1)**
 - A day on the road costs 20 Endurance (was 8). Each evening everyone eats one ration from the
@@ -1515,6 +1515,32 @@ door (built); 4. the temple, the test and Insight.
   the last two are loud (`s_loud`, the temple below is warned). Behind it the steps go down; the
   temple is step 4.
 - "Start at..." has "Oggal, the marsh village" (the mines played, the record found).
+
+**As built (step 4)**
+- **The temple** (level 2 of `ShrineArea`): dark dressed stone under a vault, low halls flooded
+  knee-deep, a torch's light. The open sunken door leads down; the steps by the arrival lead up.
+- **The Drowned:** dead priests, slow and pale (undead). Two in the first room; a pair with leeches
+  guarding the east carving. If the door was forced or picked (`s_loud`), three Drowned and
+  leeches wait at the foot of the steps.
+- **The sect:** a ward slab like those under Lehan, broken recently, boot prints and a grey thread
+  (Orrun's grey strangers). No confrontation yet.
+- **The carvings of the reign:** west, his glory (the crown, the rose); east, his fall (the fire,
+  the chain, the water). Each takes a Lore check; both read, the hall's order is known.
+- **The test, the flooded hall:** four rows of three stepping stones, each carved with a sign;
+  the right ones tell the story: crown, rose, fire, chain (decoys: sun, sword, tower, star). A
+  wrong stone tips, the water rises, someone is hurt and the party is thrown back to the
+  threshold. The way is told by both carvings, by **Ubba's skipping rhyme** (asked in Oggal once
+  the hall is seen: free for friends of Oggal or with Ommuk, otherwise Talk), or by **the
+  spirit's memory** at the threshold, which costs the host 4 hits (it doesn't want to remember the
+  fire).
+- **The basin:** the remnant shows a memory: the king of Shangrila in a white hall, loved by
+  everyone, and one Aeldroe woman who turns away. It merges; the water in the whole temple runs
+  clear. "The Drowned Shrine" is done in the quest log; Ubba notices the clear water.
+- **R2 Insight:** `Game.has_insight()`, `Game.remnants()` (2 now). The character sheet's new
+  *Nature* line shows the host's traits always (and the remnant count in its tooltip), and with
+  Insight everyone's traits, nerve (shaky, steady, bold, from `Combat.base_nerve`) and any grudge.
+  The conversation window's portraits add the companions' traits to their tooltips.
+- "Start at..." has "The drowned temple" (the grounds done, the door opened with the chant).
 
 **Open questions**
 - Is Orrun or Ubba recruitable after the shrine (CHARACTERS.md has them as Tier 2 followers)?

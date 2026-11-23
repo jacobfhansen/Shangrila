@@ -32,6 +32,7 @@ var strip := []      # [{slot, portrait, name, bars}]
 var name_label: Label
 var cls_label: Label
 var race_label: Label
+var nature_label: Label
 var log_label: Label
 var back := "inn"         # the screen Leave returns to (args "back", "back_args")
 var back_args := {}
@@ -95,6 +96,9 @@ func _ready() -> void:
 	name_label = Ui.title(self, "", Vector2(250, 88), 20)
 	cls_label = Ui.label(self, "", Vector2(400, 94), 14, Ui.TEXT, 100)
 	race_label = Ui.label(self, "", Vector2(500, 94), 14, Ui.TEXT, 80)
+	nature_label = Ui.label(self, "", Vector2(250, 111), 11, Ui.DIM, 300)
+	nature_label.clip_text = true
+	nature_label.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var body := _Body.new()
 	add_child(body)
@@ -140,6 +144,9 @@ func refresh() -> void:
 	name_label.text = c.name
 	cls_label.text = Game.CLASSES[c.cls]
 	race_label.text = Game.RACES[c.race]
+	var nat := Game.nature_of(c)
+	nature_label.text = nat[0]
+	nature_label.tooltip_text = Ui.tip(nat[0].trim_prefix("Nature: ") + "\n\n" + nat[1])
 	for k in ability_rows:
 		var row: Dictionary = ability_rows[k]
 		var v := Game.ability(c, k)

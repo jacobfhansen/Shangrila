@@ -273,7 +273,7 @@ party is. Click the party's own place (or *Enter*) to go in, or another place to
 marker moves along the road).
 Each day on the road costs every character 8 Endurance (the apple bar), so bring food. There are
 three places so far: the Old Shrine, Lehan and the Mines, each a day apart along the road (and the
-Drowned Shrine, three days off, once the jailer's record is found; the marshes aren't built yet). Places and routes are listed in
+Drowned Shrine, three days off, once the jailer's record is found). Places and routes are listed in
 `LOCATIONS` and `ROUTES` in `scripts/game.gd`.
 
 ## Combat (new)
@@ -328,7 +328,19 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   Leeches, Reed Stalkers, Marsh Lights (which lure someone away) and a Mire Toad; three sigils to
   find; a carving that tells their order (Lore); Old Moss's fish pens to clear (fight, or smoke
   with Survival) for Ubba's chant; and the sunken door, opened by the sigils, the chant, force or
-  the lock (the last two loudly). The temple below comes next.
+  the lock (the last two loudly).
+- **The drowned temple:** behind the sunken door, steps lead down into the shrine's temple: dark,
+  dressed stone, the low halls flooded knee-deep. The Drowned (dead priests) and leeches; if the
+  door was forced or picked, they wait at the foot of the steps. The sect's broken ward and fresh
+  boot prints; a priest's niche; two carvings of the king's reign (Lore: his glory in the west,
+  his fall in the east). The flooded hall is the test: rows of stepping stones, each carved with
+  a sign, one right stone per row (crown, rose, fire, chain). A wrong one throws the party back
+  across the hall. Both carvings, Ubba's skipping rhyme (asked in Oggal after seeing the hall),
+  or the spirit's own memory (it hurts the host) tell the way. At the basin the remnant shows a
+  memory of the king's reign and merges with the spirit.
+- **R2 Insight:** after the merge, the character sheet shows everyone's nature (traits, nerve,
+  a grudge), not only the host's, and the conversation window's portraits show the companions'
+  traits. "Start at..." has "The drowned temple" for testing.
 - **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
   the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
   3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the

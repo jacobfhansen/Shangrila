@@ -258,12 +258,13 @@ func _after_move() -> void:
 			say(g.intro)
 			combat_tag = t.key
 			var c := Combat.new(0, g.m)
-			c.dark = Q.DARK
+			c.dark = _dark()
 			start_combat(c)
 			return
-		"note", "trap", "breach", "sigil", "pens":
+		"note", "trap", "breach", "sigil", "pens", "stone", "hall":
 			_scene.call_deferred({"note": "Something written", "trap": "Careful!", "breach": "The breach",
-				"sigil": "Something in the mud", "pens": "The fish pens"}[t.kind], Q.scene(Game.mine_level, t))
+				"sigil": "Something in the mud", "pens": "The fish pens", "stone": "The flooded hall",
+				"hall": "The flooded hall"}[t.kind], Q.scene(Game.mine_level, t))
 			return
 		"camp":
 			say("A camp. The party can rest here safely (Sleep).")
@@ -306,7 +307,15 @@ func _hint() -> void:
 		"carving": "Ahead: carved panels on the wall, half under ivy.",
 		"shrine_door": "Ahead: the sunken door stands open, steps going down." if t.get("done", false)
 			else "Ahead: a sunken stone door with three empty sockets.",
+		"reign": "Ahead: carvings of a king's reign, cut deep in the wall.",
+		"ward_broken": "Ahead: a broken slab of carved stone in the shallows.",
+		"stone": "Ahead: a stepping stone carved with %s." % ShrineArea.SIGN_NAMES.get(t.get("sign", ""), "a sign"),
+		"basin": "Ahead: the basin, its water clear now." if t.get("done", false)
+			else "Ahead: a stone basin, a faint light under black water.",
+		"hall": "Ahead: the flooded hall.",
 	}.get(k, "")
+	if k == "up" and Game.site == "shrine":
+		text = "Ahead: the steps up to the grounds."
 	if k == "exit" and Game.site == "shrine":
 		text = "Ahead: the causeway back to Oggal (walk on, or Space)."
 	if k == "chest" and Game.site == "shrine":
@@ -357,9 +366,14 @@ func _use(t: Dictionary) -> void:
 func _wanderers() -> Combat:
 	if Game.site == "shrine":
 		var c := Combat.new(0, ShrineQuest.wandering(Game.mine_level))
-		c.dark = ShrineQuest.DARK
+		c.dark = _dark()
 		return c
 	return Combat.new(Game.depth())
+
+
+## Whether fights here are in the dark (the mines, and the temple under the shrine).
+func _dark() -> bool:
+	return Q.DARK if Game.site == "mines" else ShrineQuest.is_dark(Game.mine_level)
 
 
 func _title(t: Dictionary) -> String:
@@ -367,7 +381,8 @@ func _title(t: Dictionary) -> String:
 		"water": "The flooded passage", "ward": "The ward door", "npc": "Survivors" if t.get("ch", "") == "S" else "Saelen",
 		"warden": "The Warden", "vein": "A seam of ore", "pillar": "A carved pillar", "words": "Carved words",
 		"lift": "The lift", "carving": "Carvings on the wall", "statue": "A fallen statue",
-		"shrine_door": "The sunken door"}.get(t.kind, "In the mines" if Game.site == "mines" else "The shrine grounds")
+		"shrine_door": "The sunken door", "reign": "The king's reign", "ward_broken": "A broken ward",
+		"basin": "The basin", "up": "The steps"}.get(t.kind, "In the mines" if Game.site == "mines" else ShrineArea.NAMES[Game.mine_level - 1])
 
 
 ## Moves the party to another level: down or up a ladder (arriving by the matching way), or by lift.
@@ -378,7 +393,10 @@ func _travel(to: int, how: String) -> void:
 		say("At the top of the ladder an ore cart stands jammed across the way. You can't get past it from here." if how == "up"
 			else "The way is blocked.")
 		return
-	say({"down": "You climb down the ladder...", "up": "You climb up the ladder...", "lift": "The lift sinks and rises through the dark..."}[how])
+	if Game.site == "shrine":
+		say("You go down the steps..." if how == "down" else "You climb the steps, up into the daylight...")
+	else:
+		say({"down": "You climb down the ladder...", "up": "You climb up the ladder...", "lift": "The lift sinks and rises through the dark..."}[how])
 	Game.mine_level = to
 	Game.pos = spot[0]
 	Game.facing = spot[1]
@@ -545,7 +563,7 @@ func _scene(title: String, lines: Array) -> void:
 		combat_tag = after_scene.fight
 		say(g.intro)
 		var c := Combat.new(0, g.m)
-		c.dark = Q.DARK
+		c.dark = _dark()
 		start_combat(c)
 	elif after_scene.has("fight"):
 		combat_tag = "warden"
