@@ -334,7 +334,10 @@ func _on_kill() -> void:
 
 
 func _on_leave() -> void:
-	Game.main.goto("city" if _aubermont() else "streets", {"at": "inn"})
+	if _aubermont():
+		Game.main.goto("city", {"district": "gate", "at": "inn"})
+	else:
+		Game.main.goto("streets", {"at": "inn"})
 
 
 func _on_save() -> void:

@@ -35,6 +35,16 @@ const RECRUITS := {
 		"abilities": {"combat": 3, "toughness": 2, "survival": 1},
 		"traits": ["Brave", "Melancholy", "Loyal"],
 		"look": {"skin": "#d8a880", "hair": "#4a3020", "cloth": "#5a4a3a", "legs": "#3a3028"}},
+	# Aubermont's old town (AubermontData): the scholar who offers himself (secretly the sect's man),
+	# and the gravedigger from the north road.
+	"aldric": {"name": "Aldric Thorne", "race": "Human", "cls": "Mage", "icon": 4,
+		"abilities": {"magic": 3, "lore": 3, "talk": 2, "perception": 1},
+		"traits": ["Deceitful", "Bookish", "Calm"],
+		"look": {"skin": "#e0c4a8", "hair": "#3a3434", "cloth": "#1e1e24", "legs": "#16161a", "beard": true}},
+	"odo": {"name": "Odo Brakk", "race": "Human", "cls": "Monk", "icon": 5,
+		"abilities": {"combat": 3, "toughness": 3, "survival": 1},
+		"traits": ["Humble", "Melancholy", "Pious"],
+		"look": {"skin": "#c89a74", "hair": "#9a9890", "cloth": "#4a4440", "legs": "#3a3430", "beard": true}},
 }
 const QUESTS := ["lisbet", "skee", "boddo"]   # the Lehan quests (Hal is won by the mines job)
 const ICON_BASE := 10   # portrait icons Game.PORTRAIT_CAST + ICON_BASE + n

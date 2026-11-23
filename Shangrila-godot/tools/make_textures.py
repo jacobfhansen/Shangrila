@@ -1269,6 +1269,88 @@ def aubermont_textures():
     img.save(OUT / "aub_shop.png")
 
 
+def aubermont_old_town():
+    """The Great Library's front (columns, tall windows) and the Temple of the Hours (buttresses,
+    a rose window, a clock face), each with a door, and their upper storeys."""
+    w = h = 256
+    pale = (82, 80, 84)
+    # The library: grey stone with fluted columns between tall dark windows.
+    def columns(img, seed):
+        d = ImageDraw.Draw(img)
+        for x in (0, 128):
+            d.rectangle([x, 0, x + 26, h], fill=(96, 94, 98))
+            for k in range(4):
+                d.line([(x + 4 + k * 6, 0), (x + 4 + k * 6, h)], fill=(70, 68, 72), width=2)
+        return d
+    img = blocks(w, h, 6, 2, 1200, mortar=2, base=pale, jitter=6)
+    d = columns(img, 1)
+    for x0 in (46, 174):
+        _gothic(d, x0, 70, x0 + 52, 230, DARK_PANE, (40, 38, 42), 4)
+    img.save(OUT / "aub_library.png")
+    img = blocks(w, h, 6, 2, 1201, mortar=2, base=pale, jitter=6)
+    d = columns(img, 2)
+    _gothic(d, 40, 60, 216, h, (44, 30, 22), (30, 28, 30), 8, mullion=False)
+    d.line([(128, 70), (128, h)], fill=(26, 18, 14), width=4)
+    d.rectangle([92, 20, 164, 52], fill=(70, 68, 72), outline=(40, 38, 42), width=3)   # an open book carved over the door
+    d.line([(128, 22), (128, 50)], fill=(40, 38, 42), width=3)
+    for k in range(3):
+        d.line([(100, 28 + k * 8), (122, 28 + k * 8)], fill=(40, 38, 42), width=2)
+        d.line([(134, 28 + k * 8), (156, 28 + k * 8)], fill=(40, 38, 42), width=2)
+    img.save(OUT / "aub_library_door.png")
+    img = blocks(w, h, 6, 2, 1202, mortar=2, base=pale, jitter=6)
+    d = columns(img, 3)
+    glow = Image.new("RGB", (w, h), (0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    for i, x0 in enumerate((46, 174)):
+        lit = i == 0
+        _gothic(d, x0, 20, x0 + 52, 236, LIT if lit else DARK_PANE, (40, 38, 42), 4)
+        if lit:
+            _gothic(g, x0, 20, x0 + 52, 236, (255, 200, 120), (0, 0, 0), 4)
+    img.save(OUT / "aub_library_up.png")
+    glow.save(OUT / "aub_library_up_glow.png")
+    # The temple: darker stone, buttresses, lancets; the door under a pointed arch; a rose window
+    # and a clock face (the Hours) above.
+    dark = (58, 56, 60)
+    def buttress(d):
+        for x in (0, 236):
+            d.rectangle([x, 0, x + 20, h], fill=(70, 68, 72))
+            d.polygon([(x, 40), (x + 20, 20), (x + 20, 40)], fill=(80, 78, 82))
+    img = blocks(w, h, 6, 3, 1210, mortar=3, base=dark, jitter=8)
+    d = ImageDraw.Draw(img)
+    buttress(d)
+    _gothic(d, 70, 50, 186, 230, DARK_PANE, (30, 28, 30), 5)
+    img.save(OUT / "aub_temple.png")
+    img = blocks(w, h, 6, 3, 1211, mortar=3, base=dark, jitter=8)
+    d = ImageDraw.Draw(img)
+    buttress(d)
+    _gothic(d, 50, 40, 206, h, (40, 26, 20), (30, 28, 30), 8, mullion=False)
+    for r in (70, 56):
+        d.arc([128 - r, 40 + 70 - r, 128 + r, 40 + 70 + r], 200, 340, fill=(80, 78, 82), width=3)
+    img.save(OUT / "aub_temple_door.png")
+    img = blocks(w, h, 6, 3, 1212, mortar=3, base=dark, jitter=8)
+    d = ImageDraw.Draw(img)
+    buttress(d)
+    glow = Image.new("RGB", (w, h), (0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    d.ellipse([58, 58, 198, 198], fill=(60, 30, 40), outline=(30, 28, 30), width=6)
+    g.ellipse([62, 62, 194, 194], fill=(170, 90, 80))
+    for k in range(12):
+        a = k * np.pi / 6
+        d.line([(128, 128), (128 + np.cos(a) * 66, 128 + np.sin(a) * 66)], fill=(30, 28, 30), width=4)
+        g.line([(128, 128), (128 + np.cos(a) * 66, 128 + np.sin(a) * 66)], fill=(0, 0, 0), width=4)
+    d.ellipse([104, 104, 152, 152], fill=(200, 190, 150), outline=(30, 28, 30), width=3)   # the clock face of the Hours
+    g.ellipse([106, 106, 150, 150], fill=(0, 0, 0))
+    d.line([(128, 128), (128, 110)], fill=(20, 20, 20), width=3)
+    d.line([(128, 128), (142, 134)], fill=(20, 20, 20), width=3)
+    img.save(OUT / "aub_temple_up.png")
+    glow.save(OUT / "aub_temple_up_glow.png")
+    # Wet, dark graveyard grass.
+    n = tile_noise(w, h, 10, 1220, 5)
+    n2 = tile_noise(w, h, 40, 1221, 2)
+    v = 0.6 + 0.6 * n + 0.3 * n2
+    to_img(np.stack([30 * v, 44 * v, 28 * v], -1)).save(OUT / "aub_grass.png")
+
+
 # ---------------------------------------------------------------- inn interiors (the inn screen)
 
 FIRE_BOX = (34, 120, 96, 168)   # the hearth opening in the 280x226 picture (the screen animates flames there)
@@ -1387,4 +1469,5 @@ if __name__ == "__main__":
     shrine_textures()
     temple_textures()
     aubermont_textures()
+    aubermont_old_town()
     inn_interiors()

@@ -8,3 +8,6 @@ Shangrila-old-code/
 
 # The dev tour's log (tools/tour.sh)
 Shangrila-godot/.tour/tour.log
+
+# Exported builds (Godot export, e.g. the Windows .exe)
+build/

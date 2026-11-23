@@ -1397,6 +1397,56 @@ func _city() -> void:
 	inn._on_leave()
 	await get_tree().create_timer(0.8).timeout
 	print("city: left the inn to ", m.current_name, " at ", m.current.area.pos)
+	await _old_town()
+
+
+## The old town: through the arch, the streets, Mother Hesk, Odo (joins), the library (the roll
+## through Aldric, who joins and is watched), the temple, the man in grey, the plan, and back.
+func _old_town() -> void:
+	var m: Node = Game.main
+	var c: Node = m.current
+	c.area.place_at("oldtown", true)
+	c.view.snap()
+	c._use_ahead()
+	await get_tree().create_timer(1.2).timeout
+	print("old: screen ", m.current_name, " district ", m.current.area.district, " at ", m.current.area.pos)
+	await _drive(m.current, [])
+	await _shot("53a_old_town")
+	var views := [[Vector2i(15, 10), 3, "53b_old_street"], [Vector2i(7, 3), 0, "53c_library"], [Vector2i(13, 10), 0, "53d_temple"],
+		[Vector2i(17, 9), 0, "53e_graveyard"], [Vector2i(7, 8), 0, "53f_well_square"]]
+	for v in views:
+		var cc: Node = m.current
+		cc.area.pos = v[0]
+		cc.area.facing = v[1]
+		cc.view.snap()
+		cc._after_move()
+		await get_tree().create_timer(0.5).timeout
+		await _shot(v[2])
+	for stop in [[Vector2i(5, 7), 3, [], ""], [Vector2i(17, 8), 0, [0], "53g_odo"], [Vector2i(7, 2), 0, [1, 1], "53h_library"],
+			[Vector2i(13, 10), 0, [], ""], [Vector2i(10, 13), 2, [], ""]]:
+		var cc: Node = m.current
+		cc.area.pos = stop[0]
+		cc.area.facing = stop[1]
+		cc.view.snap()
+		cc._after_move()
+		await get_tree().create_timer(0.4).timeout
+		cc._use_ahead()
+		await get_tree().create_timer(1.5).timeout
+		await _drive(m.current, stop[2], stop[3])
+	print("old: house ", LehanQuests.get_q("aub_house"), " aldric ", LehanQuests.get_q("aub_aldric"), " watched ", LehanQuests.get_q("aub_aldric_watched"),
+		" odo ", LehanQuests.get_q("aub_odo"), " hesk ", LehanQuests.get_q("aub_hesk"), " vault ", LehanQuests.get_q("aub_vault"),
+		" singers ", LehanQuests.get_q("aub_singers"), " grey ", LehanQuests.get_q("aub_grey"))
+	print("old: party ", Game.party.map(func(p): return p.name), " at the Lamplighter ", Game.roster.filter(func(p): return p.get("inn", "") == "aubermont").map(func(p): return p.name))
+	print("old: natures ", Game.party.map(func(p): return Game.nature_of(p)[0]))
+	var cm: Node = m.current
+	cm.map_btn.button_pressed = true
+	cm._on_map()
+	await get_tree().create_timer(0.3).timeout
+	await _shot("53i_old_map")
+	cm._travel("rivergate")
+	cm._use_ahead()
+	await get_tree().create_timer(1.0).timeout
+	print("old: back to ", m.current.area.district, " at ", m.current.area.pos)
 
 
 ## Oggal: Orrun at the gate, the boardwalk, Ubba's story, Grath-Ul, Hett's stall, the guest hut.

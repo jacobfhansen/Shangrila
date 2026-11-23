@@ -359,7 +359,15 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
   dismiss, rest, provisions, save; the city's checkpoint). Each inn keeps its own followers:
   those left at one inn wait there, out of reach from the other. Map (M) shows a plan of the
   district; click a place to walk there. The inn screen shows the inn's own room, with a fire
-  burning in the hearth. The old town and the hill come next. "Start at..." has "Aubermont, the river gate".
+  burning in the hearth.
+- **Aubermont, the old town:** west through the arch, a second district (each district is its
+  own street map in `AubermontStreets.DISTRICTS`). The Great Library, where the Founders' roll
+  names House Morvane (a reader's token and Lore, Aldric Thorne's help, or the closed stacks by
+  stealth); Aldric offers to join (with Insight the spirit sees he is Deceitful). The Temple of
+  the Hours (the Morvanes pay for its bells; its choir sings at their feast, through the servants'
+  gate). Odo Brakk in the graveyard (joins if the party treated him well on the road), Mother
+  Hesk (the runaway's mother: the iron door with no keyhole in the Morvane cellars), and a man in
+  grey watching from an alley. The hill and Below come next. "Start at..." has "Aubermont, the river gate".
 - **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
   the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
   3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the

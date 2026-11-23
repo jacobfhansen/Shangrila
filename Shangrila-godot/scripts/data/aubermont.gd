@@ -4,7 +4,11 @@ extends RefCounted
 ## shop and the Lamplighter inn. The first pieces of who the sect is: a crest on the Founders'
 ## statue whose name was chiselled off, a runaway servant, grey cloaks, and Founders' Night.
 ## Quest values: aub_crest ("seen" / "read"), aub_nan ("told"), aub_feast ("heard"),
-## aub_edrin ("met"), aub_wick ("paid"). See "The story onward" in IDEAS.md.
+## aub_edrin ("met"), aub_wick ("paid"). The old town: aub_house ("known": House Morvane named, by
+## "token", "aldric" or "stacks"), aub_token (a reader's token bought), aub_aldric ("joined" /
+## "refused"; aub_aldric_told: he knows what the party is after), aub_temple ("told"), aub_singers
+## (the temple's singers go up for the feast), aub_odo, aub_hesk ("told"), aub_vault ("heard": the
+## iron door in the Morvane cellars), aub_grey ("seen"). See "The story onward" in IDEAS.md.
 
 const PEOPLE := {
 	"1": {"key": "nan", "name": "Nan Grebe", "race": "Human", "height": 1.6,
@@ -17,13 +21,27 @@ const PEOPLE := {
 		"look": {"skin": "#e8c8a8", "hair": "#b8803a", "cloth": "#3a4a6a", "legs": "#2a2a3a"}},
 	"5": {"key": "wick", "name": "Wick", "race": "Human", "height": 1.25,
 		"look": {"skin": "#d8a878", "hair": "#3a2a1a", "cloth": "#4a4036", "legs": "#2a2620", "hood": true}},
+	# The old town.
+	"6": {"key": "hesk", "name": "Mother Hesk", "race": "Human", "height": 1.5,
+		"look": {"skin": "#d0a888", "hair": "#c8c4bc", "cloth": "#3e3a3a", "legs": "#2a2626", "hood": true}},
+	"8": {"key": "odo", "name": "Odo Brakk", "race": "Human", "height": 1.9,
+		"look": {"skin": "#c89a74", "hair": "#9a9890", "cloth": "#4a4440", "legs": "#3a3430", "beard": true}},
+	"9": {"key": "grey", "name": "A man in grey", "race": "Human", "height": 1.8,
+		"look": {"skin": "#d8c0a8", "hair": "#2a2a2a", "cloth": "#5a5c60", "legs": "#3a3c40", "hood": true}},
 }
+const ALDRIC := {"name": "Aldric Thorne", "race": "Human",
+	"look": {"skin": "#e0c4a8", "hair": "#3a3434", "cloth": "#1e1e24", "legs": "#16161a", "beard": true}}
+const AMSEL := {"name": "Sister Amsel", "race": "Human",
+	"look": {"skin": "#e8c8b0", "hair": "#2a2020", "cloth": "#5a4a2a", "legs": "#3a3020", "hood": true}}
+const ARCHIVIST := {"name": "The Archivist", "race": "Human",
+	"look": {"skin": "#e0c8b0", "hair": "#e0e0e0", "cloth": "#2a2a30", "legs": "#1a1a20", "beard": true}}
+const TOKEN := 5   # silver for a reader's token at the library
 const CORVIN := {"name": "Corvin", "race": "Human",
 	"look": {"skin": "#d0a888", "hair": "#8a8a8a", "cloth": "#2e2a2a", "apron": true, "beard": true}}
 
 ## Corvin's shop (the shop screen with {"shop": "aubermont"}): city steel and city prices.
 const SHOP := {"name": "Corvin's Arms", "price_mod": 1.2, "buys": "anything", "keeper": "Corvin",
-	"stock": [44, 45, 3, 32, 11, 12, 13, 10, 47, 15, 24, 23, 27, 50], "back": ["city", {"at": "shop"}]}
+	"stock": [44, 45, 3, 32, 11, 12, 13, 10, 47, 15, 24, 23, 27, 50], "back": ["city", {"district": "gate", "at": "shop"}]}
 const SHOP_TALK := [
 	"\"City steel, city prices. You'll find cheaper in Lehan, and it'll break cheaper too.\"",
 	"\"Founders' Night is coming. Every house on the hill wants new swords for its guards, to stand about looking grand. Good for trade.\"",
@@ -43,7 +61,42 @@ static func cast() -> Dictionary:
 		var p: Dictionary = PEOPLE[k]
 		c[p.key] = {"name": p.name, "race": p.race, "look": p.look}
 	c["corvin"] = CORVIN
+	c["aldric"] = ALDRIC
+	c["amsel"] = AMSEL
+	c["archivist"] = ARCHIVIST
 	return c
+
+
+## Whether someone from the streets has joined the party (or waits at an inn).
+static func gone(key: String) -> bool:
+	for c in Game.party + Game.roster:
+		if c.get("recruit", "") == key:
+			return true
+	return false
+
+
+## Someone joins on the spot: into the party if there is room, otherwise to wait at the Lamplighter.
+static func join(key: String) -> String:
+	if gone(key):
+		return ""
+	var r: Dictionary = LehanQuests.RECRUITS[key]
+	var c := Game.make_character(r.name, Game.CLASSES.find(r.cls), Game.RACES.find(r.race),
+		Game.PORTRAIT_CAST + LehanQuests.ICON_BASE + r.icon, r.abilities)
+	c["traits"] = r.traits.duplicate()
+	c["recruit"] = key
+	if Game.party.size() < Game.MAX_PARTY:
+		Game.party.append(c)
+		return "(%s joins the party.)" % r.name
+	c["inn"] = "aubermont"
+	Game.roster.append(c)
+	return "(The party is full: %s will wait at the Lamplighter.)" % r.name
+
+
+## The scene effects: join:KEY, otherwise as MarshRoad.apply. Returns a line for the log, or "".
+static func apply(fx: String) -> String:
+	if fx.begins_with("join:"):
+		return join(fx.substr(5))
+	return MarshRoad.apply(fx)
 
 
 static func _fx(fx: String) -> Dictionary:
@@ -72,6 +125,9 @@ static func talk(id: String) -> Array:
 		"crier": return _crier()
 		"edrin": return _edrin()
 		"wick": return _wick()
+		"hesk": return _hesk()
+		"odo": return _odo()
+		"grey": return _grey()
 	return []
 
 
@@ -201,4 +257,202 @@ static func founders() -> Array:
 					else [{"n": "%s stares at the smoothed stone, but whatever was there is gone." % _first(reader)}]},
 			{"t": "Walk on.", "silent": true, "after": []},
 		]})
+	return out
+
+
+
+# ---------------------------------------------------------------- the old town
+
+static func oldtown_arrival() -> Array:
+	var out: Array = [
+		{"n": "Through the arch the old town closes in: streets that bend for no reason, houses older and blacker than at the river gate, leaning so far that in places you could step from one window to the one across. Bells somewhere count the hour, one slow stroke after another."},
+	]
+	if _host() != "":
+		out.append({"sp": "Older stone here. Some of it was here before they were. I can feel it under the soot, like a bone under skin."})
+	return out
+
+
+static func _house_line() -> String:
+	return "House Morvane" if q("aub_house") != "" else "the house of the tower and the key"
+
+
+## The Great Library: the Founders' roll, in the closed stacks. A reader's token and Lore, Aldric
+## Thorne's help, or the stacks by stealth. Then Aldric offers to come along.
+static func library() -> Array:
+	var host := _host()
+	var reader := LehanQuests.best("lore")
+	var sneak := LehanQuests.best("stealth")
+	var ok_read := Game.check(reader, "lore", Game.NORMAL)
+	var ok_sneak := Game.check(sneak, "stealth", Game.NORMAL)
+	var out: Array = []
+	if q("aub_house") != "":
+		out.append({"n": "The Great Library: a vaulted hall of chained books, lamps on long chains, the scratch of pens. The archivist doesn't look up."})
+		if q("aub_aldric") == "" and not gone("aldric"):
+			out.append_array(_aldric_offer())
+		return out
+	out.append({"n": "The Great Library: a hall as long as a street, vaulted like a temple, shelves to the roof and every book on a chain. Lamps hang on chains too, so the light swings slowly when the door opens."})
+	out.append({"s": "archivist", "t": "The Founders' rolls? Closed stacks. Readers with a token only. Tokens are %d silver, and the stacks close at the bell." % TOKEN})
+	out.append({"n": "At the next desk a scholar in black lifts his head from a book: a thin, neat man with a grey-shot beard and very steady eyes."})
+	out.append({"s": "aldric", "t": "The Founders' rolls. Now there's a request you don't hear every day. Aldric Thorne; I've been reading those rolls for twenty years. If you tell me what you're looking for, I can save you the token and the afternoon."})
+	if Game.has_insight() and host != "":
+		out.append({"sp": "Look at him. Look properly, the way I can now. There's no warmth in that one at all: patience, and deceit, cold as a coin. He wants to know what we want. He wants it very much."})
+	var roll := [
+		{"n": "The roll is a long strip of vellum, brown at the edges. Four houses, each with its crest and its oath: the ship, the wheel, the lion, the sheaf. And a fifth, the tower and the key:"},
+		{"n": "\"House Morvane, Keepers of the Key, to whom the oath and the door were given, to hold until the end of days. Their name to be spoken no more in the city, by their own wish.\""},
+		_fx("q:aub_house=known"), _fx("xp:%s" % LehanQuests.CHECK_XP),
+	]
+	if host != "":
+		roll.append({"sp": "Morvane. A Morvane carried my keys. He stood at my door every night of my reign, and then he locked it from the other side."})
+	roll.append({"n": "(House Morvane: the jailers of the oath. Their house is on the hill.)"})
+	if q("aub_aldric") == "" and not gone("aldric"):
+		roll.append_array(_aldric_offer())
+	var opts: Array = []
+	opts.append({"t": "Buy a reader's token and search the rolls yourselves (%d silver)." % TOKEN, "silent": true, "ok": ok_read,
+		"checks": [LehanQuests.chk(reader, "lore", Game.NORMAL)], "tip": "Needs %d silver in the party purse" % TOKEN,
+		"after": ([_fx("pay:%d" % TOKEN), _fx("q:aub_token=1"),
+			{"s": "aldric", "a": "shrugging, and going back to his book", "t": "As you like."},
+			{"n": "In the closed stacks %s works along the shelves for an hour before finding the right press." % _first(reader)}] + roll
+			+ [_fx("q:aub_house=token")]) if ok_read
+			else [_fx("pay:%d" % TOKEN), _fx("q:aub_token=1"),
+				{"n": "%s searches the closed stacks until the bell, among a thousand rolls of tithes and boundaries, and finds nothing about the Founders." % _first(reader)},
+				{"n": "(The token is kept. Come back and try again, or take Aldric's help.)"}]})
+	opts.append({"t": "Tell Aldric what you're looking for, and let him find it.", "silent": true,
+		"after": [{"s": host, "t": "The fifth Founder. The house of the tower and the key."},
+			{"s": "aldric", "a": "after the smallest pause", "t": "Ah. Not many ask about them. Wait here."},
+			{"n": "He's back in minutes, with the right roll already open at the right place."}] + roll
+			+ [_fx("q:aub_house=aldric"), _fx("q:aub_aldric_told=1")]})
+	opts.append({"t": "Slip into the closed stacks without a token.", "silent": true, "ok": ok_sneak,
+		"checks": [LehanQuests.chk(sneak, "stealth", Game.NORMAL)],
+		"after": ([{"n": "While the archivist trims a lamp, %s goes through the gate to the stacks like a shadow and comes back with the Founders' roll under one arm." % _first(sneak)}] + roll
+			+ [_fx("q:aub_house=stacks")]) if ok_sneak
+			else [{"n": "A board creaks. The archivist's head comes up like a heron's."},
+				{"s": "archivist", "t": "Out. Readers with a token only. Out, before I call the watch."},
+				{"n": "(Thrown out, for today. A token, or Aldric, might still do it.)"}]})
+	opts.append({"t": "Leave the library.", "silent": true, "after": []})
+	out.append({"choice": "library", "options": opts})
+	return out
+
+
+## Aldric offers himself. The spirit, with Insight, sees what he is.
+static func _aldric_offer() -> Array:
+	var host := _host()
+	var out: Array = []
+	out.append({"n": "Aldric Thorne closes his book."})
+	out.append({"s": "aldric", "t": "Whatever you want with the Morvanes, you'll want someone who knows their house: the old plans, the servants' stair, who dines with whom. I know all of it. And I confess I'm curious. Let me come with you."})
+	if Game.has_insight() and host != "":
+		out.append({"sp": "He's lying about why. I can see it in him, plain as I see my host: Deceitful, patient, calm all the way down. He wants to be near us. Whoever sent him wants him near us."})
+	out.append({"choice": "aldric", "options": [
+		{"t": "Take him along.", "silent": true, "say": host,
+			"after": [{"s": host, "t": "Then come. We could use someone who knows the hill."},
+				{"s": "aldric", "t": "Splendid. I'll fetch my coat."}, _fx("q:aub_aldric=joined"), _fx("join:aldric")]},
+		{"t": "Take him along, and keep an eye on him.", "silent": true, "say": host,
+			"tip": "He'll come. You'll know what he is, and watch him.",
+			"after": [{"s": host, "t": "Come along, then."},
+				{"n": "%s smiles, and decides never to turn their back on him." % LehanQuests.host_first()},
+				_fx("q:aub_aldric=joined"), _fx("q:aub_aldric_watched=1"), _fx("join:aldric")]},
+		{"t": "Thank him, and refuse.", "silent": true, "say": host,
+			"after": [{"s": host, "t": "Thank you. We'll manage."},
+				{"s": "aldric", "a": "without the least sign of disappointment", "t": "Of course. I'm here most days, if you change your mind."},
+				_fx("q:aub_aldric=refused")]},
+	]})
+	return out
+
+
+## The Temple of the Hours: Sister Amsel. The Morvanes pay for the bells; the temple's singers go
+## up the hill for the Founders' Night feast.
+static func temple() -> Array:
+	var host := _host()
+	var out: Array = [
+		{"n": "Inside, the temple is all height and shadow. Above the altar a great clock turns, slow as a millstone, and every hour its bell shakes dust out of the vault. A priestess in ochre is trimming candles."},
+	]
+	if q("aub_temple") == "":
+		out.append({"s": "amsel", "t": "Welcome to the Hours. Light a candle for someone, if you like; it costs nothing, though the box by the door is grateful."})
+		out.append({"s": host, "t": "The clock and the bells: someone rich must pay for all this."})
+		out.append({"s": "amsel", "t": "%s. They have for three hundred years. Their steward brings the purse every quarter-day. The old lord himself hasn't been seen since the spring; gone south on some business, they say." % ("House Morvane" if q("aub_house") != "" else "The house of the tower and the key, on the hill")})
+		out.append({"s": "amsel", "t": "And every Founders' Night our choir goes up the hill to sing at their feast. Twelve voices, in hoods, through the servants' gate. I'm always short of voices. The fever took two this winter."})
+		out.append(_fx("q:aub_temple=told"))
+		out.append(_fx("q:aub_singers=heard"))
+		out.append({"n": "(The temple's choir sings at the Morvane feast on Founders' Night, and Sister Amsel is short of voices. A way up the hill, and through the servants' gate.)"})
+		if host != "":
+			out.append({"sp": "Gone south. In the spring. When the shrine by the road was found, and a company was paid to pull it down."})
+	else:
+		out.append({"s": "amsel", "t": "Back again? The choir practises at dusk, if you have a voice. I mean that."})
+	return out
+
+
+static func _hesk() -> Array:
+	var host := _host()
+	var out: Array = []
+	var knows := q("north_odo") != "" or q("aub_odo") != ""
+	if q("aub_hesk") == "":
+		out.append({"n": "An old woman sits on the well's edge with her hands in her lap, watching the arch as if someone might come through it."})
+		out.append({"s": "hesk", "t": "Have you come up the north road? My boy went that way, three weeks gone. Pell. Tall, in a blue coat. He was a footman on the hill. He didn't say goodbye."})
+		if knows:
+			out.append({"s": host, "t": "There was a man in a blue coat on the north road. A gravedigger found him. He was buried properly, with words said."})
+			out.append({"n": "For a long time she says nothing at all."})
+			out.append({"s": "hesk", "t": "He was frightened. He came home in the night, white as milk, and said there was something in the cellars. Behind the iron door, the one with no keyhole. The steward goes down with something on a chain round his neck that isn't a key."})
+			out.append({"s": "hesk", "t": "Pell said it whispered. Through the iron. In a voice like the old king's face on the coins, he said, as if a coin could talk. Then he ran. And they sent the grey ones after him."})
+			if host != "":
+				out.append({"sp": "It whispered. Of course it did. It was calling. I'd have called too."})
+			out.append(_fx("q:aub_hesk=told"))
+			out.append(_fx("q:aub_vault=heard"))
+			out.append({"n": "(Below the Morvane house: an iron door with no keyhole, opened with something the steward wears on a chain.)"})
+		else:
+			out.append({"s": host, "t": "We haven't seen him. We'll keep an eye out."})
+			out.append({"s": "hesk", "t": "Thank you. Everyone says that."})
+	else:
+		out.append({"s": "hesk", "t": "Words said over him. That's something. That's more than the hill ever gave him."})
+	return out
+
+
+static func _odo() -> Array:
+	var host := _host()
+	var met := q("north_odo")
+	var out: Array = []
+	if met == "cold":
+		out.append({"n": "Odo Brakk is digging. He sees who it is and goes on digging."})
+		out.append({"s": "odo", "t": "Rob anyone today? No? Then go away and keep it that way."})
+		return out
+	if met == "":
+		out.append({"n": "A big grey-haired man is digging a grave between the leaning stones."})
+		out.append({"s": "odo", "t": "Odo Brakk. I bury the ones nobody claims. There's always work in Aubermont."})
+		out.append(_fx("q:north_odo=met"))
+		return out
+	if q("aub_odo") == "":
+		out.append({"n": "Odo Brakk leans on his spade among the stones and nods as if he'd expected you."})
+		out.append({"s": "odo", "t": "You found me. Good. I asked about our man from the road. Pell, his name was, a Morvane footman. His mother lives by the well. Somebody ought to tell her; I haven't had the heart."})
+		out.append({"s": "odo", "t": "And the grey ones, the Quiet: they bury nobody, but they come here at night and stand about the old stones, the oldest ones, from before the city. Looking for something. I don't ask."})
+		out.append(_fx("q:aub_odo=told"))
+	if not gone("odo"):
+		var talker := LehanQuests.best("talk")
+		var pious := Game.party.any(func(c): return "Pious" in c.get("traits", []))
+		var ok := pious or Game.check(talker, "talk", Game.NORMAL)
+		out.append({"s": "odo", "t": "I've buried enough strangers this year. I wouldn't mind walking with some live ones for a while."})
+		var ask: Dictionary = {"t": "Ask him to come with you.", "silent": true, "say": host,
+			"after": ([{"s": host, "t": "Then walk with us. We could use a strong back, and someone who knows the dead."},
+				{"s": "odo", "t": "The dead will keep. They're good at it."}, _fx("q:aub_odo=joined"), _fx("join:odo")]) if ok
+				else [{"s": host, "t": "Then walk with us."},
+					{"s": "odo", "t": "Not today. Ask me again when I know what you're about."}]}
+		if not pious:
+			ask["ok"] = ok
+			ask["checks"] = [LehanQuests.chk(talker, "talk", Game.NORMAL)]
+		out.append({"choice": "odo", "options": [ask, {"t": "Not now.", "silent": true, "after": [{"s": "odo", "t": "I'll be here. I usually am."}]}]})
+	return out
+
+
+## One of the Quiet, watching from the dead-end alley.
+static func _grey() -> Array:
+	var host := _host()
+	var looker := LehanQuests.best("perception")
+	var out: Array = [
+		{"n": "A man in a grey cloak stands at the alley's end with his back to the wall, doing nothing. Soft boots. A face you would forget at once."},
+		{"s": "grey", "t": "Just taking the air."},
+	]
+	if q("aub_aldric_told") != "":
+		out.append({"n": "His eyes go over each of you, one by one, as if checking faces against a list he's been given."})
+	if Game.has_insight() and host != "":
+		out.append({"sp": "One of them. One of mine, once, or his great-great-grandfather was. He's watching us. He knew we'd come this way."})
+	elif Game.check(looker, "perception", Game.NORMAL):
+		out.append({"n": "%s notices the grey thread on his sleeve, the same as on the broken ward in the drowned temple." % _first(looker)})
+	out.append(_fx("q:aub_grey=seen"))
 	return out

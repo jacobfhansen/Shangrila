@@ -4,8 +4,8 @@ extends Control
 ## Keys: W/Up forward, S/Down back, A/Left and D/Right turn, Q/E step sideways,
 ## Space/Enter talk to (or use) what is straight ahead, M the plan of the district (Esc closes it),
 ## C the party's character screen, J quests.
-## Args: {"at": place key, "into": bool}, or {"at_cell": [x, y], "facing": dir}. Without either the
-## party comes in at the river gate.
+## Args: {"district": "gate" / "oldtown", "at": place key, "into": bool}, or {"at_cell": [x, y],
+## "facing": dir}. The district is remembered (Game.story.aub_district) for saves and the sheet.
 
 var area := AubermontStreets.new()
 var view: DungeonView
@@ -17,12 +17,15 @@ var plan: _Plan
 var map_btn: Button
 ## The places on the plan, by AubermontStreets.ENTRANCES key.
 const PLACE_NAMES := {"gate": "River Gate", "inn": "The Lamplighter", "shop": "Corvin's Arms",
-	"oldtown": "To the Old Town", "hill": "Hill Gate"}
+	"oldtown": "To the Old Town", "hill": "Hill Gate", "rivergate": "To the River Gate",
+	"library": "The Great Library", "temple": "Temple of the Hours"}
 
 
 func _ready() -> void:
 	var args: Dictionary = get_meta("args", {})
-	area.place_at(args.get("at", "gate"), args.get("into", false))
+	area.set_district(args.get("district", Game.story.get("aub_district", "gate")))
+	Game.story["aub_district"] = area.district
+	area.place_at(args.get("at", area.entrances.keys()[0]), args.get("into", false))
 	if args.has("at_cell"):
 		area.pos = Vector2i(args.at_cell[0], args.at_cell[1])
 		area.facing = args.get("facing", 0)
@@ -73,15 +76,18 @@ func _ready() -> void:
 	buttons.append(Ui.btn(self, "Load", Rect2(507, 326, 58, 30), Game.main.load_menu, "Load a saved game (what isn't saved is lost)"))
 	buttons.append(Ui.btn(self, "Quit", Rect2(568, 326, 58, 30), _on_quit, "Back to the main menu"))
 	Ui.frame(self, Rect2(436, 364, 196, 62))
-	var help := Ui.label(self, "The river gate district. Walk up to people to talk, and into doors to go in. Map shows the district.",
+	var help := Ui.label(self, "%s. Walk up to people to talk, and into doors to go in. Map shows the district." % AubermontStreets.DISTRICTS[area.district].name.capitalize(),
 		Vector2(444, 368), 11, Ui.DIM, 182)
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	help.size = Vector2(182, 54)
 	Ui.frame(self, Rect2(14, 432, 618, 38))
 	hint = Ui.label(self, "", Vector2(24, 442), 13, Ui.TEXT, 600)
 	_after_move()
-	if not Game.story.get("aubermont_entered", false):
+	if area.district == "gate" and not Game.story.get("aubermont_entered", false):
 		_arrival.call_deferred()
+	elif area.district == "oldtown" and not Game.story.get("oldtown_entered", false):
+		Game.story["oldtown_entered"] = true
+		_dialog.call_deferred("The old town", AubermontData.oldtown_arrival())
 
 
 func _arrival() -> void:
@@ -100,19 +106,33 @@ func _after_move() -> void:
 				"gate": "Ahead: the river gate, out to the north road.  Space to leave.",
 				"inn": "Ahead: the Lamplighter inn, a lantern over the door.  Space to go in.",
 				"shop": "Ahead: Corvin's Arms, a blade and a sack on the sign.  Space to go in.",
-				"oldtown": "Ahead: the arch to the old town, dark as a mouth.",
+				"oldtown": "Ahead: the arch to the old town, dark as a mouth.  Space to go through.",
 				"hill": "Ahead: the iron gate to the hill.",
+				"rivergate": "Ahead: the arch back to the river gate.  Space to go through.",
+				"library": "Ahead: the Great Library, an open book carved over its door.  Space to go in.",
+				"temple": "Ahead: the Temple of the Hours, its clock face high above.  Space to go in.",
 			}.get(t.to, "")
 		"prop":
 			hint.text = {"founders": "Ahead: the Founders, five lords in stone round a broken crown.  Space to look.",
 				"lamp": "An iron lamp post, its lantern lit at midday.", "stall": "A market stall under a sagging awning.",
-				"barrels": "Barrels, smelling of fish and tar."}.get(t.what, "")
+				"barrels": "Barrels, smelling of fish and tar.", "grave": "A headstone, the name worn away.",
+				"yew": "A dead yew, black and twisted.", "well": "An old well. The water is a long way down."}.get(t.what, "")
 		_:
 			hint.text = _where()
 
 
 func _where() -> String:
 	var p := area.pos
+	if area.district == "oldtown":
+		if p.x >= 16 and p.y <= 9:
+			return "The graveyard behind the Temple of the Hours. Crooked stones, wet grass, a dead yew."
+		if p.y <= 3:
+			return "The library's forecourt. Scholars in black hurry past without looking up."
+		if p.x <= 8 and p.y >= 6 and p.y <= 8:
+			return "A little square round an old well. Washing hangs between the houses, grey with soot."
+		if p.y >= 11:
+			return "A narrow alley. It smells of damp and smoke, and goes nowhere."
+		return "The old town's crooked street. The houses here are older still, and lean further."
 	if p.x >= 6 and p.x <= 14 and p.y >= 4 and p.y <= 9:
 		return "The market square. The houses lean in over it from every side."
 	return "A narrow street. The upper storeys almost meet overhead; water drips from the eaves."
@@ -177,7 +197,13 @@ func _use(t: Dictionary) -> void:
 				"inn":
 					Game.main.goto("inn")
 				"oldtown":
-					await Game.main.message("The arch to the old town: a deep, dark passage, and beyond it narrower streets still, temple domes, and the great library.\n\n(The old town is the next part of Aubermont to be built.)")
+					Game.main.goto("city", {"district": "oldtown", "at": "rivergate"})
+				"rivergate":
+					Game.main.goto("city", {"district": "gate", "at": "oldtown"})
+				"library":
+					await _dialog("The Great Library", AubermontData.library())
+				"temple":
+					await _dialog("The Temple of the Hours", AubermontData.temple())
 				"hill":
 					await _dialog("The hill gate", AubermontData.talk("2"))
 
@@ -207,7 +233,7 @@ func _dialog(title: String, lines: Array) -> void:
 	Ui.place(box, Rect2(20, 180, 600, 286))
 	ov.add_child(box)
 	box.effect.connect(func(fx: String):
-		var l := MarshRoad.apply(fx)
+		var l := AubermontData.apply(fx)
 		if l != "":
 			box.log_line(l))
 	box.play(lines)
@@ -290,7 +316,7 @@ class _Plan:
 		var o := Vector2((size.x - cs * n.x) / 2.0, 40)
 		var ink := Color("#2a1a10")
 		var font := get_theme_default_font()
-		draw_string(font, Vector2(0, 28), "Aubermont: the River Gate", HORIZONTAL_ALIGNMENT_CENTER, size.x, 20, ink)
+		draw_string(font, Vector2(0, 28), "Aubermont: " + AubermontStreets.DISTRICTS[area.district].name.capitalize(), HORIZONTAL_ALIGNMENT_CENTER, size.x, 20, ink)
 		for y in n.y:
 			for x in n.x:
 				var c := Vector2i(x, y)
@@ -306,12 +332,13 @@ class _Plan:
 					if near:
 						draw_rect(r.grow(-1), Color("#6a5a4a"))
 						draw_rect(r.grow(-1), ink, false, 1.0)
-		var founders := _cell_rect(Vector2i(10, 6), cs, o).get_center()
-		draw_arc(founders, cs * 0.4, 0, TAU, 16, ink, 2.0)
-		draw_circle(founders, cs * 0.15, ink)
+		if area.district == "gate":
+			var founders := _cell_rect(Vector2i(10, 6), cs, o).get_center()
+			draw_arc(founders, cs * 0.4, 0, TAU, 16, ink, 2.0)
+			draw_circle(founders, cs * 0.15, ink)
 		spots.clear()
-		for key in AubermontStreets.ENTRANCES:
-			var e: Dictionary = AubermontStreets.ENTRANCES[key]
+		for key in area.entrances:
+			var e: Dictionary = area.entrances[key]
 			var door: Vector2i = e.cell + Game.DIR_VEC[e.dir]
 			var p := _cell_rect(door, cs, o).get_center()
 			spots[key] = p

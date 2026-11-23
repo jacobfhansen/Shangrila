@@ -1609,7 +1609,7 @@ the chapter where the truth about the spirit gets darker, a hidden Aeldroe city.
   remnant (R4 dream-sending is a candidate).
 
 **Build order (proposed):** 1. the trail north and the world map (the city appears, the road
-north) (built); 2. the first district (gate and market) (built); 3. the old town and the library (Aldric); 4.
+north) (built); 2. the first district (gate and market) (built); 3. the old town and the library (Aldric) (built); 4.
 the hill and the sect's house; 5. below (the smugglers); 6. the heist and the third remnant.
 
 **As built (step 1)**
@@ -1654,6 +1654,35 @@ the hill and the sect's house; 5. below (the smugglers); 6. the heist and the th
   window; tables with candles, the bar, and flames flickering in the hearth.
 - The old town arch and the hill gate say what lies beyond; they are steps 3 and 4.
 - "Start at..." has "Aubermont, the river gate".
+
+**As built (step 3)**
+- **The sect family is House Morvane** (decided by Jacob). A Morvane carried the king's keys and
+  locked his door from the other side.
+- **Districts:** `AubermontStreets.DISTRICTS` holds each district's map, exits and entrances; the
+  city screen takes `{"district": ...}` and remembers it (`Game.story.aub_district`). Grand flat
+  fronts (the library, the temple) have no jutting storeys. The plan (Map) shows the district.
+- **The old town:** a crooked street, a square with a well, the library forecourt, the temple and
+  its graveyard (grass, leaning headstones, a dead yew), and a dead-end alley.
+- **The Great Library:** the Founders' roll names "House Morvane, Keepers of the Key, to whom the
+  oath and the door were given". Three ways: a reader's token (5 silver) and Lore (the token is
+  kept on a failure), Aldric Thorne's help (he then knows what the party is after:
+  `aub_aldric_told`), or the closed stacks by Stealth (thrown out on a failure).
+- **Aldric Thorne** offers to come (Human Mage; Deceitful, Bookish, Calm). With Insight the spirit
+  says plainly that he is lying about why. Take him, take him and watch him (`aub_aldric_watched`,
+  for the heist), or refuse. Recruits who join on the spot go into the party, or wait at the
+  Lamplighter if it is full (`AubermontData.join`).
+- **The Temple of the Hours:** Sister Amsel. The Morvanes pay for the bells; the old lord has been
+  away south since the spring (the shrine job); the choir sings at the Morvane feast on Founders'
+  Night, twelve hooded voices through the servants' gate, and she is short of voices
+  (`aub_singers`: a way in).
+- **Odo Brakk** in the graveyard: names the runaway (Pell, a Morvane footman) and says the Quiet
+  stand about the oldest stones at night. Joins if the party helped him on the road (a Pious
+  companion, or Talk). Robbed, he wants nothing to do with you.
+- **Mother Hesk,** Pell's mother at the well: told of his death, she tells of the iron door with no
+  keyhole in the Morvane cellars, opened with something the steward wears on a chain, and the
+  whisper behind it that frightened Pell into running (`aub_vault`).
+- **A man in grey,** one of the Quiet, watching from the alley (he checks faces against a list if
+  Aldric was told what the party wants).
 
 **Open questions**
 - The sect family's name (the dead servant's crest: a tower and a key).

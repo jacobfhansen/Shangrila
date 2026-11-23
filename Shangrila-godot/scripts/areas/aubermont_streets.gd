@@ -12,86 +12,138 @@ extends RefCounted
 ##   F  the Founders' statue and fountain          L  a lamp post
 ##   s  a stall          B  barrels
 ##   1-9  people (AubermontData.PEOPLE)
+## The old town: A the arch back to the river gate, Y the Great Library (y its front), T the Temple
+## of the Hours (u its front), + a headstone, w a dead yew, W a well.
 ## Houses, doors and props block the way; walking into a door or a person uses it.
 
-const MAP := [
-	"######################",
-	"##########H###########",
-	"##########.###########",
-	"#########2.###########",
-	"######s.......s#######",
-	"######L...3...L#######",
-	"O.........F.........I#",
-	"######.....4...###5.##",
-	"######s.1......S######",
-	"######B......B.#######",
-	"##########.###########",
-	"##########.###########",
-	"#######....###########",
-	"#######.##############",
-	"#######.##############",
-	"#######.##############",
-	"#######G##############",
-	"######################",
-]
+const DISTRICTS := {
+	"gate": {"name": "the River Gate", "map": [
+		"######################",
+		"##########H###########",
+		"##########.###########",
+		"#########2.###########",
+		"######s.......s#######",
+		"######L...3...L#######",
+		"O.........F.........I#",
+		"######.....4...###5.##",
+		"######s.1......S######",
+		"######B......B.#######",
+		"##########.###########",
+		"##########.###########",
+		"#######....###########",
+		"#######.##############",
+		"#######.##############",
+		"#######.##############",
+		"#######G##############",
+		"######################",
+	], "exits": {"G": "gate", "I": "inn", "S": "shop", "O": "oldtown", "H": "hill"},
+	"entrances": {
+		"gate": {"cell": Vector2i(7, 15), "dir": 2},
+		"inn": {"cell": Vector2i(19, 6), "dir": 1},
+		"shop": {"cell": Vector2i(14, 8), "dir": 1},
+		"oldtown": {"cell": Vector2i(1, 6), "dir": 3},
+		"hill": {"cell": Vector2i(10, 2), "dir": 0},
+	}},
+	# The old town, west through the arch: the Great Library on its forecourt, a little square with
+	# a well, the Temple of the Hours and its graveyard, and an alley that goes nowhere.
+	"oldtown": {"name": "the Old Town", "map": [
+		"######################",
+		"####yyyYyyy###########",
+		"####.......###########",
+		"####.......###########",
+		"#######.##############",
+		"#######.########++.+##",
+		"####.....#######+.w.##",
+		"####6.W..#######.8.+##",
+		"####.....#######+...##",
+		"######.####uuTuu+.+.##",
+		"######...............A",
+		"#########.############",
+		"#########.############",
+		"#########..###########",
+		"##########9###########",
+		"######################",
+	], "exits": {"A": "rivergate", "Y": "library", "T": "temple"},
+	"entrances": {
+		"rivergate": {"cell": Vector2i(20, 10), "dir": 1},
+		"library": {"cell": Vector2i(7, 2), "dir": 0},
+		"temple": {"cell": Vector2i(13, 10), "dir": 0},
+	}},
+}
+## Grand fronts: flat, tall stone, no jutting storeys (the library, the temple).
+const FLAT := "yYuT"
+const FLAT_TEX := {"y": ["aub_library", "aub_library_up"], "Y": ["aub_library_door", "aub_library_up"],
+	"u": ["aub_temple", "aub_temple_up"], "T": ["aub_temple_door", "aub_temple_up"]}
 const CELL := DungeonView.CELL
 const GROUND := 2.3      # the stone ground floor
 const UPPER := 1.9       # each storey above it
 const JUT := 0.26        # how much further out each storey sits than the one below...
 const MAX_JUT := 0.78    # ... up to this, so across a narrow street the eaves nearly meet
-const BUILDING := "#IGSOH"
-const EXITS := {"G": "gate", "I": "inn", "S": "shop", "O": "oldtown", "H": "hill"}
-const ENTRANCES := {
-	"gate": {"cell": Vector2i(7, 15), "dir": 2},
-	"inn": {"cell": Vector2i(19, 6), "dir": 1},
-	"shop": {"cell": Vector2i(14, 8), "dir": 1},
-	"oldtown": {"cell": Vector2i(1, 6), "dir": 3},
-	"hill": {"cell": Vector2i(10, 2), "dir": 0},
-}
+const BUILDING := "#IGSOHAYyTu"
 
-var pos: Vector2i = ENTRANCES.gate.cell
+var district := "gate"
+var map: Array = DISTRICTS.gate.map
+var exits: Dictionary = DISTRICTS.gate.exits
+var entrances: Dictionary = DISTRICTS.gate.entrances
+var pos: Vector2i = Vector2i(7, 15)
 var facing := 0
 var eye := 1.3
 
 
+func set_district(key: String) -> void:
+	district = key if DISTRICTS.has(key) else "gate"
+	var d: Dictionary = DISTRICTS[district]
+	map = d.map
+	exits = d.exits
+	entrances = d.entrances
+
+
 func _char(cell: Vector2i) -> String:
-	if cell.y < 0 or cell.y >= MAP.size() or cell.x < 0 or cell.x >= MAP[cell.y].length():
+	if cell.y < 0 or cell.y >= map.size() or cell.x < 0 or cell.x >= map[cell.y].length():
 		return "#"
-	return MAP[cell.y][cell.x]
+	return map[cell.y][cell.x]
 
 
 ## Stand at a place's entrance: facing its door (`into`), or with the back to it (just came out).
 func place_at(place: String, into: bool) -> void:
-	var e: Dictionary = ENTRANCES.get(place, ENTRANCES.gate)
+	var e: Dictionary = entrances.get(place, entrances.values()[0])
 	pos = e.cell
 	facing = e.dir if into else (e.dir + 2) % 4
 
 
 func size() -> Vector2i:
-	return Vector2i(MAP[0].length(), MAP.size())
+	return Vector2i(map[0].length(), map.size())
 
 
 func is_open(cell: Vector2i) -> bool:
-	return _char(cell) == "."
+	return _char(cell) == "." or _gone(_char(cell))
 
 
 func can_move(from: Vector2i, dir: int) -> bool:
-	return _char(from + Game.DIR_VEC[dir]) == "."
+	return is_open(from + Game.DIR_VEC[dir])
+
+
+## Someone who has joined the party (or waits at an inn) is no longer in the street.
+func _gone(ch: String) -> bool:
+	return AubermontData.PEOPLE.has(ch) and AubermontData.gone(AubermontData.PEOPLE[ch].key)
 
 
 ## What is in a cell: {"kind": "person", "id"} / {"kind": "exit", "to"} / {"kind": "prop", "what"}
 ## / {"kind": "wall"} / {} for open cobbles.
 func thing_at(cell: Vector2i) -> Dictionary:
 	var ch := _char(cell)
-	if ch == ".":
+	if ch == "." or _gone(ch):
 		return {}
-	if EXITS.has(ch):
-		return {"kind": "exit", "to": EXITS[ch]}
+	if exits.has(ch):
+		return {"kind": "exit", "to": exits[ch]}
 	if AubermontData.PEOPLE.has(ch):
 		return {"kind": "person", "id": ch}
 	if ch == "#":
 		return {"kind": "wall"}
-	return {"kind": "prop", "what": {"F": "founders", "L": "lamp", "s": "stall", "B": "barrels"}.get(ch, "")}
+	if FLAT.contains(ch):
+		return {"kind": "wall"}
+	return {"kind": "prop", "what": {"F": "founders", "L": "lamp", "s": "stall", "B": "barrels", "+": "grave",
+		"w": "yew", "W": "well"}.get(ch, "")}
 
 
 func ahead() -> Vector2i:
@@ -152,13 +204,17 @@ func build(root: Node3D, cam: Camera3D) -> void:
 	var lanterns := []   # wall lanterns: [position, out of the wall]
 	var spires := []     # [position, height]
 	var h := CELL / 2.0
-	for y in MAP.size():
-		for x in MAP[y].length():
+	for y in map.size():
+		for x in map[y].length():
 			var cell := Vector2i(x, y)
 			if BUILDING.contains(_char(cell)):
 				continue
 			var c := Vector3(x * CELL, 0, y * CELL)
-			_quad(floors, c, Vector3.UP, Vector3.FORWARD, h, h)
+			if district == "oldtown" and x >= 16 and y <= 9:
+				_tool(by_tex, "aub_grass")
+				_quad(by_tex["aub_grass"], c, Vector3.UP, Vector3.FORWARD, h, h)   # the graveyard
+			else:
+				_quad(floors, c, Vector3.UP, Vector3.FORWARD, h, h)
 			for d in 4:
 				var n: Vector2i = cell + Game.DIR_VEC[d]
 				var ch := _char(n)
@@ -173,28 +229,37 @@ func build(root: Node3D, cam: Camera3D) -> void:
 					"G": low = "aub_gate"
 					"I": low = "aub_inn"
 					"S": low = "aub_shop"
-					"O": low = "aub_arch"
+					"O", "A": low = "aub_arch"
 					"H": low = "aub_hill_gate"
+				var flat := FLAT.contains(ch)
+				if flat:
+					low = FLAT_TEX[ch][0]
 				var side := Vector3.UP.cross(out)
 				var side_g := Vector2i(roundi(side.x), roundi(side.z))
 				var kl := _corner(n, cell, -side_g)
 				var kr := _corner(n, cell, side_g)
-				var storeys := _storeys(n)
+				var storeys := 4 if flat else _storeys(n)
 				# The ground floor, flat against the street.
 				_tool(by_tex, low)
 				_band(by_tex[low], wall_c, out, side, 0.0, GROUND, 0.0, 0.0, h, kl, kr)
 				# The upper storeys, each further out than the last and leaning outward as it rises.
 				for k in range(1, storeys):
-					var up := "aub_up_%d" % ((variant + k) % 4)
+					var up: String = FLAT_TEX[ch][1] if flat else "aub_up_%d" % ((variant + k) % 4)
+					if flat and ch in "uT" and k != 2:
+						up = "aub_temple"   # tall lancets; the rose window only in the middle
 					_tool(by_tex, up)
 					var y0 := GROUND + UPPER * (k - 1)
-					_band(by_tex[up], wall_c, out, side, y0, y0 + UPPER, _jut_at(k), _jut_at(k + 1) if k + 1 < storeys else _jut_at(k) + 0.06, h, kl, kr)
+					if flat:
+						_band(by_tex[up], wall_c, out, side, y0, y0 + UPPER, 0.0, 0.0, h, kl, kr)
+					else:
+						_band(by_tex[up], wall_c, out, side, y0, y0 + UPPER, _jut_at(k), _jut_at(k + 1) if k + 1 < storeys else _jut_at(k) + 0.06, h, kl, kr)
 				# The underside of the first overhang, over the ground floor.
 				_tool(by_tex, "aub_side")
-				_flat(by_tex["aub_side"], wall_c, out, side, GROUND, 0.0, _jut_at(1), h, kl, kr)
+				if not flat:
+					_flat(by_tex["aub_side"], wall_c, out, side, GROUND, 0.0, _jut_at(1), h, kl, kr)
 				# A steep slate roof from the eaves back to a high ridge.
 				var top := _top(storeys)
-				var o_top := _jut_at(storeys - 1) + 0.06
+				var o_top := 0.06 if flat else _jut_at(storeys - 1) + 0.06
 				var eave_out := o_top + 0.25
 				var depth := 1.3
 				var eave := wall_c + out * eave_out + Vector3(0, top, 0)
@@ -206,17 +271,22 @@ func build(root: Node3D, cam: Camera3D) -> void:
 					var ke := kl if e < 0 else kr
 					if ke != 0 or not BUILDING.contains(_char(m)):
 						continue
-					var lower := _storeys(m)
-					if lower >= storeys:
-						continue
+					var m_flat := FLAT.contains(_char(m))
+					var lower := 4 if m_flat else _storeys(m)
 					var y_lo := _top(lower)
+					if m_flat and not flat:
+						y_lo = GROUND   # a jutting house beside a flat front: close its overhang
+					elif lower >= storeys:
+						continue
 					var bnd: Vector3 = wall_c + side * (h * e)
 					var reach := o_top + 0.3
 					_quad(by_tex["aub_side"], bnd + out * (reach - depth) / 2.0 + Vector3(0, (y_lo + top + 2.6) / 2.0, 0),
 						side * e, Vector3.UP, (reach + depth) / 2.0, (top + 2.6 - y_lo) / 2.0)
 				# A spire on some outside corners, and a lantern on some walls.
 				var hs := _hash(n)
-				if (kl == 1 or kr == 1) and hs % 3 == 0:
+				if ch == "T":
+					spires.append([wall_c - out * 1.0 + Vector3(0, top + 2.0, 0), 9.0])
+				if (kl == 1 or kr == 1) and hs % 3 == 0 and not flat:
 					var e2 := -1 if kl == 1 else 1
 					spires.append([wall_c + side * (h * e2) + out * (o_top - 0.2) + Vector3(0, top, 0), 3.0 + float(hs % 5) * 0.5])
 				if hs % 4 == 1 and ch == "#":
@@ -227,7 +297,7 @@ func build(root: Node3D, cam: Camera3D) -> void:
 	_add(root, floors, cob)
 	for t in by_tex:
 		var m := _mat(t, Color.WHITE)
-		if t.begins_with("aub_up_") or t == "aub_inn":
+		if t.begins_with("aub_up_") or t in ["aub_inn", "aub_library_up", "aub_temple_up"]:
 			m.emission_enabled = true
 			m.emission = Color(1.0, 0.72, 0.4)
 			m.emission_energy_multiplier = 1.4
@@ -252,16 +322,19 @@ func build(root: Node3D, cam: Camera3D) -> void:
 		_lantern(root, ln[0], ln[1], lit < 8)
 		lit += 1
 
-	for y in MAP.size():
-		for x in MAP[y].length():
+	for y in map.size():
+		for x in map[y].length():
 			var at := Vector3(x * CELL, 0, y * CELL)
-			match MAP[y][x]:
+			match map[y][x]:
 				"F": _founders(root, at)
 				"L": _lamp_post(root, at)
 				"s": _stall(root, at)
 				"B": _barrels(root, at)
+				"+": _grave(root, at, x * 3 + y)
+				"w": _yew(root, at)
+				"W": _well(root, at)
 				var ch:
-					if AubermontData.PEOPLE.has(ch):
+					if AubermontData.PEOPLE.has(ch) and not _gone(ch):
 						_person(root, at, AubermontData.PEOPLE[ch])
 
 
@@ -359,6 +432,47 @@ func _founders(root: Node3D, at: Vector3) -> void:
 	for i in 7:
 		var a := i * TAU / 9.0
 		_box(root, at + Vector3(cos(a) * 0.14, 1.2, sin(a) * 0.14), Vector3(0.04, 0.1, 0.04), stone, Vector3(0, -a, 0.3))
+
+
+## A leaning headstone, black with age.
+func _grave(root: Node3D, at: Vector3, seed_: int) -> void:
+	var stone := _mat("aub_side", Color(0.75, 0.75, 0.78))
+	var tilt := Vector3(0.12 * sin(seed_ * 1.3), 0.3 * sin(seed_ * 2.1), 0.1 * cos(seed_ * 0.7))
+	_box(root, at + Vector3(0, 0.45, 0), Vector3(0.55, 0.9, 0.14), stone, tilt)
+	var top := CylinderMesh.new()
+	top.top_radius = 0.275
+	top.bottom_radius = 0.275
+	top.height = 0.14
+	var mi := MeshInstance3D.new()
+	mi.mesh = top
+	mi.material_override = stone
+	mi.position = at + Vector3(0, 0.9, 0)
+	mi.rotation = tilt + Vector3(PI / 2, 0, 0)
+	root.add_child(mi)
+	_box(root, at + Vector3(0, 0.03, 0.4), Vector3(0.6, 0.06, 1.0), _plain(Color(0.14, 0.16, 0.12)))
+
+
+## A dead yew: a black trunk and bare twisting branches.
+func _yew(root: Node3D, at: Vector3) -> void:
+	var bark := _plain(Color(0.08, 0.07, 0.06))
+	_cyl(root, at + Vector3(0, 1.3, 0), 0.16, 2.6, bark, Vector3(0.05, 0, 0.08))
+	for i in 6:
+		var a := i * TAU / 6.0 + 0.4
+		var r := Vector3(cos(a), 0, sin(a))
+		_cyl(root, at + Vector3(0, 2.2 + (i % 3) * 0.3, 0) + r * 0.45, 0.04, 1.1, bark, Vector3(r.z * 0.9, 0, -r.x * 0.9))
+
+
+func _well(root: Node3D, at: Vector3) -> void:
+	var stone := _mat("aub_side", Color(0.8, 0.8, 0.82))
+	_cyl(root, at + Vector3(0, 0.4, 0), 0.6, 0.8, stone)
+	var water := StandardMaterial3D.new()
+	water.albedo_color = Color(0.04, 0.05, 0.06)
+	water.roughness = 0.05
+	_cyl(root, at + Vector3(0, 0.78, 0), 0.48, 0.03, water)
+	var wood := _plain(Color(0.15, 0.11, 0.08))
+	for sx in [-0.55, 0.55]:
+		_box(root, at + Vector3(sx, 1.25, 0), Vector3(0.08, 1.7, 0.08), wood)
+	_box(root, at + Vector3(0, 2.05, 0), Vector3(1.3, 0.08, 0.1), wood)
 
 
 func _stall(root: Node3D, at: Vector3) -> void:
