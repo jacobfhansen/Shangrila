@@ -13,6 +13,7 @@ const QUESTS := [
 	{"key": "boddo", "name": "Boddo's debt"},
 	{"key": "skee", "name": "Skee's lights"},
 	{"key": "marsh", "name": "The Drowned Shrine"},
+	{"key": "aubermont", "name": "A House That Knows My Name"},
 ]
 const STATUS_NAMES := {"current": "Current", "offered": "Not taken yet", "done": "Done"}
 
@@ -39,7 +40,10 @@ static func scenes(quest: String) -> Array:
 
 ## "current", "offered" (heard of, not taken), "done", or "" (not known yet).
 static func status(key: String) -> String:
-	if key == "marsh":
+	if key == "aubermont":
+		if "aubermont" in Game.known:
+			return "current"
+	elif key == "marsh":
 		if LehanQuests.get_q("marsh") == "done":
 			return "done"
 		if "marsh_shrine" in Game.known:

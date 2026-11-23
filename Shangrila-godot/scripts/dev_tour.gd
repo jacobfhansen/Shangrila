@@ -1133,6 +1133,7 @@ func _mines_will() -> void:
 	await _stacks_and_smith()
 	await _marsh_road()
 	await _shrine()
+	await _north_road()
 	get_tree().quit()
 
 
@@ -1283,6 +1284,40 @@ func _temple() -> void:
 	m.current._walk(0)
 	await get_tree().create_timer(1.2).timeout
 	print("temple: back up, level ", Game.mine_level, " at ", Game.pos, " screen ", m.current_name)
+
+
+## The north road to Aubermont (after the marsh remnant put it on the map): the toll bridge on
+## day 2, Odo Brakk on day 3, and the first sight of the city.
+func _north_road() -> void:
+	var m: Node = Game.main
+	print("north: known ", Game.known, " insight ", Game.has_insight())
+	Game.location = "lehan"
+	Game.to_mines()
+	for c in Game.party:
+		c.health = c.max_health
+		c.hits = c.max_hits
+	for k in 10:
+		Game.party_add(50)
+	m.goto("world")
+	await get_tree().create_timer(0.6).timeout
+	await _shot("51a_world_north")
+	print("north: tip:\n", Ui.tip(m.current._tip("aubermont")))
+	m.current._on_location.call("aubermont")
+	await get_tree().create_timer(0.4).timeout
+	m._modal_done.emit(true)
+	await get_tree().create_timer(3.5).timeout
+	await _drive(m.current, [2], "51b_toll_bridge")
+	await get_tree().create_timer(2.0).timeout
+	await _drive(m.current, [0], "51c_gravedigger")
+	await get_tree().create_timer(2.5).timeout
+	m._modal_done.emit(true)
+	await get_tree().create_timer(0.6).timeout
+	await _shot("51d_aubermont")
+	m._modal_done.emit(true)
+	await get_tree().create_timer(1.0).timeout
+	print("north: at ", Game.location, " screen ", m.current_name, " day ", Game.day, " toll ", LehanQuests.get_q("north_toll"),
+		" odo ", LehanQuests.get_q("north_odo"), " journal ", Journal.status("aubermont"), " scenes ", Journal.scenes("aubermont").size())
+	await _shot("51e_world_aubermont")
 
 
 ## Oggal: Orrun at the gate, the boardwalk, Ubba's story, Grath-Ul, Hett's stall, the guest hut.

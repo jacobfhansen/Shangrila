@@ -1571,6 +1571,11 @@ the chapter where the truth about the spirit gets darker, a hidden Aeldroe city.
   remnant's memory adds a sense of the third: "north, behind iron, in a house that knows my
   name." The city appears on the world map, about four days from Lehan by the north road (food
   matters again), with a road scene or two.
+- **The look of the streets (wanted by Jacob):** dark and sinister. Tall, narrow houses of
+  blackened stone and timber, steep roofs and spires, upper storeys jutting out further with each
+  floor so the houses lean over the street and nearly meet overhead, a strip of grey sky between
+  them. Gothic windows, iron railings, gas-lamp gloom, wet cobbles. The mood of a gothic horror
+  city (Jacob's reference: Yharnam in Bloodborne, for the feeling only), in the game's own style.
 - **The districts:**
   1. **The river gate and market:** inns, shops, the crowds, rumours. The first district.
   2. **The old town:** narrow streets, temples, a great library (Aldric Thorne, scholar), the
@@ -1604,11 +1609,26 @@ the chapter where the truth about the spirit gets darker, a hidden Aeldroe city.
   remnant (R4 dream-sending is a candidate).
 
 **Build order (proposed):** 1. the trail north and the world map (the city appears, the road
-north); 2. the first district (gate and market); 3. the old town and the library (Aldric); 4.
+north) (built); 2. the first district (gate and market); 3. the old town and the library (Aldric); 4.
 the hill and the sect's house; 5. below (the smugglers); 6. the heist and the third remnant.
 
+**As built (step 1)**
+- At the basin, after the merge, the spirit feels the next piece "north, behind iron, in a house
+  that knows my name", and Aubermont appears on the world map (a larger city mark on the north
+  coast, four days from Lehan). The broken ward's boot prints are city boots, hobnailed.
+- The first trip north has two scenes (`scripts/data/north_road.gd`): **the toll bridge** over
+  the Aube on day 2 (3 silver a head, by order of "the House"; the toll men are told to note
+  anyone from Lehan or asking about shrines; pay, talk past as pilgrims, or ford upstream: a
+  Thuug swims a rope across, otherwise Survival), and **Odo Brakk** burying a dead servant by the
+  road on day 3 (help dig, a Pious companion says the words, or rob the dead: 8 silver and a crest
+  of a tower and a key; Odo then wants nothing to do with you). Odo tells of the grey cloaks
+  asking about southern shrines, and where to find him in the old town.
+- The first sight of the city is dark: soot-black walls on four hills, spires and steep roofs,
+  the great houses behind a second wall on the highest hill. The streets are step 2.
+- The quest log has "A House That Knows My Name". "Start at..." has "The north road".
+
 **Open questions**
-- The sect family's name.
+- The sect family's name (the dead servant's crest: a tower and a key).
 - Does the sect leader appear in person this chapter (a near miss), or only after the heist?
 - What happens after the heist: does the sect know who robbed them, and hunt the party?
 - How long should the chapter be compared with the mines and the shrine?

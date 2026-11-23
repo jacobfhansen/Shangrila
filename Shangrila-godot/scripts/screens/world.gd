@@ -20,6 +20,9 @@ func _ready() -> void:
 	add_child(layer)
 	Ui.place(layer, MAP_RECT)
 
+	# Games saved after the marsh remnant but before Aubermont was on the map.
+	if LehanQuests.get_q("s_remnant") != "" and not "aubermont" in Game.known:
+		Game.known.append("aubermont")
 	for key in Game.known:
 		var loc: Dictionary = Game.LOCATIONS[key]
 		var at: Vector2 = loc.at
@@ -70,7 +73,7 @@ func _set_busy(on: bool) -> void:
 ## Moves the party marker from `a` to `b` (map coordinates) between fractions f0 and f1.
 func _move_marker(a: Vector2, b: Vector2, f0: float, f1: float, secs: float) -> void:
 	var tw := create_tween()
-	tw.tween_method(func(f: float): layer.party_at = a.lerp(b, f), f0, f1, secs).set_trans(Tween.TRANS_SINE)
+	tw.tween_method(func(f: float): layer.party_at = MapLayer.road_point(a, b, f), f0, f1, secs).set_trans(Tween.TRANS_SINE)
 	await tw.finished
 
 
@@ -158,6 +161,9 @@ func _on_location(key: String) -> void:
 	if key == "marsh_shrine" and not Game.story.get("marsh_road_done", false):
 		scenes = MarshRoad.SCENES
 		Game.story["marsh_road_done"] = true
+	if key == "aubermont" and not Game.story.get("north_road_done", false):
+		scenes = NorthRoad.SCENES
+		Game.story["north_road_done"] = true
 	await _travel_days(key, days, scenes)
 
 
@@ -168,23 +174,26 @@ func _travel_days(key: String, days: int, scenes: Dictionary) -> void:
 	var loc: Dictionary = Game.LOCATIONS[key]
 	var a: Vector2 = Game.LOCATIONS[Game.location].at
 	var lines := ["After %d day%s on the road the party reaches %s." % [days, "" if days == 1 else "s", loc.name]]
+	var road: GDScript = NorthRoad if key == "aubermont" else MarshRoad   # whose road scenes
 	var box: DialogueBox = null
 	for d in days:
 		await _move_marker(a, loc.at, float(d) / days, float(d + 1) / days, 1.4)
 		if scenes.has(d + 1):
 			if box == null:
 				box = DialogueBox.new()
-				box.cast = MarshRoad.cast()
+				box.cast = road.cast()
 				box.host = Game.story.get("host", "")
+				box.journal = "aubermont" if key == "aubermont" else "marsh"
+				box.journal_place = "The north road" if key == "aubermont" else "The road to the marshes"
 				Ui.place(box, Rect2(20, 52, 600, 248))
 				add_child(box)
 				box.effect.connect(func(fx: String):
-					var l := MarshRoad.apply(fx)
+					var l: String = road.apply(fx)
 					if l != "":
 						box.log_line(l))
 			box.visible = true
 			info.text = "Day %d on the road." % (d + 1)
-			box.play(MarshRoad.scene(scenes[d + 1]))
+			box.play(road.scene(scenes[d + 1]))
 			await box.finished
 			box.show_buttons([["Go on", func(): box.finished.emit()]])
 			await box.finished
@@ -195,6 +204,9 @@ func _travel_days(key: String, days: int, scenes: Dictionary) -> void:
 	if box != null:
 		box.queue_free()
 	await Game.main.message("\n".join(lines))
+	if key == "aubermont" and not Game.story.get("aubermont_seen", false):
+		Game.story["aubermont_seen"] = true
+		await Game.main.message(NorthRoad.first_sight())
 	Game.main.goto(loc.screen if loc.screen != "" else "world")
 
 
@@ -246,6 +258,7 @@ class MapLayer extends Control:
 			var loc: Dictionary = Game.LOCATIONS[key]
 			match loc.kind:
 				"city": _city(loc.at, ink)
+				"capital": _capital(loc.at, ink)
 				"ruin": _ruin(loc.at, ink)
 				_: _cave(loc.at, ink)
 		# The party: a pulsing red ring around its location.
@@ -256,13 +269,55 @@ class MapLayer extends Control:
 			draw_circle(at, 5.5, Color(0.75, 0.1, 0.05))
 			draw_arc(at, 5.5, 0, TAU, 16, Color("#46301a"), 1.2, true)
 
+	## A point `f` (0-1) of the way along the road from `a` to `b`. Roads wind: the straight line is
+	## bent sideways by two slow waves, fixed for each pair of places (the same either way round),
+	## and pinned at both ends. The dashes on the map and the travelling marker both follow it.
+	static func road_point(a: Vector2, b: Vector2, f: float) -> Vector2:
+		var p := a
+		var q := b
+		if b.x < a.x or (b.x == a.x and b.y < a.y):
+			p = b
+			q = a
+			f = 1.0 - f
+		var len := p.distance_to(q)
+		if len < 1.0:
+			return p
+		var side := (q - p).orthogonal() / len
+		var seed_ := absf(p.x * 12.9898 + p.y * 78.233 + q.x * 37.719 + q.y * 4.581)
+		var ph1 := fmod(seed_, TAU)
+		var ph2 := fmod(seed_ * 1.7, TAU)
+		var k1 := 1.3 + fmod(seed_ * 0.37, 1.0)
+		var k2 := 3.1 + fmod(seed_ * 0.53, 1.5)
+		var off := (0.07 * sin(TAU * k1 * f + ph1) + 0.025 * sin(TAU * k2 * f + ph2)
+			- (1.0 - f) * (0.07 * sin(ph1) + 0.025 * sin(ph2)) - f * (0.07 * sin(TAU * k1 + ph1) + 0.025 * sin(TAU * k2 + ph2)))
+		return p.lerp(q, f) + side * off * minf(len, 220.0)
+
+	## The road as dashes along its winding line (road_point), kept clear of the marks at the ends.
 	func _dashed(a: Vector2, b: Vector2, col: Color) -> void:
-		var len := a.distance_to(b)
-		var dir := (b - a) / len
+		var pts := PackedVector2Array()
+		var n := 80
+		for i in n + 1:
+			pts.append(road_point(a, b, float(i) / n))
+		var total := 0.0
+		for i in n:
+			total += pts[i].distance_to(pts[i + 1])
 		var d := 14.0
-		while d < len - 14.0:
-			draw_line(a + dir * d, a + dir * minf(d + 6.0, len - 14.0), col, 2.0, true)
+		while d < total - 14.0:
+			var seg := PackedVector2Array([_along(pts, d)])
+			var e := minf(d + 6.0, total - 14.0)
+			for k in range(1, 4):
+				seg.append(_along(pts, d + (e - d) * k / 3.0))
+			draw_polyline(seg, col, 2.0, true)
 			d += 11.0
+
+	## The point at distance `d` along a polyline.
+	func _along(pts: PackedVector2Array, d: float) -> Vector2:
+		for i in pts.size() - 1:
+			var l := pts[i].distance_to(pts[i + 1])
+			if d <= l:
+				return pts[i].lerp(pts[i + 1], d / maxf(l, 0.001))
+			d -= l
+		return pts[pts.size() - 1]
 
 	func _city(p: Vector2, ink: Color) -> void:
 		var body := Rect2(p.x - 9, p.y - 5, 18, 11)
@@ -272,6 +327,21 @@ class MapLayer extends Control:
 			draw_rect(Rect2(p.x - 9 + i * 7, p.y - 9, 4, 4), ink, false, 1.0)
 		draw_rect(body, ink, false, 1.5)
 		draw_rect(Rect2(p.x - 2, p.y, 4, 6), ink)
+
+	## A great city: a wider wall with towers, and a keep on the hill behind it.
+	func _capital(p: Vector2, ink: Color) -> void:
+		var paper := Color("#e8d8b0")
+		var keep := Rect2(p.x - 5, p.y - 16, 10, 10)
+		draw_rect(keep, paper)
+		draw_rect(keep, ink, false, 1.2)
+		var body := Rect2(p.x - 14, p.y - 6, 28, 13)
+		draw_rect(body, paper)
+		for i in 4:
+			var tw := Rect2(p.x - 15 + i * 9, p.y - 11, 5, 6)
+			draw_rect(tw, paper)
+			draw_rect(tw, ink, false, 1.0)
+		draw_rect(body, ink, false, 1.5)
+		draw_rect(Rect2(p.x - 2.5, p.y, 5, 7), ink)
 
 	func _ruin(p: Vector2, ink: Color) -> void:
 		var stone := Color("#d8c8a0")

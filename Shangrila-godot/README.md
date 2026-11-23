@@ -341,6 +341,12 @@ in the new diggings, and the jailers' oath-bound dead in the sealed galleries. P
 - **R2 Insight:** after the merge, the character sheet shows everyone's nature (traits, nerve,
   a grudge), not only the host's, and the conversation window's portraits show the companions'
   traits. "Start at..." has "The drowned temple" for testing.
+- **The north road to Aubermont:** after the merge the spirit feels the next remnant "north,
+  behind iron", and Aubermont, the great city of the north, appears on the world map, four days
+  from Lehan. The first trip has two scenes (`scripts/data/north_road.gd`): a toll bridge over
+  the Aube whose guards ask who comes from Lehan (pay, talk, or ford the river; a Thuug swims a
+  rope across), and Odo Brakk the gravedigger by the road (help, pray, or rob the dead). The
+  city's streets come next. "Start at..." has "The north road".
 - **Days, rest and checkpoints:** the game counts days (travel, each night's Sleep, a night at
   the inn). At the inn, *Dismiss* on a badly wounded companion leaves them to rest for 2 days at
   3 silver a day; mustering them sooner gets "Not yet. One more day.", and they heal while the

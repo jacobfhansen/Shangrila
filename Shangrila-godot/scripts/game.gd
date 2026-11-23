@@ -112,6 +112,8 @@ const LOCATIONS := {
 		"desc": "Old mine workings in the hills above Lehan."},
 	"marsh_shrine": {"name": "The Drowned Shrine", "kind": "plot", "at": Vector2(424, 300), "screen": "village",
 		"desc": "Oggal, a Thuug stilt village on the causeways of the marshes, and beyond it an old shrine half sunk in black water. The jailers' record says they drowned something of the spirit's there."},
+	"aubermont": {"name": "Aubermont", "kind": "capital", "at": Vector2(205, 92), "screen": "",
+		"desc": "The great city of the north, dark stone on four hills above the mouth of the Aube. The old founding families live there, in their houses on the highest hill. Something of the spirit's lies there, behind iron."},
 }
 ## Town maps. Places appear on them as they are discovered; `start` are known on arrival.
 ## `at` is the position on the town image (600x370, made by tools/make_textures.py).
@@ -137,7 +139,7 @@ const TOWNS := {
 }
 
 ## Routes between locations, with the number of days on the road.
-const ROUTES := [["lehan", "mines", 1], ["shrine", "lehan", 1], ["lehan", "marsh_shrine", 3]]
+const ROUTES := [["lehan", "mines", 1], ["shrine", "lehan", 1], ["lehan", "marsh_shrine", 3], ["lehan", "aubermont", 4]]
 ## Endurance each character uses per day of travel (food is what refills it).
 const TRAVEL_COST := 20      # Endurance a day on the road: three days take most of a full bar
 const RATIONS := [50, 51, 30]   # what is eaten on the road, in this order: bread, dried fish, cheese

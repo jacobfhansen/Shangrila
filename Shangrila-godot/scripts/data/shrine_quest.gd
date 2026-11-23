@@ -285,6 +285,7 @@ static func _broken_ward() -> Array:
 	var out: Array = [
 		{"n": "A slab of carved stone lies broken in two in the shallows. The same carvings as the ward-stones under Lehan: chains, an eye, a seal. Somebody set it here long ago to keep something in."},
 		{"n": "Somebody broke it recently. The edges are clean and pale, not yet green. In the silt around it, boot prints, sharp-edged, a few weeks old at most, and a grey thread caught on the stone."},
+		{"n": "City boots, hobnailed in neat rows. Nobody in the marshes wears boots like that, or in Lehan either."},
 	]
 	if q("marsh_orrun") == "trust":
 		out.append({"n": "(Grey cloth. Orrun said the strangers a month ago wore grey.)"})
@@ -370,10 +371,14 @@ static func _basin(done: bool) -> Array:
 	out.append(_fx("remnant"))
 	out.append(_fx("q:s_remnant=merged"))
 	out.append(_fx("q:marsh=done"))
+	if _host() != "":
+		out.append({"sp": "And there's more of me still. North. Behind iron, in a house that knows my name. I can feel it pulling, like a tide."})
+	out.append(_fx("known:aubermont"))
 	out.append(_fx("xp:%s" % LehanQuests.DONE_XP))
 	out.append({"n": "(The spirit has merged with its second remnant. Insight: it can see into the people who follow it now. Their nature shows on the character sheet and in conversations, and so does their nerve.)"})
 	if _host() != "":
 		out.append({"sp": "I can see them. All of you, the way I see my host. Not only what you say: what you are. Don't be afraid. I'll be careful with it."})
+	out.append({"n": "(Aubermont, the great city of the north, is on the world map now: four days from Lehan by the north road.)"})
 	return out
 
 
@@ -382,6 +387,9 @@ static func _basin(done: bool) -> Array:
 static func apply(fx: String) -> void:
 	if fx.begins_with("take:"):
 		Game.take_item(int(fx.substr(5)))
+	elif fx.begins_with("known:"):
+		if not fx.substr(6) in Game.known:
+			Game.known.append(fx.substr(6))
 	elif fx == "wash":
 		Game.pos = ShrineArea.HALL_BACK
 		Game.facing = 0
